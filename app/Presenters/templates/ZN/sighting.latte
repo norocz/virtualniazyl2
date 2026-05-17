@@ -1,0 +1,114 @@
+{block content}
+<link href="{$basePath}/assets/css/vaz-redesign.css" rel="stylesheet">
+<main class="vaz-redesign">
+
+<section class="vaz-section-hero" style="background:linear-gradient(135deg,#fef2f2,#fff7ed);">
+    <div class="container">
+        <h1 class="vaz-page-title" style="color:#dc2626;">
+            <i class="bi bi-chat-square-dots me-2"></i>Zanechat vzkaz majiteli
+        </h1>
+        <p class="vaz-page-sub">
+            Hledáme:
+            <strong>{$animal->getName() ?? $animal->getSpecies()->getName()}</strong>
+            {if $animal->getCity()} — {$animal->getCity()}{/if}
+        </p>
+    </div>
+</section>
+
+<section class="py-4">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-7">
+
+                {* Přehled hledaného zvířete *}
+                <div class="vaz-card mb-4" style="border-color:#fca5a5;">
+                    <div class="d-flex gap-3 align-items-start">
+                        {var $firstPhoto = $animal->getPhotos()->filter(fn($p) => !$p->isDeleted())->first()}
+                        {if $firstPhoto}
+                        <img src="{$basePath}{$firstPhoto->getPath()}{$firstPhoto->getName()}"
+                             style="width:90px; height:90px; object-fit:cover; border-radius:8px; flex-shrink:0;"
+                             alt="">
+                        {else}
+                        <div style="width:90px; height:90px; background:#fee2e2; border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                            <i class="bi bi-exclamation-triangle text-danger" style="font-size:2rem;"></i>
+                        </div>
+                        {/if}
+                        <div>
+                            <div class="fw-bold fs-5">{$animal->getName() ?? $animal->getSpecies()->getName()}</div>
+                            <div class="text-muted small">
+                                {$animal->getSpecies()->getName()}
+                                {if $animal->getSex()} · {$animal->getSex()}{/if}
+                            </div>
+                            {if $animal->getLocation()}
+                            <div class="text-muted small mt-1">
+                                <i class="bi bi-geo-alt me-1"></i>{$animal->getLocation()}
+                            </div>
+                            {/if}
+                            <div class="text-muted small">
+                                <i class="bi bi-calendar3 me-1"></i>Ztraceno: {$animal->getLostAt()|date:'d.m.Y'}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {* Formulář *}
+                <div class="vaz-card">
+                    <h4 class="h5 fw-bold mb-4">Váš vzkaz</h4>
+
+                    {form sightingForm}
+                    {input token, value => $animal->getSecretToken()}
+
+                    <div class="mb-3">
+                        {label type, class => 'form-label fw-semibold' /}
+                        {input type, class => 'zn-radio-list'}
+                        <span class="text-danger small">{inputError type}</span>
+                    </div>
+
+                    <div class="mb-3">
+                        {label message, class => 'form-label fw-semibold' /}
+                        {input message, class => 'form-control'}
+                        <span class="text-danger small">{inputError message}</span>
+                    </div>
+
+                    <div class="mb-3">
+                        {label location, class => 'form-label fw-semibold' /}
+                        {input location, class => 'form-control', placeholder => 'Ulice, oblast — kde jste zvíře viděli'}
+                    </div>
+
+                    <hr>
+
+                    <h6 class="fw-semibold mb-3">Váš kontakt <span class="text-muted fw-normal small">(pro zpětnou vazbu od majitele)</span></h6>
+                    <div class="row g-3 mb-3">
+                        <div class="col-sm-6">
+                            {label contactName, class => 'form-label' /}
+                            {input contactName, class => 'form-control', placeholder => 'Jméno (nepovinné)'}
+                        </div>
+                        <div class="col-sm-6">
+                            {label contactEmail, class => 'form-label fw-semibold' /}
+                            {input contactEmail, class => 'form-control'}
+                            <span class="text-danger small">{inputError contactEmail}</span>
+                        </div>
+                        <div class="col-sm-6">
+                            {label contactPhone, class => 'form-label' /}
+                            {input contactPhone, class => 'form-control', placeholder => '+420 … (nepovinné)'}
+                        </div>
+                    </div>
+
+                    {input send, class => 'vaz-btn vaz-btn--primary w-100'}
+
+                    {/form}
+                </div>
+
+                <div class="text-center mt-3">
+                    <a n:href="ZN:lost, $animal->getId()" class="text-muted small">
+                        <i class="bi bi-arrow-left me-1"></i>Zpět na detail inzerátu
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</section>
+</main>
+{/block}
+{block scripts-user}{/block}

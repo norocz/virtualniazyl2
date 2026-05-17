@@ -1,0 +1,769 @@
+<versions>
+    <version>
+        <date>17.05.2026</date>
+        <number>1.8 Blondie</number>
+        <description>
+            Změny:
+            - Přepracovaný profil
+            - Sledování azylu -> Moje aktivity
+            - Moje aktivity
+            - Změna registrací na události
+            - Nové tabulky v DB pro sledování a další změny dvě migrace
+            - finanční zprávy a sledování pohybu financí
+
+            Chyby:
+            - změny v šablonách, předevšíám profil
+
+        </description>
+    </version>
+    <version>
+        <date>10.05.2026</date>
+        <number>1.6 Beria</number>
+        <description>
+            Změny:
+            - Možnost tvořit události
+            - Vylepšené přidávání polohy pomocí mapy
+            - Převod adres na lokalizační údaje
+            - Barevná témate Eshopu
+            - finanční zprávy a sledování pohybu financí
+
+            Chyby:
+            - opraven problém v nekonzistenci šablon (a že jich bylo)
+
+        </description>
+    </version>
+    <version>
+        <date>01.05.2026</date>
+        <number>1.5 Baghira</number>
+        <description>
+            Změny:
+            - Vylepšení designu, vizuálně zajímavější a hezčí prvky
+            - Eshopy pro azyly
+            - Python správa plateb na pozadí
+            - Platební DB
+            - předělané kontakty u azylu
+            - změny v komunikačním protokolu
+            - integrace překladů
+
+            Chyby:
+            - hromada drobných chyb v designu
+            - posílání zpráv opraveno
+
+        </description>
+    </version>
+    <version>
+        <date>11.04.2025</date>
+        <number>1.O RC3 Cassidy</number>
+        <description>
+            Změny:
+            - Obrázek ve sbírkách (Administrace azylu)
+            - Defaultní obrázek ve sbírkách
+            - filtrace fotek při adopci (deleted fotky neberat)
+            - opravena editace aktualit u Azylu
+            . opraveno mazání aktualit u azylu
+
+        </description>
+    </version>
+    <version>
+        <date>05.04.2025</date>
+        <number>1.O RC2 Cassidy</number>
+        <description>
+            Změny:
+            - Opravena chyba ve formátu data - napříč celým systémem jsem prostě Kokot :D (a nebo někdo kdo ten formát vymyslel je kokot) 
+
+        </description>
+    </version>
+    <version>
+        <date>04.04.2025</date>
+        <number>1.O RC1 Cassidy</number>
+        <description>
+            Změny:
+           - vylepšeno vyhledávání
+           - vylepšené ukládání zvířat azylu
+           - upravená DB
+           - editace druhů
+           - přidání TAGů pro vyhledávání k druhu
+        </description>
+    </version>
+    <version>
+        <date>01.04.2025</date>
+        <number>0.9.9.9 RC13</number>
+        <description>
+            Změny:
+            - zmenšený náhled adopce aby se vešli 4 vedle sebe
+            - upraven vystup v adopci pro azyl
+            - počet zpráv na hlavní stránce
+            - předělaná tlačítka u adopcí (aby se to vešlo)
+
+            - opravena chyba v šabloně
+            - oprava JS v šablonách
+            - oprava designu šablony
+            - chyba v News Datagridu (připnutá Pined)
+
+
+        </description>
+    </version>
+    <version>
+        <date>31.03.2025</date>
+        <number>0.9.9.9 RC11</number>
+        <description>
+            Změny:
+            - změna řazení nejprve adopce potom aktuality
+            - opravy přepadů chyb 500 na 404
+
+        </description>
+    </version>
+    <version>
+        <date>31.03.2025</date>
+        <number>0.9.9.9 RC10</number>
+        <description>
+            Změny:
+            - oprava volání naja.js
+            - oprava volání netteForm.js
+
+        </description>
+    </version>
+    <version>
+        <date>31.03.2025</date>
+        <number>0.9.9.9 RC9</number>
+        <description>
+            Změny:
+            - oprava podmínky pro vyhledávání v adopcích - isDeleted
+            - prepřacovaná 404
+            - odchytávání Exception 500 -> 404 u azylu a adopce
+            - pročištění presenteru
+
+        </description>
+    </version>
+    <version>
+        <date>29.03.2025</date>
+        <number>0.9.9.9 RC8</number>
+        <description>
+            Změny:
+            - vyladění funkce heldání v adopcích
+            - animal.latte
+            - adoptions.latte - přepracováné
+        </description>
+    </version>
+    <version>
+        <date>28.03.2025</date>
+        <number>0.9.9.9 RC7</number>
+        <description>
+            Změny:
+           - oprava spojování konverzací Nekativuje se pokud není nikdo přihlášený proto nepřihlášený stejně nemůže poslat vzkaz.
+           - mazání fotek uživatele
+           - mazání fotek uživatele profil v azylu
+        </description>
+    </version>
+    <version>
+        <date>28.03.2025</date>
+        <number>0.9.9.9 RC6</number>
+        <description>
+            Změny:
+            - opravena formulářová tlačítka profil azyl
+            - opraveno generováníá PersonalPhoto
+            - opraveny odkazy v home:SingIn a home:Registration
+        </description>
+    </version>
+    <version>
+        <date>26.03.2025</date>
+        <number>0.9.9.9 RC5</number>
+        <description>
+            Změny:
+            - změna v DB kvůli nastavení fotky
+            - změna v šablonách pro azyl/home
+            - změna nastavení fotky v azylu
+            - změna nastavení personál photo pro uživatele
+            - změna nastavení nastavení personál photo pro Azyl
+        </description>
+    </version>
+    <version>
+        <date>24.03.2025</date>
+        <number>0.9.9.8 RC4</number>
+        <description>
+
+            Změny:
+            - oprava linků na fotky
+            - oprava šablon 404
+            - oprava šablony azylu a profilu uživatele
+        </description>
+    </version>
+    <version>
+        <date>24.03.2025</date>
+        <number>0.9.9.8 RC3</number>
+        <description>
+
+            Změny:
+            - oprava chyby mazání zablokované IP adresy z FW. (rychlý patch)
+            - kontrola emailu při registraci na straně klienta
+            - kontrola emailu na straně serveru
+            - registrace odstraní záznam ve FW pro IP adresu
+            - upraveny titulky
+
+            - oprava chyb při ukládání zvířete (tag-druh)
+            - oprava chyb v aktualitách u azylu kde nemůžou dávat připnuté
+
+            -oprava home:default šablony
+
+
+            Chyby:
+            - virtualní adopce by měla vygenerovat QR kód
+            - provázat vlastnosti při vytváření adopce
+
+            Nápady:
+            - podepisování smlouvy pomocí SMS (odeslání sms s kodem, zadání kódu pro podpis)
+            - náhled změn ve verzích
+        </description>
+    </version>
+    <version>
+        <date>24.03.2025</date>
+        <number>0.9.9.8 RC3</number>
+        <description>
+
+            Změny:
+            - oprava chyby mazání zablokované IP adresy z FW. (rychlý patch)
+            - kontrola emailu při registraci na straně klienta
+            - kontrola emailu na straně serveru
+            - registrace odstraní záznam ve FW pro IP adresu
+            - upraveny titulky
+
+
+            Chyby:
+            - virtualní adopce by měla vygenerovat QR kód
+            - provázat vlastnosti při vytváření adopce
+
+            Nápady:
+            - podepisování smlouvy pomocí SMS (odeslání sms s kodem, zadání kódu pro podpis)
+            - náhled změn ve verzích
+        </description>
+    </version>
+    <version>
+        <date>23.03.2025</date>
+        <number>0.9.9.7 RC1</number>
+        <description>
+
+            Změny:
+            - opravená šablona profilu
+            - SuperAdmin zpracování uživatelů (změna role)
+            - refaktorování UserDatagrid
+            - refaktorizace Admin User, Owner a Azyl
+            - oprava šablony azylu
+            - oprava šablony azyly adoptions
+            - oprava šablony adoptions
+            - oprava šablony adopce
+            - Refaktorizace novinek
+            - Doplněná editace a správa připnuté novinky
+            - Zobrazení Připnuté novinky na hlavní stránce
+
+
+            Chyby:
+            - virtualní adopce by měla vygenerovat QR kód
+            - provázat vlastnosti při vytváření adopce
+
+            Nápady:
+            - podepisování smlouvy pomocí SMS (odeslání sms s kodem, zadání kódu pro podpis)
+        </description>
+    </version>
+    <version>
+        <date>21.03.2025</date>
+        <number>0.9.9.6</number>
+        <description>
+
+            Změny:
+            - zvyraznění typu adopce
+            - změna v DB pro souřadnice
+            - změna v DB pro vyhledávání a indexaci
+            - příprava na OpenSearch
+            - oprava chyby v detailu sbírky
+            - u sbírky vyřešen problém se sbírkou co už skončila
+            - Generátor HTML->PDF pro smlouvy
+            - Automatická archivace smluv a její návaznost (vazba na minulou verzi).
+
+
+            Chyby:
+            - virtualní adopce by měla vygenerovat QR kód
+            - provázat vlastnosti při vytváření adopce
+
+            Nápady:
+            - podepisování smlouvy pomocí SMS (odeslání sms s kodem, zadání kódu pro podpis)
+        </description>
+    </version>
+       <version>
+            <date>14.03.2025</date>
+            <number>0.9.9.5</number>
+            <description>
+
+                Změny:
+                - Zvířátka mají parametr příchodu do útulku/azylu
+                - Váha zvířátka
+                - Velikost
+                - Kontrola aby narození nebylo dřív než datum přijetí :-)
+
+                Co je potřeba:
+                - přidat režim odstávky
+                - Zkontrolovat všechny odkazy jestli jsou OK zvlášť odkazy na fotky
+                - ADMIN: kontrola smluv
+                - ADMIN: Hromadné zprávy
+                - ADMIN: Odpovědi na dotazy
+                - párování smlouvy
+                - archivace smlouvy
+                - pravidla pro adopce
+                - adopční podmínky - rozběhnutý proces poslaný mail
+                - Nastavit až bude správný účet
+
+                Rozvoj:
+                - Taby na profilu automaticky Switchovat
+                - Přidat taby (popořili jste, oblíbené azyly)
+                - Azyl může mít vlastní stránky na profilu (editace včetně fotek a podobně)
+                - Azyl by měl mít archív adopcí
+                - hodnocení adopce (adoptéra po adopci)
+
+                Nápady:
+                - podepisování smlouvy pomocí SMS (odeslání sms s kodem, zadání kódu pro podpis)
+            </description>
+        </version>
+        <version>
+            <date>11.03.2025</date>
+            <number>0.9.9.4</number>
+            <description>
+
+                Změny:
+                - Propojení smlouvy
+                - Doplnění dalších parametrů ke zvířatům
+
+
+
+                Co je potřeba:
+                - přidat režim odstávky
+                - Zkontrolovat všechny odkazy jestli jsou OK zvlášť odkazy na fotky
+                - ADMIN: editor částí smluv (šablona smlouvy)
+                - ADMIN: kontrola smluv
+                - ADMIN: Hromadné zprávy
+                - ADMIN: Odpovědi na dotazy
+                - párování smlouvy
+                - archivace smlouvy
+                - pravidla pro adopce
+                - adopční podmínky - rozběhnutý proces poslaný mail
+                - Nastavit až bude správný účet
+
+                Rozvoj:
+                - Taby na profilu automaticky Switchovat
+                - Přidat taby (popořili jste, oblíbené azyly)
+                - Azyl může mít vlastní stránky na profilu (editace včetně fotek a podobně)
+                - Azyl by měl mít archív adopcí
+                - hodnocení adopce (adoptéra po adopci)
+
+                Nápady:
+                - podepisování smlouvy pomocí SMS (odeslání sms s kodem, zadání kódu pro podpis)
+            </description>
+        </version>
+    <version>
+        <date>09.03.2025</date>
+        <number>0.9.9.3</number>
+        <description>
+
+            Změny:
+            - logování stavů adopce
+            - zmeny stavu adopce
+            - zobrazení smlouvy a podmínek
+            - opravená chyba přeřazování zpráv k adopci
+            - Přepracované zpracování hlasování a změny stavů - místo odkazů formuláře jde přidávat komenty
+            - s tím spojené změny entit
+            - nové formuláře
+            - design adopce z pohledu azylu
+
+
+
+            Co je potřeba:
+            - přidat režim odstávky
+            - Zkontrolovat všechny odkazy jestli jsou OK zvlášť odkazy na fotky
+            - ADMIN: editor částí smluv (šablona smlouvy)
+            - ADMIN: kontrola smluv
+            - ADMIN: Hromadné zprávy
+            - ADMIN: Odpovědi na dotazy
+            - párování smlouvy
+            - archivace smlouvy
+            - pravidla pro adopce
+            - adopční podmínky - rozběhnutý proces poslaný mail
+            - Nastavit až bude správný účet
+
+            Rozvoj:
+            - Taby na profilu automaticky Switchovat
+            - Přidat taby (popořili jste, oblíbené azyly)
+            - Azyl může mít vlastní stránky na profilu (editace včetně fotek a podobně)
+            - Azyl by měl mít archív adopcí
+            - hodnocení adopce (adoptéra po adopci)
+
+            Nápady:
+            - podepisování smlouvy pomocí SMS (odeslání sms s kodem, zadání kódu pro podpis)
+        </description>
+    </version>
+    <version>
+        <date>05.03.2025</date>
+        <number>0.9.9.2</number>
+        <description>
+
+            Změny:
+            - formulář na hodnocení adoptujícícho
+            - formuláře pro části smluv
+            - změny v DB pro smlouvy a jejich verzování
+            - verzování smluv
+
+
+            Co je potřeba:
+            - přidat režim odstávky
+            - Zkontrolovat všechny odkazy jestli jsou OK zvlášť odkazy na fotky
+            - ADMIN: editor částí smluv (šablona smlouvy)
+            - ADMIN: kontrola smluv
+            - ADMIN: Hromadné zprávy
+            - ADMIN: Odpovědi na dotazy
+            - párování smlouvy
+            - archivace smlouvy
+            - pravidla pro adopce
+            - adopční podmínky - rozběhnutý proces poslaný mail
+            - Nastavit až bude správný účet
+
+            Rozvoj:
+            - Taby na profilu automaticky Switchovat
+            - Přidat taby (popořili jste, oblíbené azyly)
+
+            Nápady:
+            - podepisování smlouvy pomocí SMS (odeslání sms s kodem, zadání kódu pro podpis)
+        </description>
+    </version>
+    <version>
+    <date>01.03.2025</date>
+    <number>0.9.9.1</number>
+    <description>
+            Velký úklid v kódu. Projit všechny TODO a dodělat je smazat zakomentovaný kód.
+            Dodělat komentáře.
+
+            Změny:
+            - indexy v DB
+            - komunikace z profilu
+            - komunikace na straně Azylu
+            - komunikace na straně uživatele
+            - 64 zmněn v DB :D
+            - opravena chyba v generování odkazu z "Moje adopce"
+
+            Co je potřeba:
+            - přidat režim odstávky
+            - Zkontrolovat všechny odkazy jestli jsou OK zvlášť odkazy na fotky
+            - ADMIN: editor částí smluv (šablona smlouvy)
+            - ADMIN: kontrola smluv
+            - ADMIN: Hromadné zprávy
+            - ADMIN: Odpovědi na dotazy
+            - párování smlouvy
+            - archivace smlouvy
+            - pravidla pro adopce
+            - adopční podmínky - rozběhnutý proces poslaný mail
+            - Nastavit až bude správný účet
+
+            Rozvoj:
+            - Taby na profilu automaticky Switchovat
+            - Přidat taby (popořili jste, oblíbené azyly)
+
+            Nápady:
+            - podepisování smlouvy pomocí SMS (odeslání sms s kodem, zadání kódu pro podpis)
+        </description>
+    </version>
+    <version>
+        <date>28.02.2025</date>
+        <number>0.9.9.0</number>
+        <description>
+            GIT HUB Výročí :D - dneska je to rok! Co je první verze na GitHubu.
+
+            Změny:
+            - Azyl dostal navíc IČO
+            - Azyl má krom popisu i krátký popis bez Větších HTML prvků
+            - komunikace Uživatel -> Azyl
+            - komunikace Azyl -> Uživatel
+            - komunikace Uživatel -> Uživatel
+            - kompletace smlouvy
+            - zadávání částí smlouvy
+                - Nejdřív se vytvoří smlouva -> pak se naplní -> %azyl%, %adopter% %podpisAzyl% %podpisAdopter%
+            - kompletní přepracování komunikace
+            - nový systém zpráv, rozdělený do konverzací
+            - ještě na něm doaldit nějaké drobnosti co mi během jeho programování došli
+
+
+            Co je potřeba:
+            - přidat režim odstávky
+            - Zkontrolovat všechny odkazy jestli jsou OK zvlášť odkazy na fotky
+            - ADMIN: editor částí smluv (šablona smlouvy)
+            - ADMIN: kontrola smluv
+            - ADMIN: Hromadné zprávy
+            - ADMIN: Odpovědi na dotazy
+            - párování smlouvy
+            - archivace smlouvy
+            - pravidla pro adopce
+            - adopční podmínky - rozběhnutý proces poslaný mail
+            - Nastavit až bude správný účet
+
+            Rozvoj:
+            - Taby na profilu automaticky Switchovat
+            - Přidat taby (popořili jste, oblíbené azyly)
+
+            Nápady:
+            - podepisování smlouvy pomocí SMS (odeslání sms s kodem, zadání kódu pro podpis)
+        </description>
+    </version>
+    <version>
+        <date>24.02.2025</date>
+        <number>0.9.8.9</number>
+        <description>
+            Změny:
+            - velké opravování chyb
+            - smazal jsem celou DB a začal doma načisto... takže hromada chyb začala vyskakovat z důvodu vracení NULL
+            - Je to dřina
+            - oprava AdoptionTypeEnum
+            - oprava ActionTypenEnum
+            - oprava MessageTypeEnum
+            - oprava RoleTypeEnum
+            - oprava SexTypeEnum
+            - PROFIL JE OTESTOVANÝ
+                - oba formuláře fungují
+                - fotky jdou nahrávat
+                - Zkusit do budoucna přehazování tabů.
+            - Opravené hlavní menu (kurva jak za to mohl title to takhle doprasit)
+            - Aktivní linky už fungují
+
+            Co je potřeba:
+            - přidat režim odstávky
+            - Zkontrolovat všechny odkazy jestli jsou OK zvlášť odkazy na fotky
+            - ADMIN: editor částí smluv (šablona smlouvy)
+            - ADMIN: kontrola smluv
+            - ADMIN: Hromadné zprávy
+            - ADMIN: Odpovědi na dotazy
+            - párování smlouvy
+            - archivace smlouvy
+            - azyl komunikace
+            - pravidla pro adopce
+            - adopční podmínky - rozběhnutý proces poslaný mail
+            - Pořád je problém s přepínáním azylu v souvislosti s fotkou pokud není nastavená a je null
+            - Nastavit až bude správný účet
+
+            Rozvoj:
+            - Taby na profilu automaticky Switchovat
+            - Přidat taby (popořili jste, oblíbené azyly)
+
+            Nápady:
+            - podepisování smlouvy pomocí SMS (odeslání sms s kodem, zadání kódu pro podpis)
+        </description>
+    </version>
+    <version>
+        <date>22.02.2025</date>
+        <number>0.9.8.6</number>
+        <description>
+            Změny:
+            - oprava editace sbírky (ukládání nového nebo neukládání žádného obrázku).
+            - oprava nastavení města
+            - integrace select2 pro město
+            - přidání města do DB azylu
+            - přidání adresy pro komunikaci azylu (azyly budou mít adresu azl############################
+            - uprava formuláře na profilu uživatele
+            - uprava formuláře nastavení azylu
+            - doplnění scházející Prahy (Wtf :D)
+            - ukládání nastavení systému
+            - zpracování nastavení systému
+            - nastavení azylu
+            - azyl navíc (web, email, město)
+
+            Nápady:
+            - podepisování smlouvy pomocí SMS (odeslání sms s kodem, zadání kódu pro podpis)
+
+            Co je potřeba:
+            - přidat režim odstávky
+            - Zkontrolovat všechny odkazy jestli jsou OK zvlášť odkazy na fotky
+            - ADMIN: editor částí smluv (šablona smlouvy)
+            - ADMIN: kontrola smluv
+            - ADMIN: Hromadné zprávy
+            - ADMIN: Odpovědi na dotazy
+            - párování smlouvy
+            - archivace smlouvy
+            - azyl komunikace
+            - pravidla pro adopce
+            - adopční podmínky - rozběhnutý proces poslaný mail
+            - Pořád je problém s přepínáním azylu v souvislosti s fotkou pokud není nastavená a je null
+            - Nastavit až bude správný účet
+        </description>
+    </version>
+    <version>
+        <date>21.02.2025</date>
+        <number>0.9.8.5</number>
+        <description>
+            Změny:
+            - orpava odpočtu u sbírky
+            - doplnění hlavičky pro sbírku pro lepší vkládání na FB a vyhledávače
+            - vkládání titulního obrázku sbírky do skrz hlavičku
+            - změna designu detailu sbírky
+            - ikony a náhledové obrázky pro iPhone, Andorid, a prohlížeč
+            - drobnosti v update.sh pro nastavení applikace
+
+
+            Nápady:
+            - podepisování smlouvy pomocí SMS (odeslání sms s kodem, zadání kódu pro podpis)
+
+            Co je potřeba:
+            - Zkontrolovat všechny odkazy jestli jsou OK zvlášť odkazy na fotky
+            - ADMIN: editor částí smluv (šablona smlouvy)
+            - ADMIN: kontrola smluv
+            - párování smlouvy
+            - archivace smlouvy
+            - azyl komunikace
+            - pravidla pro adopce
+            - adopční podmínky - rozběhnutý proces poslaný mail
+            - odkazy na podmínky při registraci
+            - Pořád je problém s přepínáním azylu v souvislosti s fotkou pokud není nastavená a je null
+            - Nastavit až bude správný účet
+        </description>
+    </version>
+    <version>
+        <date>20.02.2025</date>
+        <number>0.9.8.4</number>
+        <description>
+            Změny:
+            - tabulky pro podepisování smluv
+            - tabulka pro archivaci smluv
+            - tabulka pro části smlouvy
+            - změny v tabulce ANIMALS, AZYL a USERS pro párování smluv
+            - Opravena chyba v Collections:setExtendedAmount()
+            - SAdmin: Sbírkový datagrid
+            - Oprava odkazů u sbírek
+            - Oprava odkazů na obrázek u sbírek
+
+
+            Nápady:
+            - podepisování smlouvy pomocí SMS (odeslání sms s kodem, zadání kódu pro podpis)
+
+            Co je potřeba:
+            - Zkontrolovat všechny odkazy jestli jsou OK zvlášť odkazy na fotky
+            - ADMIN: editor částí smluv (šablona smlouvy)
+            - ADMIN: kontrola smluv
+            - párování smlouvy
+            - archivace smlouvy
+            - azyl komunikace
+            - pravidla pro adopce
+            - adopční podmínky - rozběhnutý proces poslaný mail
+            - odkazy na podmínky při registraci
+            - Pořád je problém s přepínáním azylu v souvislosti s fotkou pokud není nastavená a je null
+        </description>
+    </version>
+    <version>
+        <date>19.02.2025</date>
+        <number>0.9.8.3</number>
+        <description>
+            Změny:
+            - opravena chyba kdy SAdmin nemohl předstírat azyl (Cannot assign __PHP_Incomplete_Class to property App\Model\Orm\Entity\Azyl::$mainPhoto of type ?App\Model\Orm\Entity\Photo)
+            - schvalování Sbírek (Admin)
+            - stopnuti Sbírky (Admin)
+
+            Co je potřeba:
+            - pravidla pro adopce
+            - adopční podmínky - rozběhnutý proces poslaný mail
+            - odkazy na podmínky při registraci
+        </description>
+    </version>
+    <version>
+        <date>18.02.2025</date>
+        <number>0.9.8.2</number>
+        <description>
+            Změny:
+            - odstraněn odkaz na nastavení v Administraci
+            - Přidány verze do Administrace
+            - Patička v adminu má verzi
+            - Web jako takový dostal verzi a datum sestavení do patičky
+            - Nahrávání fotek k azylu
+            - Mazání fotek
+            - Nastavení fotky azylu jako fotky na hlavní stránce (logo)
+            - překopání šablony pro home:AzylPhotos
+            - překopání šablony pro home:Azyl
+            - Mazání fotek zvířat
+            - Editace sbírky -> zneplatnění
+            - Zastavení sbírky -> neactivní
+            - Nová sbírka čeká na schválení
+
+            Příprava:
+            - sitemap.xml generátor
+            - app:test - command test - příprava na příkazy pro symfony console
+            - Registrovaný uživatel může poslat dotaz (admin by měl vidět ty dotazy a měl by na ně odpovědět). Tabulka HELP a FAQ
+
+
+            Dodělat:
+            - Komunikace azyl
+            - Systém settings pro SAdmina
+            - System setings pro Consoli
+            - Schválení sbírky
+            - Sbírky co nejsou aktivní
+
+        </description>
+    </version>
+    <version>
+        <date>17.02.2025</date>
+        <number>0.9.8.1</number>
+        <description>
+            Přidána podpora pro XML verzování aby jsme v tom neměli bordel :-).
+        </description>
+    </version>
+    <version>
+        <date>17.02.2025</date>
+        <number>0.9.8.1</number>
+        <description>
+            Přidána podpora pro XML verzování aby jsme v tom neměli bordel :-).
+        </description>
+    </version>
+    <version>
+        <data>14.02.2025</data>
+        <number>0.9.7.1</number>
+        <description>
+            Novinky:
+            - nasazené sbírky
+
+            Opravy:
+            - chyba při registraci
+            - chyba při nastavení
+            Oprava chyb na registraci
+        </description>
+    </version>
+    <version>
+        <date>10.02.2025</date>
+        <number>0.9.7</number>
+        <description>
+            Funkcionality:
+            - Kompletace všech funkcionalit pro přihlášeného a nepřihlášeného uživatele.
+            - Všechny funkcionality pro Azyly.
+            - doplněna správa uživatelů pro Admina
+            - upravená správa fotek
+        </description>
+    </version>
+    <version>
+        <date>28.02.2024</date>
+        <number>0.2</number>
+        <description>
+            Funkcionality:
+            - Přihlašování
+            - Registrace uživatele
+            - Šablona pro web a pro
+
+            Opravy:
+            - Chyba v registraci
+            - Přidána položka do DB
+            - Chyba pro mapování Konstant
+        </description>
+    </version>
+    <version>
+        <date>28.02.2024</date>
+        <number>0.2</number>
+        <description>
+            Funkcionality:
+            - Přihlašování
+            - Registrace uživatele
+            - Šablona pro web a pro
+
+            Opravy:
+            - Chyba v registraci
+            - Přidána položka do DB
+            - Chyba pro mapování Konstant
+        </description>
+    </version>
+</versions>

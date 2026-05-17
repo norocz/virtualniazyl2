@@ -1,0 +1,94 @@
+{layout @layout.latte}
+
+{block title}💰 Výplata {$payout->getAmount()|number:0,',','&nbsp;'|noescape} Kč - doklady v příloze{/block}
+
+{block content}
+<h2 style="color:#198754;margin:0 0 16px 0;font-size:20px;">
+    💰 Peníze jsou na cestě!
+</h2>
+
+<p style="margin:0 0 16px 0;">Dobrý den,</p>
+
+<p style="margin:0 0 16px 0;">
+    právě jsme Vám odeslali výplatu z objednávky <strong>{$order->getOrderNumber()}</strong>.
+</p>
+
+<div style="background:#d1e7dd;border-radius:6px;padding:20px;margin:20px 0;text-align:center;">
+    <p style="margin:0 0 4px 0;font-size:13px;color:#666;">Odesláno na Váš účet:</p>
+    <p style="margin:0;font-size:28px;font-weight:bold;color:#198754;">
+        {$payout->getAmount()|number:2,',','&nbsp;'|noescape} {$payout->getCurrency()}
+    </p>
+    <p style="margin:4px 0 0 0;font-size:12px;color:#666;">
+        VS {$order->getOrderNumber()} • {$payout->getSentAt()|date:'d.m.Y'}
+    </p>
+</div>
+
+<div style="background:#e7f3ff;border-left:4px solid #0d6efd;padding:16px 20px;margin:20px 0;border-radius:4px;">
+    <p style="margin:0 0 8px 0;"><strong>📎 V příloze tohoto e-mailu najdete:</strong></p>
+    <ul style="margin:0;padding-left:20px;font-size:13px;">
+        <li><strong>Fakturu za provozní poplatek</strong>
+            ({$commissionInvoice->getDocumentNumber()}) - zaúčtujte si ji jako
+            provozní náklad</li>
+        <li><strong>Informativní výpis o výplatě</strong>
+            ({$payoutStatement->getDocumentNumber()}) - přehled jak byla
+            objednávka vyřízena</li>
+    </ul>
+</div>
+
+<h3 style="margin:24px 0 12px 0;font-size:16px;">Rozpis platby</h3>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-size:14px;">
+    <tr>
+        <td style="padding:6px 0;color:#666;">Zákazník {$order->getBuyerName()} zaplatil:</td>
+        <td style="text-align:right;padding:6px 0;">
+            {$order->getTotalAmount()|number:2,',','&nbsp;'|noescape} Kč
+        </td>
+    </tr>
+    <tr>
+        <td style="padding:6px 0;color:#666;">Provize spolku ({$order->getFeePercent()}&nbsp;%):</td>
+        <td style="text-align:right;padding:6px 0;color:#666;">
+            -{$order->getFeeAmount()|number:2,',','&nbsp;'|noescape} Kč
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2" style="padding:8px 0 0 0;border-top:1px solid #dee2e6;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                    <td style="padding:6px 0;font-weight:bold;">Vyplaceno:</td>
+                    <td style="text-align:right;padding:6px 0;font-weight:bold;color:#198754;">
+                        {$payout->getAmount()|number:2,',','&nbsp;'|noescape} Kč
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+
+<div style="background:#fff3cd;border-left:4px solid #ffc107;padding:16px 20px;margin:24px 0;border-radius:4px;font-size:13px;">
+    <p style="margin:0 0 6px 0;"><strong>📋 Pro účetní azylu:</strong></p>
+    <p style="margin:0 0 6px 0;">
+        <strong>Příjem z prodeje:</strong> {$order->getTotalAmount()|number:2,',','&nbsp;'|noescape} Kč
+        (v hrubé výši - co zákazník zaplatil spolku jménem azylu)
+    </p>
+    <p style="margin:0 0 6px 0;">
+        <strong>Provozní náklad:</strong> {$order->getFeeAmount()|number:2,',','&nbsp;'|noescape} Kč
+        (provozní poplatek - doloženo přiloženou fakturou od spolku)
+    </p>
+    <p style="margin:0;">
+        <strong>Čistý výsledek (bez DPH pokud neplátce):</strong>
+        {$payout->getAmount()|number:2,',','&nbsp;'|noescape} Kč
+    </p>
+</div>
+
+<p style="margin:20px 0;">
+    <a href="{$baseUrl}/azyl/shopOrder/{$order->getId()}"
+       style="display:inline-block;background:#0d6efd;color:white;padding:12px 24px;text-decoration:none;border-radius:6px;font-weight:bold;">
+        Detail objednávky
+    </a>
+</p>
+
+<p style="margin:20px 0 0 0;font-size:12px;color:#666;padding-top:16px;border-top:1px solid #eee;">
+    Peníze by měly dorazit na Váš účet do 1-3 pracovních dnů v závislosti na bance.
+    Děkujeme, že s námi pomáháte zvířatům! 🐾
+</p>
+{/block}

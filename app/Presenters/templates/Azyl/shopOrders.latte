@@ -1,0 +1,97 @@
+{templateType App\Presenters\Templates\Azyl\Layout}
+{block azylContent}
+<div class="container-fluid pt-4 px-4">
+    <div class="bg-light rounded p-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="mb-0"><i class="bi bi-bag me-2"></i>Objednávky</h4>
+            <a href="{link Azyl:shop}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i>Zpět do eshopu
+            </a>
+        </div>
+
+        {* Filtr podle statusu *}
+        <div class="mb-3">
+            <div class="btn-group" role="group">
+                <a href="{link Azyl:shopOrders}"
+                   class="btn {if !($statusFilter ?? null)}btn-primary{else}btn-outline-primary{/if}">
+                    Všechny
+                </a>
+                <a href="{link Azyl:shopOrders, 'status' => 'paid'}"
+                   class="btn {if ($statusFilter ?? null) === 'paid'}btn-primary{else}btn-outline-primary{/if}">
+                    K vyřízení
+                </a>
+                <a href="{link Azyl:shopOrders, 'status' => 'shipped'}"
+                   class="btn {if ($statusFilter ?? null) === 'shipped'}btn-primary{else}btn-outline-primary{/if}">
+                    Odeslané
+                </a>
+                <a href="{link Azyl:shopOrders, 'status' => 'delivered'}"
+                   class="btn {if ($statusFilter ?? null) === 'delivered'}btn-primary{else}btn-outline-primary{/if}">
+                    Doručené
+                </a>
+            </div>
+        </div>
+
+        {if count($orders) > 0}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th>Číslo / datum</th>
+                            <th>Zákazník</th>
+                            <th>Položky</th>
+                            <th class="text-end">Částka</th>
+                            <th class="text-center">Stav</th>
+                            <th class="text-end">Akce</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {foreach $orders as $order}
+                            <tr>
+                                <td>
+                                    <strong>{$order->getOrderNumber()}</strong><br>
+                                    <small class="text-muted">{$order->getCreatedAt()|date:'d.m.Y H:i'}</small>
+                                </td>
+                                <td>
+                                    {$order->getBuyerName()}<br>
+                                    <small class="text-muted">{$order->getBuyerEmail()}</small>
+                                </td>
+                                <td>
+                                    <small>
+                                        {foreach $order->getItems() as $item}
+                                            {$item->getQuantity()}&times; {$item->getProductName()}<br>
+                                        {/foreach}
+                                    </small>
+                                </td>
+                                <td class="text-end">
+                                    <strong>{$order->getTotalAmount()|number:0,',','&nbsp;'|noescape} Kč</strong>
+                                    <br><small class="text-muted">
+                                        vám připadne {$order->getPayoutAmount()|number:0,',','&nbsp;'|noescape} Kč
+                                    </small>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge {$order->getOrderStatus()->badgeClass()}">
+                                        {$order->getOrderStatus()->label()}
+                                    </span>
+                                </td>
+                                <td class="text-end">
+                                    <a href="{link Azyl:shopOrder, $order->getId()}"
+                                       class="btn btn-sm btn-outline-primary">
+                                        Detail
+                                    </a>
+                                </td>
+                            </tr>
+                        {/foreach}
+                    </tbody>
+                </table>
+            </div>
+        {else}
+            <div class="alert alert-info text-center">
+                <i class="bi bi-inbox me-2"></i>
+                Žádné objednávky v tomto filtru.
+            </div>
+        {/if}
+    </div>
+</div>
+{/block}
+
+{block scripts}{/block}

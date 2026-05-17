@@ -1,0 +1,282 @@
+{block content}
+<link href="{$basePath}/assets/css/vaz-redesign.css" rel="stylesheet">
+<main class="vaz-redesign">
+
+<section class="vaz-section-hero">
+    <div class="container">
+        <nav class="vaz-crumbs">
+            <a n:href="Home:default">Úvod</a>
+            <span class="sep">›</span>
+            <a n:href="ZN:default">Z&amp;N</a>
+            <span class="sep">›</span>
+            <span class="current">{$animal->getName() ?? $animal->getSpecies()->getName()}</span>
+        </nav>
+
+        {if count($photos) > 0}
+        <div class="d-flex gap-2 mb-4 flex-wrap">
+            {foreach $photos as $photo}
+            <img src="{$basePath}{$photo->getPath()}{$photo->getName()}"
+                 class="rounded-3 shadow-sm"
+                 style="height:220px; max-width:300px; object-fit:cover;"
+                 alt="">
+            {/foreach}
+        </div>
+        {/if}
+
+        <div class="d-flex gap-2 flex-wrap mb-3">
+            <span class="vaz-pill" style="background:#fee2e2; color:#dc2626;">
+                <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                {if $animal->isSearching()}Hledáme!{else}{$animal->getStatusLabel()}{/if}
+            </span>
+            <span class="vaz-pill vaz-pill--sky">{$animal->getSpecies()->getName()}</span>
+            {if $animal->getSex()}<span class="vaz-pill">{$animal->getSex()}</span>{/if}
+        </div>
+
+        <h1 class="vaz-page-title">
+            {if $animal->getName()}
+                Hledáme: {$animal->getName()}
+            {else}
+                Hledáme {$animal->getSpecies()->getName()}
+            {/if}
+        </h1>
+
+        <div class="d-flex flex-wrap gap-3 mt-2" style="color:var(--vaz-text-muted);">
+            <div><i class="bi bi-geo-alt me-1"></i>{$animal->getLocation()}</div>
+            <div><i class="bi bi-calendar3 me-1"></i>Ztraceno: {$animal->getLostAt()|date:'d.m.Y H:i'}</div>
+            <div><i class="bi bi-clock me-1"></i>Přidáno: {$animal->getCreatedAt()|date:'d.m.Y'}</div>
+        </div>
+    </div>
+</section>
+
+<section class="py-4">
+    <div class="container">
+        <div class="row g-4">
+
+            {* Levý sloupec *}
+            <div class="col-lg-8">
+
+                <div class="vaz-card mb-4">
+                    <h3 class="h5 fw-bold mb-3"><i class="bi bi-info-circle me-2"></i>Popis zvířete</h3>
+                    <div class="vaz-prose">{$animal->getDescription()|noescape}</div>
+
+                    {if $animal->getBreed() || $animal->getColor() || $animal->getSpecialMarks()}
+                    <hr>
+                    <div class="row g-2 small">
+                        {if $animal->getBreed()}
+                        <div class="col-sm-4">
+                            <span class="text-muted">Rasa/plemeno:</span><br>
+                            <strong>{$animal->getBreed()}</strong>
+                        </div>
+                        {/if}
+                        {if $animal->getColor()}
+                        <div class="col-sm-4">
+                            <span class="text-muted">Barva:</span><br>
+                            <strong>{$animal->getColor()}</strong>
+                        </div>
+                        {/if}
+                        {if $animal->getSpecialMarks()}
+                        <div class="col-sm-4">
+                            <span class="text-muted">Zvláštní znamení:</span><br>
+                            <strong>{$animal->getSpecialMarks()}</strong>
+                        </div>
+                        {/if}
+                    </div>
+                    {/if}
+
+                    {if $animal->getName() || $animal->getAliases()}
+                    <hr>
+                    <div class="row g-2 small">
+                        {if $animal->getName()}
+                        <div class="col-sm-6">
+                            <span class="text-muted">Jméno:</span><br>
+                            <strong class="fs-5">{$animal->getName()}</strong>
+                        </div>
+                        {/if}
+                        {if $animal->getAliases()}
+                        <div class="col-sm-6">
+                            <span class="text-muted">Také reaguje na:</span><br>
+                            <strong>{$animal->getAliases()}</strong>
+                        </div>
+                        {/if}
+                    </div>
+                    {/if}
+
+                    {if $animal->isHasChip() || $animal->isHasTattoo()}
+                    <hr>
+                    <div class="d-flex gap-3 flex-wrap small">
+                        {if $animal->isHasChip()}
+                        <div>
+                            <i class="bi bi-cpu me-1 text-primary"></i>
+                            <strong>Čip</strong>
+                            {if $animal->getChipNumber()}: {$animal->getChipNumber()}{/if}
+                        </div>
+                        {/if}
+                        {if $animal->isHasTattoo()}
+                        <div>
+                            <i class="bi bi-pen me-1 text-secondary"></i>
+                            <strong>Tetování</strong>
+                            {if $animal->getTattooValue()}: {$animal->getTattooValue()}{/if}
+                        </div>
+                        {/if}
+                    </div>
+                    {/if}
+                </div>
+
+                <div class="vaz-card mb-4">
+                    <h3 class="h5 fw-bold mb-3"><i class="bi bi-calendar-event me-2"></i>Jak se zvíře ztratilo</h3>
+                    <div class="vaz-prose">{$animal->getEventDescription()|noescape}</div>
+                </div>
+
+                {* Vzkazník *}
+                {if count($sightings) > 0}
+                <div class="vaz-card mb-4">
+                    <h3 class="h5 fw-bold mb-3">
+                        <i class="bi bi-chat-dots me-2"></i>Vzkazník
+                        <span class="badge bg-danger ms-2">{count($sightings)}</span>
+                    </h3>
+                    {foreach $sightings as $s}
+                    <div class="border rounded-2 p-3 mb-2 {if $s->getType() === 'has_animal'}border-success bg-light{/if}">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="badge {if $s->getType() === 'has_animal'}bg-success{else}bg-primary{/if}">
+                                {$s->getTypeLabel()}
+                            </span>
+                            <small class="text-muted">{$s->getCreatedAt()|date:'d.m.Y H:i'}</small>
+                        </div>
+                        <p class="mb-1">{$s->getMessage()}</p>
+                        {if $s->getLocation()}
+                        <div class="small text-muted"><i class="bi bi-geo-alt me-1"></i>{$s->getLocation()}</div>
+                        {/if}
+                        {if $isLoggedIn && $animal->getUser()->getId() == $presenter->getUser()->getId()}
+                        <div class="mt-2 small border-top pt-2 text-muted">
+                            <i class="bi bi-person me-1"></i>
+                            {$s->getContactName() ?? 'Anonym'}
+                            &nbsp;|&nbsp;<i class="bi bi-envelope me-1"></i>{$s->getContactEmail()}
+                            {if $s->getContactPhone()}&nbsp;|&nbsp;<i class="bi bi-phone me-1"></i>{$s->getContactPhone()}{/if}
+                        </div>
+                        {/if}
+                    </div>
+                    {/foreach}
+                </div>
+                {/if}
+
+                {* Nalezená v okolí *}
+                {if count($nearbyFound) > 0}
+                <div class="vaz-card">
+                    <h3 class="h5 fw-bold mb-3">
+                        <i class="bi bi-hand-index me-2 text-success"></i>Nalezená zvířata v okolí
+                    </h3>
+                    <div class="row g-2">
+                        {foreach $nearbyFound as $f}
+                        <div class="col-sm-6">
+                            <a href="{link ZN:found, $f->getId()}" class="d-flex gap-2 align-items-center text-decoration-none border rounded-2 p-2"
+                               style="color:inherit;">
+                                {var $fp = $f->getPhotos()->filter(fn($p) => !$p->isDeleted())->first()}
+                                {if $fp}
+                                <img src="{$basePath}{$fp->getPath()}{$fp->getName()}"
+                                     style="width:48px; height:48px; object-fit:cover; border-radius:6px;" alt="">
+                                {else}
+                                <div style="width:48px; height:48px; background:#f0fdf4; display:flex; align-items:center; justify-content:center; border-radius:6px;">
+                                    <i class="bi bi-hand-index text-success"></i>
+                                </div>
+                                {/if}
+                                <div style="min-width:0;">
+                                    <div class="fw-semibold small">{$f->getSpecies()->getName()}</div>
+                                    <div class="text-muted" style="font-size:11px;">{$f->getLocation()|truncate:30}</div>
+                                    <div class="text-muted" style="font-size:11px;">{$f->getFoundAt()|date:'d.m.Y'}</div>
+                                </div>
+                            </a>
+                        </div>
+                        {/foreach}
+                    </div>
+                </div>
+                {/if}
+
+            </div>
+
+            {* Pravý sidebar *}
+            <div class="col-lg-4">
+
+                {if $animal->isSearching()}
+                <div class="vaz-card mb-4" style="background:linear-gradient(135deg,#fef2f2,#fff); border-color:#fca5a5;">
+                    <h5 class="fw-bold mb-3 text-danger">
+                        <i class="bi bi-qr-code me-2"></i>Viděli jste toto zvíře?
+                    </h5>
+                    <p class="small text-muted mb-3">
+                        Naskenujte QR kód nebo klikněte na tlačítko a zanechte vzkaz majiteli.
+                    </p>
+                    <a href="{link ZN:sighting, $animal->getSecretToken()}"
+                       class="vaz-btn vaz-btn--primary w-100 mb-3">
+                        <i class="bi bi-chat-square-dots me-2"></i>Zanechat vzkaz
+                    </a>
+                    <a href="{link ZN:pdf, $animal->getId()}"
+                       class="vaz-btn vaz-btn--ghost w-100">
+                        <i class="bi bi-file-earmark-pdf me-1"></i>Stáhnout PDF plakát
+                    </a>
+                </div>
+                {else}
+                <div class="vaz-card mb-4 border-success">
+                    <div class="text-center py-2">
+                        <i class="bi bi-check-circle-fill text-success" style="font-size:2.5rem;"></i>
+                        <p class="mt-2 mb-0 fw-semibold">{$animal->getStatusLabel()}</p>
+                    </div>
+                </div>
+                {/if}
+
+                {* Vlastník může uzavřít *}
+                {if $isLoggedIn && $animal->getUser()->getId() == $presenter->getUser()->getId() && $animal->isSearching()}
+                <div class="vaz-card mb-4">
+                    <h6 class="fw-semibold mb-2">Správa inzerátu</h6>
+                    <a href="{link ZN:reportLost, $animal->getId()}" class="vaz-btn vaz-btn--ghost vaz-btn--sm w-100 mb-2">
+                        <i class="bi bi-pencil me-1"></i>Upravit
+                    </a>
+                    <a href="{link closeReport!, token => $animal->getSecretToken(), status => 'found'}"
+                       class="vaz-btn vaz-btn--sm w-100 mb-1"
+                       style="background:#16a34a; color:#fff;"
+                       onclick="return confirm('Označit jako Nalezeno?')">
+                        <i class="bi bi-check-circle me-1"></i>Nalezeno!
+                    </a>
+                    <a href="{link closeReport!, token => $animal->getSecretToken(), status => 'not_found'}"
+                       class="vaz-btn vaz-btn--ghost vaz-btn--sm w-100"
+                       onclick="return confirm('Uzavřít jako nenalezeno?')">
+                        Uzavřít bez nálezu
+                    </a>
+                </div>
+                {/if}
+
+                <div class="vaz-card">
+                    <h6 class="fw-semibold mb-2"><i class="bi bi-info-circle me-1"></i>Informace</h6>
+                    <table class="table table-sm mb-0">
+                        <tr>
+                            <td class="text-muted">Druh</td>
+                            <td class="fw-semibold">{$animal->getSpecies()->getName()}</td>
+                        </tr>
+                        {if $animal->getSex()}
+                        <tr>
+                            <td class="text-muted">Pohlaví</td>
+                            <td>{$animal->getSex()}</td>
+                        </tr>
+                        {/if}
+                        <tr>
+                            <td class="text-muted">Ztraceno</td>
+                            <td>{$animal->getLostAt()|date:'d.m.Y'}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Lokalita</td>
+                            <td>{$animal->getCity() ?? $animal->getLocation()|truncate:30}</td>
+                        </tr>
+                        {if count($sightings) > 0}
+                        <tr>
+                            <td class="text-muted">Vzkazů</td>
+                            <td><span class="badge bg-danger">{count($sightings)}</span></td>
+                        </tr>
+                        {/if}
+                    </table>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</section>
+</main>
+{/block}
+{block scripts-user}{/block}

@@ -1,0 +1,693 @@
+{*
+    Drop-in replacement for: vaz/app/Presenters/templates/User/profil.latte
+
+    Requires: vaz-redesign.css linked in @layout.latte or via this template.
+
+    Zachováno z originálu:
+      - presenter proměnné: $adoptions, $photos, $personalPhoto, $basePath
+      - formy: userDetailsForm, userUpdateForm, ownerPhotoUploadForm
+      - snippety: activeAdoptions, citySelect, photos
+      - handlery: deleteUserPhoto!
+      - Select2 + citySelect s AJAX
+      - image modal (zoom fotek)
+      - 4 taby (Moje adopce / Osobní nastavení / Heslo & email / Fotky)
+
+    Nové proti originálu:
+      - persistence aktivního tabu přes localStorage + URL hash
+        (po reloadu se už neresetuje na „Osobní nastavení")
+      - vizuál sjednocený s redesign design systémem
+      - hero sekce s avatarem, breadcrumbs, pill statusy
+*}
+
+{block content}
+<link href="{$basePath}/assets/css/vaz-redesign.css" rel="stylesheet">
+<style>
+    .personalPhoto { margin-top:.8em; max-height:250px; height:auto; width:auto; }
+    #photos { min-height:200px; }
+    .gallery-item.large { grid-row: span 2; }
+    .delete-icon{
+        position:absolute; top:8px; right:8px;
+        background: rgba(0,0,0,.7); color:#fff;
+        padding:4px 7px; border-radius:99px; cursor:pointer; z-index:2;
+    }
+    .delete-icon a{ color:#fff !important; }
+    .modal{ display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%;
+        background: rgba(0,0,0,.95); overflow:hidden; align-items:center; justify-content:center; }
+    .modal-content{ max-width:70vw; max-height:70vh; object-fit:contain; background:#000; }
+    .close{ position:absolute; bottom:20px; right:20px; color:#fff; font-size:30px; cursor:pointer;
+        background: rgba(0,0,0,.6); padding:5px 10px; border-radius:5px; }
+    .gallery{ min-height:400px; }
+
+    /* Nav tabs — redesign look, zachovává bootstrap data-bs-toggle API */
+    .vaz-tabs{
+        display:flex; gap:4px; flex-wrap:wrap;
+        border-bottom:1px solid var(--vaz-border);
+        padding: 4px 4px 0;
+    }
+    .vaz-tabs .nav-link{
+        border:none !important;
+        background: transparent;
+        color: var(--vaz-text-muted);
+        font-weight:600; font-size:14px;
+        padding: 10px 16px;
+        border-radius: 10px 10px 0 0;
+        display:inline-flex; align-items:center; gap:8px;
+        margin-bottom:-1px;
+    }
+    .vaz-tabs .nav-link:hover{ color: var(--vaz-ink); background: var(--vaz-surface-2); }
+    .vaz-tabs .nav-link.active{
+        color: var(--vaz-ink);
+        background: var(--vaz-surface);
+        border: 1px solid var(--vaz-border) !important;
+        border-bottom-color: var(--vaz-surface) !important;
+    }
+    .vaz-tabs .nav-link i{ color: var(--vaz-green); font-size:16px; }
+    .vaz-tab-count{
+        font-size:10px; font-weight:800;
+        padding: 2px 7px; border-radius:99px;
+        background: var(--vaz-green-soft); color: var(--vaz-ink);
+    }
+
+    .vaz-panel{
+        background: var(--vaz-surface);
+        border: 1px solid var(--vaz-border);
+        border-top: none;
+        border-radius: 0 0 var(--vaz-radius) var(--vaz-radius);
+        padding: 24px;
+    }
+
+    /* Why-panel on the right */
+    .vaz-why{
+        background: var(--vaz-surface-2);
+        border: 1px solid var(--vaz-border);
+        border-radius: var(--vaz-radius);
+        padding: 18px;
+        font-size: 13px;
+        line-height: 1.6;
+    }
+    .vaz-why h3{
+        font-size: 12px; font-weight:800; text-transform: uppercase;
+        letter-spacing: .06em; color: var(--vaz-ink);
+        margin: 0 0 10px;
+    }
+    .vaz-why p{ margin: 0 0 8px; color: var(--vaz-text-muted); }
+    .vaz-why strong{ color: var(--vaz-ink); }
+
+    /* Avatar in hero */
+    .vaz-avatar{
+        width: 88px; height: 88px; border-radius: 50%; object-fit: cover;
+        border: 3px solid #fff; box-shadow: var(--vaz-shadow-md);
+    }
+</style>
+
+<main class="vaz-redesign">
+
+{* ---- HERO ---- *}
+<section class="vaz-section-hero">
+    <div class="container">
+        <nav class="vaz-crumbs">
+            <a n:href="Home:default">Úvod</a>
+            <span class="sep">›</span>
+            <span class="current">Můj profil</span>
+        </nav>
+
+        <div class="d-flex align-items-center gap-3 flex-wrap">
+            {if $personalPhoto != null}
+                <img src="{$basePath}{$personalPhoto->getPath()}{$personalPhoto->getName()}"
+                     alt="Profilová fotka" class="vaz-avatar">
+            {else}
+                <img src="{$basePath}/assets/vazdata/img/pic/love1.jpeg"
+                     alt="Profilová fotka" class="vaz-avatar">
+            {/if}
+            <div>
+                <div class="d-flex gap-2 mb-2 flex-wrap">
+                    <span class="vaz-pill"><i class="bi bi-person-check-fill"></i> Adoptér</span>
+                    {if isset($adoptions) && $adoptions !== null}
+                        <span class="vaz-pill vaz-pill--rose"><i class="bi bi-heart-fill"></i> {count($adoptions)} aktivních adopcí</span>
+                    {/if}
+                </div>
+                <h1 class="vaz-page-title" style="font-size:32px; margin:0;">Můj profil</h1>
+                <p class="vaz-page-sub mb-0" style="margin-top:6px;">Aktivity sledovaných azylů, adopce, události a nastavení účtu</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+{* ---- TABS ---- *}
+<section class="py-4" id="signIn">
+    <div class="container">
+
+        <nav>
+            <div class="nav vaz-tabs" id="nav-tab" role="tablist">
+                <button class="nav-link active" id="nav-activity-tab" data-bs-toggle="tab" data-bs-target="#nav-activity"
+                        type="button" role="tab" aria-controls="nav-activity" aria-selected="true">
+                    <i class="bi bi-rss"></i>
+                    <span>Moje aktivity</span>
+                    {if count($activityFeed) > 0}
+                        <span class="vaz-tab-count">{count($activityFeed)}</span>
+                    {/if}
+                </button>
+                <button class="nav-link" id="nav-home-tab" data-bs-toggle="tab" data-bs-target="#nav-home"
+                        type="button" role="tab" aria-controls="nav-home" aria-selected="false">
+                    <i class="bi bi-heart"></i>
+                    <span>Moje adopce</span>
+                    {if isset($adoptions) && $adoptions !== null}
+                        <span class="vaz-tab-count">{count($adoptions)}</span>
+                    {/if}
+                </button>
+                <button class="nav-link" id="nav-events-tab" data-bs-toggle="tab" data-bs-target="#nav-events"
+                        type="button" role="tab" aria-controls="nav-events" aria-selected="false">
+                    <i class="bi bi-calendar-event"></i>
+                    <span>Moje události</span>
+                    {if count($myRegistrations) > 0}
+                        <span class="vaz-tab-count">{count($myRegistrations)}</span>
+                    {/if}
+                </button>
+                <button class="nav-link" id="nav-cart-tab" data-bs-toggle="tab" data-bs-target="#nav-cart"
+                        type="button" role="tab" aria-controls="nav-cart" aria-selected="false">
+                    <i class="bi bi-cart"></i>
+                    <span>Můj košík</span>
+                    {if ($cartItemCount ?? 0) > 0}
+                        <span class="vaz-tab-count">{$cartItemCount}</span>
+                    {/if}
+                </button>
+                <button class="nav-link" id="nav-profile-tab" data-bs-toggle="tab" data-bs-target="#nav-profile"
+                        type="button" role="tab" aria-controls="nav-profile" aria-selected="false">
+                    <i class="bi bi-person-circle"></i>
+                    <span>Osobní údaje</span>
+                </button>
+                <button class="nav-link" id="nav-contact-tab" data-bs-toggle="tab" data-bs-target="#nav-contact"
+                        type="button" role="tab" aria-controls="nav-contact" aria-selected="false">
+                    <i class="bi bi-key"></i>
+                    <span>Účet & heslo</span>
+                </button>
+                <button class="nav-link" id="nav-photos-tab" data-bs-toggle="tab" data-bs-target="#nav-photos"
+                        type="button" role="tab" aria-controls="nav-photos" aria-selected="false">
+                    <i class="bi bi-images"></i>
+                    <span>Moje fotky</span>
+                </button>
+            </div>
+        </nav>
+
+        <div class="tab-content fade show" id="nav-tabContent">
+
+            {* ==== TAB: Moje aktivity ==== *}
+            <div class="tab-pane fade show active vaz-panel" id="nav-activity" role="tabpanel" aria-labelledby="nav-activity-tab">
+                <h2 class="h5 fw-bold mb-3" style="color: var(--vaz-ink);">Aktivity sledovaných azylů</h2>
+                {if count($followedAzyls) === 0}
+                    <div class="vaz-why">
+                        <p style="margin:0;">
+                            <i class="bi bi-star me-1"></i>
+                            Zatím nesledujete žádný azyl. Klikněte na <strong>hvězdičku ★</strong> na stránce nebo v přehledu azylů a jejich novinky se zobrazí tady.
+                            <a href="{link Home:azyls}" class="fw-semibold ms-1">Prohlédnout azyly →</a>
+                        </p>
+                    </div>
+                {elseif count($activityFeed) === 0}
+                    <div class="vaz-why">
+                        <p style="margin:0;">
+                            Sledované azyly zatím nemají žádné aktivity.
+                        </p>
+                    </div>
+                {else}
+                    <div class="d-flex flex-column gap-2">
+                        {foreach $activityFeed as $item}
+                        <a href="{link $item['linkPresenter'], $item['linkId']}"
+                           class="d-flex align-items-center gap-3 p-3 rounded text-decoration-none"
+                           style="background:var(--vaz-surface-2); border:1px solid var(--vaz-border); color:inherit;">
+                            <div class="flex-shrink-0 d-flex align-items-center justify-content-center rounded-circle"
+                                 style="width:40px; height:40px; background:var(--vaz-green-soft);">
+                                <i class="bi {$item['icon']}" style="color:var(--vaz-green); font-size:1.1rem;"></i>
+                            </div>
+                            <div style="flex:1; min-width:0;">
+                                <div class="fw-semibold text-truncate">{$item['title']}</div>
+                                <div class="small text-muted">
+                                    <span class="me-2">{$item['label']}</span>
+                                    {if $item['subtitle']}<span class="me-2">{$item['subtitle']}</span>{/if}
+                                    <i class="bi bi-building me-1"></i>{$item['azyl']->getAzylName()}
+                                </div>
+                            </div>
+                            <div class="small text-muted flex-shrink-0">{$item['date']|date:'d.m.Y'}</div>
+                        </a>
+                        {/foreach}
+                    </div>
+                {/if}
+            </div>
+
+            {* ==== TAB: Moje adopce ==== *}
+            <div class="tab-pane fade vaz-panel" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab">
+                <h2 class="h5 fw-bold mb-3" style="color: var(--vaz-ink);">Vaše adopce</h2>
+
+                {ifset $adoptions}
+                    {if $adoptions == null}
+                        <div class="vaz-why">
+                            <p style="margin:0;">
+                                Nemáte žádnou aktivní adopci. Máte vyplněný celý profil? Bez toho to nepůjde.
+                            </p>
+                        </div>
+                    {else}
+                        {snippet activeAdoptions}
+                            <div class="row g-3 adoptions" id="adoptions">
+                                {foreach $adoptions as $adoption}
+                                    {var $pillClass = 'vaz-pill'}
+                                    {var $info = ''}
+                                    {switch $adoption->getActionType()}
+                                        {case 'Start adopce'}    {var $pillClass = 'vaz-pill vaz-pill--sky'}   {var $info = 'Adopce začala'}
+                                        {case 'Přerušení adopce'} {var $pillClass = 'vaz-pill vaz-pill--ochre'} {var $info = 'Adopce skončila'}
+                                        {case 'Kontakt'}         {var $pillClass = 'vaz-pill vaz-pill--sky'}   {var $info = 'Kontakt zájemce'}
+                                        {case 'Telefonát'}       {var $pillClass = 'vaz-pill vaz-pill--sky'}   {var $info = 'Telefonát zájemci'}
+                                        {case 'Osobní kontakt'}  {var $pillClass = 'vaz-pill vaz-pill--sky'}   {var $info = 'Osobní návštěva'}
+                                        {case 'Ověření'}         {var $pillClass = 'vaz-pill vaz-pill--sky'}   {var $info = 'Adopce ověřená'}
+                                        {case 'Adopce se zdařila'} {var $pillClass = 'vaz-pill'}               {var $info = 'Adopce skončila'}
+                                        {case 'Adopce se nezdařila'} {var $pillClass = 'vaz-pill vaz-pill--rose'} {var $info = 'Adopce skončila'}
+                                        {case 'Konec adopce'}    {var $pillClass = 'vaz-pill vaz-pill--ochre'} {var $info = 'Adopce skončila'}
+                                    {/switch}
+
+                                    <div class="col-12 col-lg-4 col-md-6">
+                                        <article class="vaz-adoption h-100">
+                                            <div class="vaz-adoption__media">
+                                                {if !is_null($adoption->getAnimal()->getPhotos()[0])}
+                                                    <img src="{$basePath}{$adoption->getAnimal()->getPhotos()[0]->getPath().$adoption->getAnimal()->getPhotos()[0]->getName()}"
+                                                         alt="{$adoption->getAnimal()->getName()}">
+                                                {else}
+                                                    <img src="{$basePath}/assets/vazdata/img/pic/love1.jpeg"
+                                                         alt="{$adoption->getAnimal()->getName()}">
+                                                {/if}
+                                            </div>
+                                            <div class="vaz-adoption__body">
+                                                <div class="d-flex justify-content-between align-items-start gap-2 mb-1">
+                                                    <h3 class="vaz-adoption__title">{$adoption->getAnimal()->getName()}</h3>
+                                                    <span class="{$pillClass}">{$info}</span>
+                                                </div>
+                                                <p class="vaz-adoption__meta">
+                                                    <i class="bi bi-clock"></i> {$adoption->getCreatedAt()|date:'d.m.Y H:i'}
+                                                </p>
+                                                <p class="vaz-adoption__desc">
+                                                    <i class="bi bi-building"></i> {$adoption->getAzyl()->getAzylName()}
+                                                </p>
+                                                <div class="d-flex gap-2 mt-auto">
+                                                    <a class="vaz-btn vaz-btn--primary vaz-btn--sm"
+                                                       href="{link home:adopce $adoption->getAnimal()->getId()}">
+                                                        Zvířátko
+                                                    </a>
+                                                    <a class="vaz-btn vaz-btn--ghost vaz-btn--sm"
+                                                       href="{link Home:azyl $adoption->getAzyl()->getId()}">
+                                                        Azyl
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </article>
+                                    </div>
+                                {/foreach}
+                            </div>
+                        {/snippet}
+                    {/if}
+                {else}
+                    <div class="vaz-why">
+                        <p style="margin:0;">
+                            Nemáte žádnou aktivní adopci. Máte vyplněný celý profil? Bez toho to nepůjde.
+                        </p>
+                    </div>
+                {/ifset}
+            </div>
+
+            {* ==== TAB: Osobní údaje ==== *}
+            <div class="tab-pane fade vaz-panel" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab">
+                <div class="row g-4">
+                    <div class="col-xl-8">
+                        <form class="row g-3 vaz-form" n:name=userDetailsForm>
+                            <div class="col-md-6">
+                                <label class="vaz-form-label">Jméno</label>
+                                <input placeholder="Jméno" class="form-control" n:name=firstName>
+                                {inputError firstName}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="vaz-form-label">Příjmení</label>
+                                <input placeholder="Příjmení" class="form-control" n:name=lastName>
+                                {inputError lastName}
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="vaz-form-label">Telefon</label>
+                                <input placeholder="+420 444 999 111" class="form-control" n:name=phone>
+                                {inputError phone}
+                            </div>
+
+                            <div class="col-12">
+                                <label class="vaz-form-label">Něco o vás</label>
+                                <textarea placeholder="Popis — co byste rádi sdělili azylům o sobě, svém domově a podmínkách…"
+                                          rows="4" class="form-control" n:name=description></textarea>
+                            </div>
+
+                            <div class="col-md-8">
+                                <label class="vaz-form-label">Ulice</label>
+                                <input placeholder="Ulice" class="form-control" n:name=street>
+                            </div>
+                            <div class="col-md-2 col-6">
+                                <label class="vaz-form-label">Čp.</label>
+                                <input placeholder="Čp" class="form-control" n:name=house>
+                            </div>
+                            <div class="col-md-2 col-6">
+                                <label class="vaz-form-label">Čo.</label>
+                                <input placeholder="Čo" class="form-control" n:name=orientation>
+                            </div>
+
+                            <div class="col-12">
+                                <label class="vaz-form-label" n:name="city">Město</label>
+                                {snippet citySelect}
+                                    <select size="30" class="ajax form-control select2" id="citySelect" n:name="city">
+                                    </select>
+                                {/snippet}
+                            </div>
+
+                            <div class="col-12 pt-2" style="border-top:1px dashed var(--vaz-border);">
+                                <button class="vaz-btn vaz-btn--accent" n:name=send>
+                                    <i class="bi bi-check-lg"></i> Uložit změny
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="col-xl-4">
+                        <div class="vaz-why">
+                            <h3>Proč to po vás chceme?</h3>
+                            <p><strong>Jméno a příjmení</strong> — pro komunikaci s Vámi. Potřebné pro schválení přístupu k adopcím.</p>
+                            <p><strong>Popis</strong> — napište něco o sobě, podmínkách pro zvířátka a klidně i něco o sobě.</p>
+                            <p><strong>Adresa</strong> — důležitá pro azyly; zároveň slouží jako podklad k dohodě o adopci a pomáhá Vám filtrovat zvířátka poblíž.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {* ==== TAB: Účet & heslo ==== *}
+            <div class="tab-pane fade vaz-panel" id="nav-contact" role="tabpanel" aria-labelledby="nav-contact-tab">
+                <div class="row g-4">
+                    <div class="col-xl-8">
+                        <form class="row g-3 vaz-form" n:name=userUpdateForm method="post">
+                            <div class="col-md-6">
+                                <label class="vaz-form-label">Uživatelské jméno</label>
+                                <input class="form-control" n:name=username readonly>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="vaz-form-label">Email</label>
+                                <input class="form-control" n:name=email>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="vaz-form-label">Nové heslo</label>
+                                <input type="password" class="form-control" n:name=password placeholder="Nechte prázdné pro nezměněno">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="vaz-form-label">Heslo znovu</label>
+                                <input type="password" class="form-control" n:name=password2>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="vaz-form-label">Profilová fotka</label>
+                                <input class="form-control ajax" n:name=personalPhoto>
+                            </div>
+                            <div class="col-md-6 text-center">
+                                {if $personalPhoto != null}
+                                    <img src="{$basePath}{$personalPhoto->getPath()}{$personalPhoto->getName()}"
+                                         class="img-fluid img-thumbnail rounded personalPhoto"
+                                         alt="{$personalPhoto->getName()}">
+                                {else}
+                                    <img src="{$basePath}/assets/vazdata/img/pic/love1.jpeg"
+                                         class="img-fluid img-thumbnail rounded personalPhoto"
+                                         alt="Profilová fotka">
+                                {/if}
+                            </div>
+
+                            <div class="col-12 pt-2" style="border-top:1px dashed var(--vaz-border);">
+                                <button class="vaz-btn vaz-btn--accent" n:name=update>
+                                    <i class="bi bi-check-lg"></i> Aktualizovat účet
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="col-xl-4">
+                        <div class="vaz-why">
+                            <h3>Zabezpečení účtu</h3>
+                            <p><strong>Email</strong> slouží i k přihlášení — změna emailu změní i přihlašovací údaj.</p>
+                            <p><strong>Heslo</strong> nechte prázdné, pokud ho nechcete měnit.</p>
+                            <p><strong>Profilová fotka</strong> se zobrazí azylům při žádosti o adopci.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {* ==== TAB: Moje fotky ==== *}
+            <div class="tab-pane fade vaz-panel" id="nav-photos" role="tabpanel" aria-labelledby="nav-photos-tab">
+                <div class="row g-4">
+                    <div class="col-xl-5">
+                        <div class="vaz-why" style="background: var(--vaz-cream); border-color: var(--vaz-border);">
+                            <h3><i class="bi bi-cloud-upload"></i> Nahrát fotky</h3>
+                            <p>Fotky by měly ukázat, v jakém prostředí u Vás zvířátko bude žít. Naráz lze nahrát 10 fotek, maximálně lze mít 30 fotek v profilu.</p>
+                            <div class="mt-3">
+                                {control ownerPhotoUploadForm}
+                            </div>
+                        </div>
+                    </div>
+
+                    {snippet photos}
+                        <div class="col-xl-7 photos" id="photos">
+                            <h2 class="h6 fw-bold mb-3" style="color: var(--vaz-ink);">Vaše fotky</h2>
+                            {if !is_null($photos)}
+                                <div class="row g-3 gallery">
+                                    {foreach $photos as $userPhoto}
+                                        {if !$userPhoto->isDeleted()}
+                                            {if $iterator->first}
+                                                <div class="col-12 col-md-6 gallery-item large">
+                                                    <div class="position-relative">
+                                                        <img src="{$basePath}{$userPhoto->getPath()}{$userPhoto->getName()}"
+                                                             alt="{$userPhoto->getOriginalName()}"
+                                                             class="img-fluid rounded"
+                                                             onclick="showImageModal(this.src)">
+                                                        <span class="delete-icon">
+                                                            <a class="ajax" href="{link deleteUserPhoto!, $userPhoto->getId()}" title="Smazat">
+                                                                <i class="bi bi-trash"></i>
+                                                            </a>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            {else}
+                                                <div class="col-6 col-md-3 gallery-item">
+                                                    <div class="position-relative">
+                                                        <img src="{$basePath}{$userPhoto->getPath()}{$userPhoto->getName()}"
+                                                             alt="{$userPhoto->getOriginalName()}"
+                                                             class="img-fluid rounded"
+                                                             onclick="showImageModal(this.src)">
+                                                        <span class="delete-icon">
+                                                            <a class="ajax" href="{link deleteUserPhoto!, $userPhoto->getId()}" title="Smazat">
+                                                                <i class="bi bi-trash"></i>
+                                                            </a>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            {/if}
+                                        {/if}
+                                    {/foreach}
+                                </div>
+                            {else}
+                                <div class="vaz-why">
+                                    <p style="margin:0;">Nemáte žádné fotky.</p>
+                                </div>
+                            {/if}
+                        </div>
+                    {/snippet}
+                </div>
+            </div>
+
+            {* ==== TAB: Košík ==== *}
+            <div class="tab-pane fade vaz-panel" id="nav-cart" role="tabpanel" aria-labelledby="nav-cart-tab">
+                {if $profileCart->isEmpty()}
+                    <div class="vaz-why">
+                        <p style="margin:0;">
+                            <i class="bi bi-cart-x me-1"></i>
+                            Košík je prázdný.
+                            <a href="{link Shop:default}" class="fw-semibold">Jít nakupovat →</a>
+                        </p>
+                    </div>
+                {else}
+                    <h2 class="h5 fw-bold mb-3" style="color: var(--vaz-ink);">Zboží v košíku</h2>
+                    <div class="table-responsive">
+                        <table class="table align-middle" style="font-size:14px;">
+                            <thead>
+                                <tr style="color:var(--vaz-text-muted); font-size:12px; text-transform:uppercase; letter-spacing:.05em;">
+                                    <th>Produkt</th>
+                                    <th>Azyl</th>
+                                    <th class="text-end">Cena / ks</th>
+                                    <th class="text-center">Množství</th>
+                                    <th class="text-end">Celkem</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {foreach $profileCart->getHydratedItems() as $item}
+                                    <tr>
+                                        <td>
+                                            <a href="{link Shop:product, $item['product']->getId()}"
+                                               class="fw-semibold text-decoration-none" style="color:var(--vaz-ink);">
+                                                {$item['product']->getName()}
+                                            </a>
+                                        </td>
+                                        <td class="text-muted small">{$item['product']->getAzyl()->getAzylName()}</td>
+                                        <td class="text-end">{$item['product']->getPrice()|number:0,',','&nbsp;'|noescape} Kč</td>
+                                        <td class="text-center">{$item['quantity']}</td>
+                                        <td class="text-end fw-bold">{$item['subtotal']|number:0,',','&nbsp;'|noescape} Kč</td>
+                                    </tr>
+                                {/foreach}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="d-flex justify-content-end gap-2 mt-3">
+                        <a href="{link Shop:cart}" class="vaz-btn vaz-btn--ghost vaz-btn--sm">
+                            <i class="bi bi-cart"></i> Upravit košík
+                        </a>
+                        <a href="{link Shop:checkout}" class="vaz-btn vaz-btn--primary vaz-btn--sm">
+                            Dokončit objednávku <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+                {/if}
+            </div>
+
+            {* ==== TAB: Moje události ==== *}
+            <div class="tab-pane fade vaz-panel" id="nav-events" role="tabpanel" aria-labelledby="nav-events-tab">
+                <h2 class="h5 fw-bold mb-3" style="color: var(--vaz-ink);">Moje registrace na události</h2>
+                {if count($myRegistrations) === 0}
+                    <div class="vaz-why">
+                        <p style="margin:0;">
+                            <i class="bi bi-calendar-x me-1"></i>
+                            Nejste zatím registrováni na žádnou událost.
+                            <a href="{link Home:events}" class="fw-semibold">Prohlédnout události →</a>
+                        </p>
+                    </div>
+                {else}
+                    <div class="d-flex flex-column gap-3">
+                        {foreach $myRegistrations as $reg}
+                        {if !$reg->isCancelled()}
+                        <div class="d-flex align-items-center justify-content-between gap-3 p-3 rounded"
+                             style="background:var(--vaz-surface-2); border:1px solid var(--vaz-border);">
+                            <div>
+                                <div class="fw-semibold">
+                                    <a href="{link Home:event, $reg->getEvent()->getId()}"
+                                       class="text-decoration-none" style="color:var(--vaz-ink);">
+                                        {$reg->getEvent()->getTitle()}
+                                    </a>
+                                </div>
+                                <div class="small text-muted mt-1">
+                                    <i class="bi bi-clock me-1"></i>
+                                    {$reg->getEvent()->getDateFrom()|date:'d.m.Y H:i'}
+                                    {if $reg->getEvent()->getLocation()}
+                                        <span class="ms-2"><i class="bi bi-geo-alt me-1"></i>{$reg->getEvent()->getLocation()}</span>
+                                    {/if}
+                                </div>
+                                <div class="small text-muted">
+                                    <i class="bi bi-house-heart me-1"></i>
+                                    {$reg->getEvent()->getAzyl()->getAzylName()}
+                                </div>
+                                {if $reg->getParticipantsCount() > 1}
+                                <div class="small text-muted">
+                                    <i class="bi bi-people me-1"></i>{$reg->getParticipantsCount()} osoby
+                                </div>
+                                {/if}
+                            </div>
+                            <div class="d-flex flex-column align-items-end gap-2 flex-shrink-0">
+                                {if $reg->isWaitlist()}
+                                    <span class="vaz-pill vaz-pill--ochre"><i class="bi bi-hourglass-split me-1"></i>Čekací listina</span>
+                                {else}
+                                    <span class="vaz-pill vaz-pill--sky"><i class="bi bi-check-circle me-1"></i>Registrován</span>
+                                {/if}
+                                {if $reg->getToken() && !$reg->getEvent()->isPast()}
+                                <a href="{link Home:cancelRegistration, token => $reg->getToken()}"
+                                   class="small text-muted text-decoration-none"
+                                   onclick="return confirm('Opravdu zrušit registraci?')">
+                                    <i class="bi bi-x-circle me-1"></i>Zrušit
+                                </a>
+                                {/if}
+                            </div>
+                        </div>
+                        {/if}
+                        {/foreach}
+                    </div>
+                {/if}
+            </div>
+
+        </div>
+    </div>
+</section>
+</main>
+
+{* Image modal *}
+<div id="imageModal" class="modal">
+    <span class="close" onclick="closeModal()">×</span>
+    <img class="modal-content" id="modalImage">
+</div>
+
+{/block}
+
+{block scripts-user}
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/i18n/cs.js"></script>
+<script>
+    // Image modal
+    function showImageModal(src){
+        const modal = document.getElementById("imageModal");
+        const modalImg = document.getElementById("modalImage");
+        modal.style.display = "flex";
+        modalImg.src = src;
+    }
+    function closeModal(){ document.getElementById("imageModal").style.display = "none"; }
+    document.getElementById("imageModal").addEventListener('click', closeModal);
+</script>
+
+<script>
+    // Select2 city picker — zachováno z originálu
+    $(document).ready(function(){
+        var baseUrl = window.location.origin;
+        var url = baseUrl + $('#citySelect').data('url');
+        $('#citySelect').select2({
+            placeholder: "Vyberte obec",
+            allowClear: true,
+            language: {
+                noResults: function(){ return "Žádné výsledky"; },
+                inputTooShort: function(){ return "Zadejte více znaků"; },
+                searching: function(){ return "Hledám..."; }
+            },
+            ajax: {
+                delay: 250,
+                url: url,
+                data: function(params){ return { search: params.term }; }
+            }
+        });
+    });
+</script>
+
+<script>
+    // Taby: URL hash aktivuje konkrétní záložku, jinak zůstane HTML default (Moje aktivity)
+    document.addEventListener("DOMContentLoaded", function(){
+        function activateTab(targetSelector){
+            if (!targetSelector) return false;
+            const trigger = document.querySelector(
+                `[data-bs-toggle="tab"][data-bs-target="${ targetSelector }"]`
+            );
+            if (!trigger) return false;
+            new bootstrap.Tab(trigger).show();
+            return true;
+        }
+
+        if (window.location.hash){
+            activateTab(window.location.hash);
+        }
+
+        document.querySelectorAll('[data-bs-toggle="tab"]').forEach(btn => {
+            btn.addEventListener('shown.bs.tab', function(e){
+                const target = e.target.getAttribute('data-bs-target');
+                if (target) history.replaceState(null, null, target);
+            });
+        });
+
+        window.addEventListener("hashchange", function(){
+            if (window.location.hash) activateTab(window.location.hash);
+        });
+    });
+</script>
+{/block}

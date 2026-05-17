@@ -1,0 +1,41 @@
+{layout @layout.latte}
+
+{block title}Objednávka {$order->getOrderNumber()} odeslána{/block}
+
+{block content}
+<h2 style="color:#0d6efd;margin:0 0 16px 0;font-size:20px;">
+    📦 Zboží je na cestě!
+</h2>
+
+<p style="margin:0 0 16px 0;">Dobrý den {$order->getBuyerName()},</p>
+
+<p style="margin:0 0 16px 0;">
+    azyl <strong>{$order->getAzyl()->getAzylName()}</strong> právě odeslal vaši objednávku
+    <strong>{$order->getOrderNumber()}</strong>.
+</p>
+
+{if $order->getShippingTracking()}
+    <div style="background:#e7f3ff;border-left:4px solid #0d6efd;padding:16px 20px;margin:20px 0;border-radius:4px;">
+        <p style="margin:0 0 6px 0;font-size:13px;color:#666;">Sledovací číslo:</p>
+        <p style="margin:0;font-family:monospace;font-size:16px;font-weight:bold;">
+            {$order->getShippingTracking()}
+        </p>
+    </div>
+{/if}
+
+<p style="margin:16px 0;">
+    Zásilka by měla dorazit v nejbližších dnech. Pokud máte dotazy ohledně doručení,
+    kontaktujte přímo dopravce.
+</p>
+
+<p style="margin:20px 0;">
+    <a href="{$baseUrl}/eshop/orderDetail/{$order->getOrderNumber()}"
+       style="display:inline-block;background:#0d6efd;color:white;padding:12px 24px;text-decoration:none;border-radius:6px;font-weight:bold;">
+        Detail objednávky
+    </a>
+</p>
+
+<p style="margin:20px 0 0 0;font-size:13px;color:#666;padding-top:16px;border-top:1px solid #eee;">
+    Přejeme vám radost ze zboží a děkujeme za podporu azylů! 🐾
+</p>
+{/block}

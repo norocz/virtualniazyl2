@@ -1,0 +1,42 @@
+{*
+    Drop-in replacement for: vaz/app/Presenters/templates/User/first.latte
+    Nastavení role po registraci
+*}
+{block content}
+<link href="{$basePath}/assets/css/vaz-redesign.css" rel="stylesheet">
+<main class="vaz-redesign">
+
+<section class="py-5">
+    <div class="container" style="max-width: 1000px;">
+        {snippet signin}
+        <div class="vaz-auth" id="signIn">
+            <div class="vaz-auth__media">
+                <img src="{$basePath}/assets/vazdata/img/pic/roleselect.jpeg" alt="Výběr role">
+            </div>
+            <div class="vaz-auth__body">
+                <div class="vaz-auth__eyebrow" style="color: var(--vaz-ochre);">
+                    <i class="bi bi-signpost-split"></i> Jeden krok
+                </div>
+                <h2 class="vaz-auth__title">Vyberte si roli</h2>
+                <p class="vaz-auth__lead">
+                    <b>Registrace vás dovedla až sem!</b> Teď si vyberte, v jakém příběhu chcete být —
+                    <b>Azyl</b>, nebo <b>zájemce o adopci</b>.
+                </p>
+                <div class="vaz-card mb-3" style="background: var(--vaz-rose-soft); border-color: #f1c9ce;">
+                    <div class="d-flex gap-3 align-items-start">
+                        <i class="bi bi-exclamation-triangle-fill" style="color: #8a3a48; font-size:20px;"></i>
+                        <div class="small" style="color: #6a2a38; line-height:1.6;">
+                            <b>Pozor!</b> Volba už nepůjde později změnit. Vyberte si proto dobře.
+                        </div>
+                    </div>
+                </div>
+                {control roleForm}
+            </div>
+        </div>
+        {/snippet}
+    </div>
+</section>
+
+</main>
+{/block}
+{block scripts-user}{/block}

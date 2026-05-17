@@ -1,0 +1,128 @@
+{templateType App\Presenters\Templates\SuperAdmin\Layout}
+{block superAdminContent}
+<div class="container-fluid pt-4 px-4">
+    <div class="bg-light rounded p-4">
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="mb-0">
+                <i class="bi bi-person-circle me-2"></i>
+                {$editedUser->getUserName()}
+            </h4>
+            <div class="d-flex gap-2">
+                <a href="{link SuperAdmin:users}" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-arrow-left me-1"></i>Zpět na seznam
+                </a>
+                <a href="{link deleteUser!, id => $editedUser->getId()}"
+                   class="btn btn-outline-danger btn-sm"
+                   onclick="return confirm('Označit uživatele ' + {$editedUser->getUserName()|json} + ' jako smazaný?')">
+                    <i class="bi bi-trash me-1"></i>Smazat účet
+                </a>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            {* Info badges *}
+            <div class="col-12">
+                <div class="d-flex flex-wrap gap-2">
+                    <span class="badge bg-primary">{$editedUser->getRole()}</span>
+                    {if $editedUser->isBaned()}
+                        <span class="badge bg-danger">Zabanován</span>
+                    {/if}
+                    {if $editedUser->isDeleted()}
+                        <span class="badge bg-secondary">Smazán</span>
+                    {/if}
+                    {if $editedUser->isMeilVerified()}
+                        <span class="badge bg-success">Email ověřen</span>
+                    {else}
+                        <span class="badge bg-warning text-dark">Email neověřen</span>
+                    {/if}
+                    {if $editedUser->isPhoneVerified()}
+                        <span class="badge bg-success">Tel. ověřen</span>
+                    {/if}
+                    <span class="badge bg-light text-dark border">
+                        Registrace: {$editedUser->getCreatedAt()|date:'d.m.Y H:i'}
+                    </span>
+                </div>
+            </div>
+
+            {* Edit form *}
+            <div class="col-md-7">
+                <div class="card">
+                    <div class="card-header"><i class="bi bi-pencil me-1"></i>Upravit údaje</div>
+                    <div class="card-body">
+                        <form n:name="editUserForm" class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label" n:name="userName">Uživatelské jméno</label>
+                                <input class="form-control" n:name="userName">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" n:name="email">E-mail</label>
+                                <input class="form-control" n:name="email">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" n:name="firstName">Jméno</label>
+                                <input class="form-control" n:name="firstName">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" n:name="lastName">Příjmení</label>
+                                <input class="form-control" n:name="lastName">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" n:name="phone">Telefon</label>
+                                <input class="form-control" n:name="phone">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label" n:name="description">Poznámka</label>
+                                <textarea class="form-control" n:name="description" rows="3"></textarea>
+                            </div>
+                            <div class="col-12">
+                                <button class="btn btn-primary" n:name="save">Uložit změny</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            {* Read-only info *}
+            <div class="col-md-5">
+                <div class="card mb-3">
+                    <div class="card-header"><i class="bi bi-info-circle me-1"></i>Adresa</div>
+                    <div class="card-body small">
+                        <dl class="row mb-0">
+                            <dt class="col-sm-4">Ulice</dt>
+                            <dd class="col-sm-8">{$editedUser->getStreet() ?? '—'} {$editedUser->getHouseNumber() ?? ''}/{$editedUser->getOrientationNumber() ?? ''}</dd>
+                            <dt class="col-sm-4">PSČ</dt>
+                            <dd class="col-sm-8">{$editedUser->getZipCode() ?? '—'}</dd>
+                        </dl>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header"><i class="bi bi-shield-lock me-1"></i>Bezpečnostní akce</div>
+                    <div class="card-body d-flex flex-column gap-2">
+                        {if !$editedUser->isBaned()}
+                            <a href="{link updateBanUser!, id => $editedUser->getId()}"
+                               class="btn btn-warning btn-sm"
+                               onclick="return confirm('Zabanovat uživatele {$editedUser->getUserName()}?')">
+                                <i class="bi bi-ban me-1"></i>Zabanovat
+                            </a>
+                        {else}
+                            <a href="{link updateBanUser!, id => $editedUser->getId()}"
+                               class="btn btn-outline-warning btn-sm"
+                               onclick="return confirm('Odbanovat uživatele {$editedUser->getUserName()}?')">
+                                <i class="bi bi-check-circle me-1"></i>Odbanovat
+                            </a>
+                        {/if}
+                        <a href="{link SuperAdmin:analytics}" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-bar-chart-steps me-1"></i>Analytics tohoto uživatele
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{/block}
+
+{block scripts}{/block}

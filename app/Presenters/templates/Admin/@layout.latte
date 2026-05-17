@@ -1,0 +1,284 @@
+{templateType App\Presenters\Templates\Admin\Layout}
+<!DOCTYPE html>
+<html lang="cz" xmlns="http://www.w3.org/1999/html">
+
+<head>
+    <meta charset="utf-8">
+    <title>Virtuální azyl administrace</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta content="" name="keywords">
+    <meta content="" name="description">
+
+    <!-- Favicon -->
+    <link href="{$basePath}/dashmin/img/favicon.ico" rel="icon">
+
+    <!-- Google Web Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Icon Font Stylesheet -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Libraries Stylesheet -->
+    <link href="{$basePath}/dashmin/lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">
+    <link href="{$basePath}/dashmin/lib/tempusdominus/css/tempusdominus-bootstrap-4.min.css" rel="stylesheet" />
+
+    <!-- Customized Bootstrap Stylesheet -->
+    <link href="{$basePath}/dashmin/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Template Stylesheet -->
+    <link href="{$basePath}/dashmin/css/style.css" rel="stylesheet">
+</head>
+<style>
+ .adminContent {
+    min-height: 80vh;
+    padding: 5px;
+}
+</style>
+
+<body>
+
+
+
+<div class="toast-container position-fixed bottom-0 start-50 p-3">
+    {snippet flash}
+    <div
+            n:foreach="$flashes as $flash"
+            id="flash-toast-{$iterator->counter}"
+            class="toast"
+            role="alert"
+            aria-live="assertive"
+            aria-atomic="true"
+            data-bs-autohide="true"
+            data-bs-delay="5000">
+        <div class="toast-header {if $flash->type === 'alert-success'}bg-success text-white{elseif $flash->type === 'alert-warning'}bg-danger text-white{else}bg-info text-white{/if}">
+            <span class="me-auto">Informace
+                {if $flash->type === 'alert-success'}
+                    <i class="bi bi-check-circle-fill text-success"></i>
+                {elseif $flash->type === 'alert-warning'}
+                    <i class="bi bi-exclamation-triangle-fill text-danger"></i>
+                {else}
+                    <i class="bi bi-info-circle-fill text-info"></i>
+                {/if}
+
+            </span>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body">
+            {$flash->message}
+        </div>
+    </div>
+</div>
+{/snippet}
+<div class="container-fluid position-relative bg-white d-flex p-0">
+
+
+
+    <!-- Sidebar Start -->
+    <div class="sidebar pe-4 pb-3">
+        <nav class="navbar bg-light navbar-light">
+            <a href="{link admin:default}" class="navbar-brand mx-4 mb-3">
+                <h3 class="text-primary"><i class="fa fa-hashtag me-2"></i>Administrace</h3>
+            </a>
+            <div class="d-flex align-items-center ms-4 mb-4">
+                <div class="position-relative">
+                 {ifset $personalPhoto}
+                        {var $pphoto = true}
+                    {else}
+                        {var $pphoto = false}
+                    {/ifset}
+                    <img class="rounded-circle" src="{$basePath}{if $pphoto}{$personalPhoto->getPath()}{$personalPhoto->getName()}{else}/dashmin/img/user.jpg{/if}" alt="" style="width: 40px; height: 40px;">
+                    <div class="bg-success rounded-circle border border-2 border-white position-absolute end-0 bottom-0 p-1"></div>
+                </div>
+                <div class="ms-3">
+                    <h6 class="mb-0">{$user->getIdentity()->data['User']->userName}</h6>
+                    <span>{if $user->getIdentity()->data['User']->userName == 'noro'}The GOD{/if}</span>
+                </div>
+            </div>
+            <div class="navbar-nav w-100">
+                <a href="{link admin:default}" class="nav-item nav-link {if isLinkCurrent('admin:default')}active{/if}">
+    <i class="bi bi-bar-chart me-2"></i>Přehled
+</a>
+<div class="nav-item dropdown">
+    <a href="#" class="nav-link dropdown-toggle {if isLinkCurrent('Admin:guests') || isLinkCurrent('Admin:owners') || isLinkCurrent('Admin:azyls')}active{/if}" data-bs-toggle="dropdown">
+        <i class="bi bi-people me-2"></i>Uživatelé
+    </a>
+    <div class="dropdown-menu bg-transparent border-0">
+        <a href="{link Admin:guests}" class="dropdown-item {if isLinkCurrent('Admin:guests')}active{/if}">Registrace</a>
+        <a href="{link Admin:owners}" class="dropdown-item {if isLinkCurrent('Admin:owners')}active{/if}">Uživatelé</a>
+        <a href="{link Admin:azyls}" class="dropdown-item {if isLinkCurrent('Admin:azyls')}active{/if}">Azyly</a>
+    </div>
+</div>
+<a href="{link Admin:species}" class="nav-item nav-link {if isLinkCurrent('Admin:species')}active{/if}">
+    <i class="bi bi-bug me-2"></i>Druhy zvířat
+</a>
+<a href="{link Admin:animals}" class="nav-item nav-link {if isLinkCurrent('Admin:animals')}active{/if}">
+    <i class="bi bi-github me-2"></i>Zvířata
+</a>
+<a href="{link Admin:messages}" class="nav-item nav-link {if isLinkCurrent('Admin:messages')}active{/if}">
+    <i class="bi bi-chat-text me-2"></i>Vzkazy
+</a>
+<div class="nav-item dropdown">
+    <a href="{link Admin:pages}" class="nav-link dropdown-toggle {if isLinkCurrent('Admin:pages') || isLinkCurrent('Admin:page')}active{/if}" data-bs-toggle="dropdown">
+        <i class="bi bi-blockquote-right me-2"></i>Stránky
+    </a>
+    <div class="dropdown-menu bg-transparent border-0">
+        <a href="{link Admin:pages}" class="dropdown-item {if isLinkCurrent('Admin:pages')}active{/if}">Stránky</a>
+        <a href="{link Admin:page}" class="dropdown-item {if isLinkCurrent('Admin:page')}active{/if}">Přidat stránku</a>
+    </div>
+</div>
+<a href="{link Admin:photos}" class="nav-item nav-link {if isLinkCurrent('Admin:photos')}active{/if}">
+    <i class="bi bi-images me-2"></i>Fotky
+</a>
+<a href="{link Admin:news}" class="nav-item nav-link {if isLinkCurrent('Admin:news')}active{/if}">
+    <i class="bi bi-newspaper me-2"></i>Novinky
+</a>
+<a href="{link Admin:adoptions}" class="nav-item nav-link {if isLinkCurrent('Admin:adoptions')}active{/if}">
+    <i class="bi bi-clipboard me-2"></i>Adopce
+</a>
+<a href="{link Admin:collections}" class="nav-item nav-link {if isLinkCurrent('Admin:collections')}active{/if}">
+                    <i class="fa fa-piggy-bank me-2"></i>Sbírky
+                </a>
+<div class="nav-item dropdown">
+    <a href="{link Admin:shopProducts}" class="nav-link dropdown-toggle {if isLinkCurrent('Admin:shopProducts') || isLinkCurrent('Admin:shopProductDetail')}active{/if}" data-bs-toggle="dropdown">
+        <i class="bi bi-shop me-2"></i>Eshop
+    </a>
+    <div class="dropdown-menu bg-transparent border-0">
+        <a href="{link Admin:shopProducts}" class="dropdown-item {if isLinkCurrent('Admin:shopProducts')}active{/if}">Schvalování produktů</a>
+    </div>
+</div>
+<hr>
+<div class="nav-item dropdown">
+    <a href="{link Admin:contracts}" class="nav-link dropdown-toggle {if isLinkCurrent('Admin:contracts') || isLinkCurrent('Admin:contracts')}active{/if}" data-bs-toggle="dropdown">
+        <i class="bi bi-file-earmark-text me-2"></i>Správa smluv
+    </a>
+        <div class="dropdown-menu bg-transparent border-0">
+            <a href="{link Admin:contractparts}" class="dropdown-item {if isLinkCurrent('Admin:contractparts')}active{/if}">Části smluv</a>
+            <a href="{link Admin:contracts}" class="dropdown-item {if isLinkCurrent('Admin:contracts')}active{/if}">Smlouvy</a>
+            <a href="{link Admin:contractsarchive}" class="dropdown-item {if isLinkCurrent('Admin:contractsarchive')}active{/if}">Archiv smluv</a>
+        </div>
+</div>
+<a href="{link Admin:citys}" class="nav-item nav-link {if isLinkCurrent('Admin:citys')}active{/if}">
+    <i class="bi bi-compass me-2"></i>Lokality
+</a>
+<div class="nav-item dropdown">
+    <a href="#" class="nav-link dropdown-toggle {if isLinkCurrent('Admin:updateMessagesAddress')}active{/if}" data-bs-toggle="dropdown">
+        <i class="bi bi-alarm me-2"></i>Update
+    </a>
+    <div class="dropdown-menu bg-transparent border-0">
+        <a href="{link Admin:updateMessagesAddress}" class="dropdown-item {if isLinkCurrent('Admin:updateMessagesAddress')}active{/if}">Messages Address Update</a>
+    </div>
+</div>
+
+<a class="{if isLinkCurrent('Admin:versions')}active{/if} nav-item nav-link"  href="{link Admin:versions}"><i class="bi bi-info-square me-2"></i>Verze: {$version['number']}</a>
+
+                    </div>
+
+                </div>
+
+
+            </div>
+        </nav>
+    </div>
+</div>
+    <!-- Sidebar End -->
+
+
+    <!-- Content Start -->
+    <div class="content">
+        <!-- Navbar Start -->
+        <nav class="navbar navbar-expand bg-light navbar-light sticky-top px-4 py-0">
+            <a href="{link Admin:default}" class="navbar-brand d-flex d-lg-none me-4">
+                <h2 class="text-primary mb-0"><i class="fa fa-hashtag"></i></h2>
+            </a>
+            <a href="#" class="sidebar-toggler flex-shrink-0">
+                <i class="fa fa-bars"></i>
+            </a>
+            <div class="navbar-nav align-items-center ms-auto">
+
+                <div class="nav-item dropdown">
+                    <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
+                        <i class="fa fa-bell me-lg-2"></i>
+                        <span class="d-none d-lg-inline-flex">Události</span>
+                    </a>
+
+                </div>
+                <div class="nav-item dropdown">
+                    <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
+                        <img class="rounded-circle me-lg-2" src="{$basePath}{if $pphoto}{$personalPhoto->getPath()}{$personalPhoto->getName()}{else}/dashmin/img/user.jpg{/if}"  alt="" style="width: 40px; height: 40px;">
+                        <span class="d-none d-lg-inline-flex">{$user->getIdentity()->data['User']->userName}</span>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-end bg-light border-0 rounded-0 rounded-bottom m-0">
+                        <a href="{link User:profil}" class="dropdown-item">Můj profil</a>
+                      {*/<a href="{link Admin:settings}" class="dropdown-item">Nastavení</a>/*}
+                        <a href="{link Home:default}" class="dropdown-item">Na web</a>
+                        <a href="{link Home:logOut}" class="dropdown-item">Odhlásit</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Navbar End -->
+    <div class="adminContent">
+        {include adminContent}
+    </div>
+<!-- Footer Start -->
+<div class="container-fluid pt-4 px-4">
+    <div class="bg-light rounded-top p-4">
+        <div class="row">
+            <div class="col-12 col-sm-6 text-center text-sm-start">
+                &copy; <a href="{link Home:default}">Virtuální azyl</a>, All Right Reserved. Verze: {$version['number']} | Datum sestavení: {$version['date']}
+            </div>
+            <div class="col-12 col-sm-6 text-center text-sm-end">
+                <!--/*** This template is free as long as you keep the footer author’s credit link/attribution link/backlink. If you'd like to use the template without the footer author’s credit link/attribution link/backlink, you can purchase the Credit Removal License from "https://htmlcodex.com/credit-removal". Thank you for your support. ***/-->
+                Developed by <a href="https://josefnemec.cz">Josef 'Noro' Němec</a>
+
+
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Footer End -->
+</div>
+<!-- Content End -->
+
+
+<!-- Back to Top -->
+
+</div>
+
+<!-- JavaScript Libraries -->
+<script src="{$basePath}/vendors/jquery/jquery.min.js"></script>
+<script src="{$basePath}/assets/js/Naja.min.js"></script>
+<script src="{$basePath}/assets/js/netteForms.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{$basePath}/dashmin/lib/chart/chart.min.js"></script>
+<script src="{$basePath}/dashmin/lib/easing/easing.min.js"></script>
+<script src="{$basePath}/dashmin/lib/waypoints/waypoints.min.js"></script>
+<script src="{$basePath}/dashmin/lib/owlcarousel/owl.carousel.min.js"></script>
+<script src="{$basePath}/dashmin/lib/tempusdominus/js/moment.min.js"></script>
+<script src="{$basePath}/dashmin/lib/tempusdominus/js/moment-timezone.min.js"></script>
+<script src="{$basePath}/dashmin/lib/tempusdominus/js/tempusdominus-bootstrap-4.min.js"></script>
+{include scripts}
+<!-- Template Javascript -->
+<script src="{$basePath}/dashmin/js/main.js"></script>
+<script>naja.initialize();
+</script>
+<script src="{$basePath}/assets/js/datagrid.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        // Najdi všechny toast prvky
+        const toastElements = document.querySelectorAll('.toast');
+
+        // Pro každý toast vytvoř instance Bootstrap Toast
+        toastElements.forEach(toastElement => {
+            const toast = new bootstrap.Toast(toastElement);
+            toast.show(); // Zobraz toast
+        });
+    });
+</script>
+</body>
+
+</html>

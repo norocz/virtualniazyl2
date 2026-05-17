@@ -1,0 +1,115 @@
+{templateType App\Presenters\Templates\Home\Layout}
+{block title}Eshop - Virtuální azyl{/block}
+
+{block content}
+<main class="main" id="top">
+    <section class="bg-light py-5">
+        <div class="container">
+            <div class="row align-items-center mb-4">
+                <div class="col-md-8">
+                    <h1 class="mb-2">Eshop azylů</h1>
+                    <p class="text-muted mb-0">
+                        Nákupem podporujete konkrétní azyl. Platíte spolku Virtuální Azyl,
+                        který peníze přepošle azylu (po odečtu {$feePercent}&nbsp;% na provoz).
+                    </p>
+                </div>
+                <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                    <a href="{link Shop:cart}" class="btn btn-primary position-relative">
+                        <i class="bi bi-cart"></i> Košík
+                        {if $cartItemCount > 0}
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                {$cartItemCount}
+                            </span>
+                        {/if}
+                    </a>
+                </div>
+            </div>
+
+            {* Filtr *}
+            <form class="row g-2 mb-4" method="get">
+                <div class="col-md-5">
+                    <input type="text" name="q" class="form-control"
+                           placeholder="Hledat v nabídce..."
+                           value="{$searchQuery ?? ''}">
+                </div>
+                <div class="col-md-3">
+                    <select name="category" class="form-select">
+                        <option value="">Všechny kategorie</option>
+                        {foreach $categories as $cat}
+                            <option value="{$cat}" {if $cat === ($selectedCategory ?? '')}selected{/if}>{$cat}</option>
+                        {/foreach}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select name="azyl" class="form-select">
+                        <option value="">Všechny azyly</option>
+                        {foreach $azylList as $a}
+                            <option value="{$a->getId()}" {if ($selectedAzylId ?? null) === $a->getId()}selected{/if}>{$a->getAzylName()}</option>
+                        {/foreach}
+                    </select>
+                </div>
+                <div class="col-md-1">
+                    <button class="btn btn-secondary w-100">Hledat</button>
+                </div>
+            </form>
+
+            {* Produkty *}
+            {if count($products) > 0}
+                <div class="row g-4">
+                    {foreach $products as $product}
+                        <div class="col-md-6 col-lg-4 col-xl-3">
+                            <div class="card h-100">
+                                {* Fotka *}
+                                {var $photo = $product->getPhotos()->first()}
+                                {if $photo}
+                                    <a href="{link Shop:product, $product->getId()}">
+                                        <img src="{$basePath}{$photo->getFullPath()}"
+                                             class="card-img-top" style="height:220px;object-fit:cover;"
+                                             alt="{$product->getName()}">
+                                    </a>
+                                {else}
+                                    <div class="bg-light d-flex align-items-center justify-content-center"
+                                         style="height:220px;">
+                                        <i class="bi bi-image text-muted" style="font-size:3rem;"></i>
+                                    </div>
+                                {/if}
+
+                                <div class="card-body d-flex flex-column">
+                                    <h5 class="card-title">{$product->getName()}</h5>
+                                    <p class="text-muted small mb-2">
+                                        <i class="bi bi-house-heart"></i> {$product->getAzyl()->getAzylName()}
+                                    </p>
+                                    {if $product->getShortDescription()}
+                                        <p class="card-text small">{$product->getShortDescription()}</p>
+                                    {/if}
+                                    <div class="mt-auto">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <span class="h5 mb-0 text-primary">
+                                                {$product->getPrice()|number:0,',','&nbsp;'|noescape} Kč
+                                            </span>
+                                            {if !$product->isUnlimitedStock()}
+                                                <small class="text-muted">Skladem: {$product->getStock()}</small>
+                                            {/if}
+                                        </div>
+                                        <a href="{link Shop:product, $product->getId()}"
+                                           class="btn btn-outline-primary btn-sm w-100">
+                                            Zobrazit detail
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {/foreach}
+                </div>
+            {else}
+                <div class="alert alert-info text-center">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Zatím tu nic není - ale brzy azyly naplní tento eshop!
+                </div>
+            {/if}
+        </div>
+    </section>
+</main>
+{/block}
+
+{block scripts}{/block}

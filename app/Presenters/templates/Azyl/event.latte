@@ -1,0 +1,328 @@
+{templateType App\Presenters\Templates\Azyl\Layout}
+{block scripts}
+<script src="{$basePath}/vendors/tinymce/tinymce.js"></script>
+{syntax off}
+<script>
+tinymce.init({
+    selector: '#eventDescription',
+    plugins: 'link code lists',
+    toolbar: 'undo redo | blocks | bold italic | bullist numlist | link code',
+    height: 300,
+});
+
+(function () {
+    var sel = document.getElementById('recurrenceTypeSelect');
+    var grp = document.getElementById('recurrenceEndGroup');
+    if (!sel || !grp) return;
+    function toggle() {
+        grp.style.display = sel.value !== 'none' ? '' : 'none';
+    }
+    sel.addEventListener('change', toggle);
+    toggle();
+})();
+</script>
+{/syntax}
+{/block}
+
+{block azylContent}
+<div class="container-fluid pt-3 pb-5">
+
+    <div class="d-flex align-items-center gap-3 mb-4">
+        <a href="{link Azyl:events}" class="btn btn-sm btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Zpět
+        </a>
+        <h4 class="mb-0">
+            <i class="bi bi-calendar-event me-2"></i>
+            {if $event}{$event->getTitle()}{else}Nová událost{/if}
+        </h4>
+        {if $event}
+            <span class="badge {if $event->isPublished()}bg-success{else}bg-secondary{/if} fs-6">
+                {if $event->isPublished()}Zveřejněno{else}Skrytá{/if}
+            </span>
+        {/if}
+    </div>
+
+    <div class="row g-4">
+
+    {* ── Levý sloupec: formulář ───────────────────────────────────── *}
+    <div class="col-lg-8">
+    <form n:name="eventForm" novalidate>
+    <input type="hidden" n:name="id">
+
+        {* Základní info *}
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header text-white fw-semibold" style="background:#1565c0;">
+                <i class="bi bi-info-circle me-2"></i>Základní informace
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold" n:name="title">Název události <span class="text-danger">*</span></label>
+                    <input class="form-control" n:name="title" placeholder="např. Sobotní procházka se psy">
+                    <div n:ifcontent class="invalid-feedback d-block">{$form['title']->getError()}</div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold" n:name="shortDescription">Krátký popis</label>
+                    <textarea class="form-control" n:name="shortDescription" rows="2"
+                              placeholder="Pár vět — zobrazí se v přehledu a veřejném výpisu"></textarea>
+                    <div class="form-text">Max 512 znaků.</div>
+                </div>
+                <div class="mb-0">
+                    <label class="form-label fw-semibold" n:name="description">Podrobný popis</label>
+                    <textarea class="form-control" n:name="description" id="eventDescription" rows="10"
+                              placeholder="Detailní popis, program, co si vzít s sebou…"></textarea>
+                </div>
+            </div>
+        </div>
+
+        {* Termín *}
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header text-white fw-semibold" style="background:#e65100;">
+                <i class="bi bi-clock me-2"></i>Termín a opakování
+            </div>
+            <div class="card-body">
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold" n:name="dateFrom">Začátek <span class="text-danger">*</span></label>
+                        <input class="form-control" n:name="dateFrom">
+                        <div n:ifcontent class="invalid-feedback d-block">{$form['dateFrom']->getError()}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold" n:name="dateTo">Konec <span class="text-danger">*</span></label>
+                        <input class="form-control" n:name="dateTo">
+                        <div n:ifcontent class="invalid-feedback d-block">{$form['dateTo']->getError()}</div>
+                    </div>
+                </div>
+                <div class="alert alert-light border small py-2 mb-3">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Pro vícedenní akci nastavte začátek a konec na různé dny.
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-5">
+                        <label class="form-label fw-semibold" n:name="recurrenceType">Opakování</label>
+                        <select n:name="recurrenceType" class="form-control" id="recurrenceTypeSelect"></select>
+                    </div>
+                    <div class="col-md-4" id="recurrenceEndGroup" style="display:none;">
+                        <label class="form-label fw-semibold" n:name="recurrenceEndDate">Opakovat do</label>
+                        <input class="form-control" n:name="recurrenceEndDate">
+                        <div class="form-text">Prázdné = bez omezení.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {* Místo a kapacita *}
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header text-white fw-semibold" style="background:#2e7d32;">
+                <i class="bi bi-geo-alt me-2"></i>Místo a kapacita
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-8">
+                        <label class="form-label fw-semibold" n:name="location">Místo konání</label>
+                        <input class="form-control" n:name="location">
+                        <div class="form-text">Adresa nebo název místa, zobrazí se veřejně.</div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold" n:name="maxParticipants">Max. účastníků</label>
+                        <input class="form-control" n:name="maxParticipants">
+                        <div class="form-text">Prázdné = neomezeno.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {* Registrace a viditelnost *}
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header fw-semibold" style="background:#f5f5f5;">
+                <i class="bi bi-eye me-2"></i>Registrace a viditelnost
+            </div>
+            <div class="card-body">
+                <div class="form-check form-switch mb-2">
+                    <input class="form-check-input" n:name="registrationEnabled" id="registrationEnabledCheck" role="switch">
+                    <label class="form-check-label fw-semibold" for="registrationEnabledCheck">Povolit registraci přes web</label>
+                </div>
+                <div class="form-text mb-3">Zobrazí registrační formulář přímo na stránce události.</div>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" n:name="isPublished" id="isPublishedCheck" role="switch">
+                    <label class="form-check-label fw-semibold" for="isPublishedCheck">Zveřejnit událost</label>
+                </div>
+                <div class="form-text mt-1">Nezveřejněná událost je viditelná pouze vám v administraci.</div>
+            </div>
+        </div>
+
+        <div class="d-flex gap-2 mb-2">
+            <button class="btn btn-primary btn-lg px-5" n:name="save">
+                <i class="bi bi-floppy me-2"></i>Uložit
+            </button>
+            <a href="{link Azyl:events}" class="btn btn-outline-secondary btn-lg">Zrušit</a>
+        </div>
+
+    </form>
+    </div>
+
+    {* ── Pravý sloupec: fotky a rezervace ────────────────────────── *}
+    <div class="col-lg-4">
+
+        {if $event}
+
+        {* Hlavní foto *}
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header fw-semibold" style="background:#f5f5f5;">
+                <i class="bi bi-image me-2"></i>Hlavní foto
+            </div>
+            <div class="card-body text-center">
+                {if $headerPhoto}
+                    <img src="{$basePath}{$headerPhoto->getPath()}{$headerPhoto->getName()}"
+                         class="img-fluid rounded mb-3" style="max-height:200px;object-fit:cover;" alt="">
+                {else}
+                    <div class="bg-light rounded d-flex align-items-center justify-content-center mb-3" style="height:140px;">
+                        <i class="bi bi-image text-muted" style="font-size:2.5rem;"></i>
+                    </div>
+                {/if}
+                <form n:name="headerPhotoForm" enctype="multipart/form-data">
+                    <input n:name="headerPhoto" class="form-control form-control-sm mb-2" accept="image/*">
+                    <button n:name="uploadHeader" class="btn btn-sm btn-outline-primary w-100">
+                        <i class="bi bi-upload me-1"></i>Nahrát hlavní foto
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        {* Galerie *}
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header fw-semibold d-flex align-items-center justify-content-between" style="background:#f5f5f5;">
+                <span><i class="bi bi-images me-2"></i>Galerie ({$event->getPhotos()->count()})</span>
+                {if $event->isPast()}<span class="badge bg-success">Po akci</span>{/if}
+            </div>
+            <div class="card-body">
+                {if $event->isPast()}
+                <div class="alert alert-info small py-2 mb-3">
+                    <i class="bi bi-lightbulb me-1"></i>
+                    Nahráním fotek z proběhlé akce se <strong>automaticky vytvoří aktualita</strong>.
+                </div>
+                {/if}
+                {if $event->getPhotos()->count() > 0}
+                <div class="row g-2 mb-3">
+                    {foreach $event->getPhotos() as $photo}
+                    {if !$photo->isDeleted()}
+                    <div class="col-4 position-relative">
+                        <img src="{$basePath}{$photo->getPath()}{$photo->getName()}"
+                             class="img-fluid rounded" style="height:80px;width:100%;object-fit:cover;" alt="">
+                        <a href="{link deleteEventPhoto!, photoId => $photo->getId()}"
+                           class="position-absolute top-0 end-0 btn btn-danger btn-sm p-0 m-1"
+                           style="width:20px;height:20px;line-height:20px;font-size:10px;"
+                           onclick="return confirm('Smazat fotku?')">×</a>
+                    </div>
+                    {/if}
+                    {/foreach}
+                </div>
+                {/if}
+                <form n:name="eventPhotoForm" enctype="multipart/form-data">
+                    <input n:name="photos" class="form-control form-control-sm mb-2" accept="image/*" multiple>
+                    <button n:name="uploadPhotos" class="btn btn-sm btn-outline-success w-100">
+                        <i class="bi bi-upload me-1"></i>Nahrát fotky
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        {* Registrace *}
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header fw-semibold d-flex justify-content-between align-items-center" style="background:#f5f5f5;">
+                <span><i class="bi bi-people me-2"></i>Registrovaní ({$event->getReservationCount()}{if $event->getMaxParticipants() !== null} / {$event->getMaxParticipants()}{/if})</span>
+                {if count($waitlist) > 0}
+                    <span class="badge bg-warning text-dark">{count($waitlist)} čeká</span>
+                {/if}
+            </div>
+            <div class="card-body p-0">
+                {if count($reservations) > 0}
+                <div class="list-group list-group-flush small">
+                    {foreach $reservations as $res}
+                    <div class="list-group-item d-flex align-items-center justify-content-between py-2 px-3">
+                        <div>
+                            <div class="fw-semibold">{$res->getEffectiveName()}</div>
+                            <div class="text-muted" style="font-size:11px;">{$res->getEffectiveEmail()}</div>
+                            {if $res->getParticipantsCount() > 1}
+                                <div class="text-muted" style="font-size:11px;">{$res->getParticipantsCount()} osoby</div>
+                            {/if}
+                            {if $res->getNote()}
+                                <div class="text-muted fst-italic" style="font-size:11px;">{$res->getNote()|truncate:40}</div>
+                            {/if}
+                        </div>
+                        <a href="{link cancelReservation!, reservationId => $res->getId()}"
+                           class="btn btn-sm btn-outline-danger py-0 px-1 flex-shrink-0"
+                           onclick="return confirm('Zrušit registraci?')">
+                            <i class="bi bi-x"></i>
+                        </a>
+                    </div>
+                    {/foreach}
+                </div>
+                {else}
+                <div class="text-center text-muted small py-3">Zatím žádné registrace.</div>
+                {/if}
+            </div>
+        </div>
+
+        {* Čekací listina *}
+        {if count($waitlist) > 0}
+        <div class="card border-0 shadow-sm mb-4 border-warning">
+            <div class="card-header fw-semibold" style="background:#fff3cd;">
+                <i class="bi bi-hourglass-split me-2"></i>Čekací listina ({count($waitlist)})
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush small">
+                    {foreach $waitlist as $i => $res}
+                    <div class="list-group-item d-flex align-items-center justify-content-between py-2 px-3">
+                        <div>
+                            <span class="badge bg-secondary me-1">#{$i+1}</span>
+                            <span class="fw-semibold">{$res->getEffectiveName()}</span>
+                            <div class="text-muted" style="font-size:11px;">{$res->getEffectiveEmail()}</div>
+                        </div>
+                        <a href="{link cancelReservation!, reservationId => $res->getId()}"
+                           class="btn btn-sm btn-outline-danger py-0 px-1 flex-shrink-0"
+                           onclick="return confirm('Odebrat z čekací listiny?')">
+                            <i class="bi bi-x"></i>
+                        </a>
+                    </div>
+                    {/foreach}
+                </div>
+            </div>
+        </div>
+        {/if}
+
+        {* Zpráva registrovaným *}
+        {if count($reservations) > 0}
+        <div class="card border-0 shadow-sm">
+            <div class="card-header fw-semibold" style="background:#f5f5f5;">
+                <i class="bi bi-envelope me-2"></i>Zpráva registrovaným
+            </div>
+            <div class="card-body">
+                <form n:name="eventMessageForm">
+                    <input type="hidden" n:name="eventId" value="{$event->getId()}">
+                    <div class="mb-2">
+                        <input class="form-control form-control-sm" n:name="subject" placeholder="Předmět">
+                    </div>
+                    <div class="mb-2">
+                        <textarea class="form-control form-control-sm" n:name="body" rows="4" placeholder="Text zprávy…"></textarea>
+                    </div>
+                    <button class="btn btn-sm btn-primary w-100" n:name="send">
+                        <i class="bi bi-send me-1"></i>Odeslat {count($reservations)} registrovaným
+                    </button>
+                </form>
+            </div>
+        </div>
+        {/if}
+
+        {else}
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center text-muted py-4 small">
+                <i class="bi bi-images mb-2 d-block" style="font-size:2rem;"></i>
+                Fotky a rezervace budou dostupné po uložení události.
+            </div>
+        </div>
+        {/if}
+
+    </div>
+    </div>
+</div>
+{/block}

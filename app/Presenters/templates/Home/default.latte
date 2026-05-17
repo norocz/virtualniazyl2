@@ -1,0 +1,299 @@
+{*
+    Drop-in replacement for: vaz/app/Presenters/templates/Home/default.latte
+    Homepage — pinned news + adoptions grid + news sidebar
+*}
+{block content}
+<link href="{$basePath}/assets/css/vaz-redesign.css" rel="stylesheet">
+<main class="vaz-redesign">
+
+<section class="vaz-section-hero">
+    <div class="container">
+        <h1 class="vaz-page-title">Virtuální azyl</h1>
+        <p class="vaz-page-sub" style="max-width:680px;">
+            Pomáhejte zvířatům v nouzi — adoptujte, přispějte, sdílejte.
+            Každé zvíře si zaslouží domov, bezpečí a lásku.
+        </p>
+    </div>
+</section>
+
+{if isset($pined)}
+<section class="pt-4">
+    <div class="container">
+        <div class="vaz-card" style="background: linear-gradient(180deg, var(--vaz-ochre-soft), #fff); border-color: var(--vaz-ochre);">
+            <div class="d-flex align-items-start gap-3">
+                <span class="vaz-pill vaz-pill--ochre"><i class="bi bi-pin-angle-fill"></i> Připnuto</span>
+                <div style="flex:1;">
+                    <h3 class="h5 fw-bold mb-2" style="color: var(--vaz-ink);">{$pined->getTitle()}</h3>
+                    <div style="color: var(--vaz-text-muted); line-height:1.6;">{$pined->getContent()|noescape}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{/if}
+
+<section class="py-4">
+    <div class="container">
+        <div class="row g-4">
+            {* ADOPCE *}
+            <div class="col-xl-8 col-12">
+                <div class="d-flex justify-content-between align-items-end mb-3">
+                    <div>
+                        <h2 class="h4 fw-bold mb-1" style="color: var(--vaz-ink);">
+                            <i class="bi bi-heart-fill" style="color: var(--vaz-rose);"></i> Adopce
+                        </h2>
+                        <p class="small text-muted mb-0">Zvířata, která právě hledají domov</p>
+                    </div>
+                    <a n:href="Home:adoptions" class="vaz-btn vaz-btn--ghost vaz-btn--sm">
+                        Všechny adopce <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+
+                <div class="row g-3">
+                    {foreach $adoptions as $adoption}
+                        <div class="col-xl-6 col-md-6 col-sm-12">
+                            <article class="vaz-adoption h-100">
+                                <div class="vaz-adoption__media">
+                                    {if !is_null($adoption->getPhotos()[0])}
+                                        <img src="{$basePath}{$adoption->getPhotos()[0]->getPath().$adoption->getPhotos()[0]->getName()}" alt="{$adoption->getName()}">
+                                    {else}
+                                        <img src="{$basePath}/assets/vazdata/img/pic/love1.jpeg" alt="{$adoption->getName()}">
+                                    {/if}
+                                    {var $t = $adoption->getAdoptionType()}
+                                    <span class="vaz-adoption__type
+                                        {if $t == 'Virtuální adopce'}t-virt
+                                        {elseif $t == 'Dočasná péče'}t-doc
+                                        {elseif $t == 'Předadopce'}t-pre
+                                        {elseif $t == 'Plná adopce'}t-full{/if}">
+                                        {$t}
+                                    </span>
+                                </div>
+                                <div class="vaz-adoption__body">
+                                    <h5 class="vaz-adoption__title">{$adoption->getName()}</h5>
+                                    <div class="vaz-adoption__meta">
+                                        <i class="bi bi-paw"></i> {$adoption->getBreed()}
+                                        {if !is_null($adoption->getBirthdate())}
+                                            {var $interval = date_diff($adoption->getBirthdate(), new DateTimeImmutable())}
+                                            &nbsp;·&nbsp; {$interval->y} {if $interval->y == 1}rok{elseif $interval->y < 5}roky{else}let{/if}
+                                        {/if}
+                                    </div>
+                                    <p class="vaz-adoption__desc">{$adoption->getDescription()|truncate:110}</p>
+                                    <div class="d-flex gap-2 flex-wrap">
+                                        {if $user->isLoggedIn()}
+                                            <a href="{link Home:adopce $adoption->getId()}" class="vaz-btn vaz-btn--primary vaz-btn--sm">
+                                                <i class="bi bi-heart"></i> Chci adoptovat
+                                            </a>
+                                        {else}
+                                            <a href="{link Home:SignIn}" class="vaz-btn vaz-btn--primary vaz-btn--sm">
+                                                <i class="bi bi-box-arrow-in-right"></i> Přihlášení
+                                            </a>
+                                        {/if}
+                                        <a href="{link Home:azyl $adoption->getAzyl()->getId()}" class="vaz-btn vaz-btn--ghost vaz-btn--sm">
+                                            {$adoption->getAzyl()->getAzylName()|truncate:22}
+                                        </a>
+                                    </div>
+                                </div>
+                            </article>
+                        </div>
+                    {/foreach}
+                </div>
+            </div>
+
+            {* AKTUALITY + UDÁLOSTI *}
+            <div class="col-xl-4 col-12">
+
+                {* ── Nadcházející události ── *}
+                {if isset($upcomingEvents) && count($upcomingEvents) > 0}
+                <div class="d-flex justify-content-between align-items-end mb-3">
+                    <div>
+                        <h2 class="h4 fw-bold mb-1" style="color: var(--vaz-ink);">
+                            <i class="bi bi-calendar-event-fill" style="color: var(--vaz-ochre);"></i> Události
+                        </h2>
+                        <p class="small text-muted mb-0">Nadcházející akce azylů</p>
+                    </div>
+                    <a n:href="Home:events" class="vaz-btn vaz-btn--ghost vaz-btn--sm">
+                        Všechny <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+                <div class="vaz-card vaz-card--flush mb-4">
+                    {foreach $upcomingEvents as $ev}
+                    <a href="{link Home:event, id => $ev->getId()}"
+                       class="d-flex align-items-start gap-2 px-3 py-2 text-decoration-none border-bottom"
+                       style="color:inherit; transition:background .15s;"
+                       onmouseover="this.style.background='#f8f8f6'" onmouseout="this.style.background=''">
+                        <div class="flex-shrink-0 text-center rounded-2 px-2 py-1"
+                             style="background:var(--vaz-ochre-soft,#fdf6e3); min-width:44px;">
+                            <div class="fw-bold" style="font-size:18px; line-height:1; color:var(--vaz-ochre,#c8960c);">
+                                {$ev->getDateFrom()|date:'d'}
+                            </div>
+                            <div class="text-uppercase" style="font-size:10px; color:#888; letter-spacing:.04em;">
+                                {$ev->getDateFrom()|date:'M'}
+                            </div>
+                        </div>
+                        <div style="min-width:0;">
+                            <div class="fw-semibold text-truncate" style="font-size:13px;">{$ev->getTitle()}</div>
+                            <div class="small text-muted text-truncate">
+                                <i class="bi bi-house-heart me-1"></i>{$ev->getAzyl()->getAzylName()|truncate:28}
+                                {if $ev->getLocation()}
+                                    &nbsp;·&nbsp;<i class="bi bi-geo-alt me-1"></i>{$ev->getLocation()|truncate:20}
+                                {/if}
+                            </div>
+                        </div>
+                    </a>
+                    {/foreach}
+                </div>
+                {/if}
+
+                {* ── Aktuality ── *}
+                <div class="d-flex justify-content-between align-items-end mb-3">
+                    <div>
+                        <h2 class="h4 fw-bold mb-1" style="color: var(--vaz-ink);">
+                            <i class="bi bi-megaphone-fill" style="color: var(--vaz-green);"></i> Aktuality
+                        </h2>
+                        <p class="small text-muted mb-0">Co je nového</p>
+                    </div>
+                    {if $newsCount !== 0}
+                        <a n:href="Home:news" class="vaz-btn vaz-btn--ghost vaz-btn--sm">
+                            Více <i class="bi bi-arrow-right"></i>
+                        </a>
+                    {/if}
+                </div>
+
+                <div class="vaz-card vaz-card--flush">
+                    {if $newsCount !== 0}
+                        {foreach $news as $new}
+                            {var $newsAzyl = $new->getAzyl()}
+                            <div class="vaz-news{if $new->getImportant()} important{/if}" style="grid-template-columns: 1fr;">
+                                <div>
+                                    <div class="d-flex align-items-center gap-2 mb-1">
+                                        {if $new->getImportant()}
+                                            <span class="vaz-pill vaz-pill--ochre"><i class="bi bi-star-fill"></i> Důležité</span>
+                                        {/if}
+                                        <span class="small text-muted">{$new->getCreatedAt()->format('d.m.Y')}</span>
+                                    </div>
+                                    <h5 class="vaz-news__title">{$new->getTitle()}</h5>
+                                    <div class="vaz-news__text">{$new->getContent()|noescape}</div>
+                                    <div class="mt-2">
+                                        {if $newsAzyl != null}
+                                            <a href="{link Home:azyl, $newsAzyl->getId()}" class="vaz-btn vaz-btn--ghost vaz-btn--sm">
+                                                <i class="bi bi-building"></i> {$newsAzyl->getAzylName()|truncate:28}
+                                            </a>
+                                        {else}
+                                            <span class="small text-muted"><i class="bi bi-shield-check"></i> Admin</span>
+                                        {/if}
+                                    </div>
+                                </div>
+                            </div>
+                        {/foreach}
+                    {else}
+                        <div class="p-4 text-center text-muted">
+                            <i class="bi bi-inbox" style="font-size:32px; opacity:.4;"></i>
+                            <p class="mt-2 mb-0 small">Žádné novinky</p>
+                        </div>
+                    {/if}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{if isset($featuredCollections) && count($featuredCollections) > 0}
+<section class="py-4">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-end mb-3">
+            <div>
+                <h2 class="h4 fw-bold mb-1" style="color: var(--vaz-ink);">
+                    <i class="bi bi-piggy-bank-fill" style="color: var(--vaz-green);"></i> Aktuální sbírky
+                </h2>
+                <p class="small text-muted mb-0">Pomozte zvířatům přímo finanční podporou</p>
+            </div>
+            <a n:href="Home:collections" class="vaz-btn vaz-btn--ghost vaz-btn--sm">
+                Všechny sbírky <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+        <div class="row g-3">
+            {foreach $featuredCollections as $collection}
+            <div class="col-xl-4 col-md-6">
+                <article class="vaz-card vaz-card--flush h-100 d-flex flex-column">
+                    {if $collection->getPhoto() !== null}
+                        <img src="{$basePath}{$collection->getPhoto()->getPath().$collection->getPhoto()->getName()}"
+                             alt="{$collection->getCollectionName()}"
+                             style="width:100%; height:180px; object-fit:cover;">
+                    {else}
+                        <div style="height:180px; background:linear-gradient(135deg,var(--vaz-green-soft),var(--vaz-cream)); display:flex; align-items:center; justify-content:center;">
+                            <i class="bi bi-piggy-bank" style="font-size:48px; color:var(--vaz-green); opacity:.5;"></i>
+                        </div>
+                    {/if}
+                    <div class="p-3 d-flex flex-column" style="flex:1;">
+                        <p class="small text-muted mb-1">
+                            <i class="bi bi-house-heart"></i> {$collection->getAzyl()->getAzylName()|truncate:28}
+                        </p>
+                        <h5 class="fw-bold mb-2" style="font-size:15px; color:var(--vaz-ink);">{$collection->getCollectionName()}</h5>
+                        <p class="small text-muted mb-3" style="flex:1;">{$collection->getCollectionDescription()|truncate:100}</p>
+                        <a href="{link Home:collection, $collection->getCollectionKey()}" class="vaz-btn vaz-btn--primary vaz-btn--sm">
+                            <i class="bi bi-gift"></i> Přispět
+                        </a>
+                    </div>
+                </article>
+            </div>
+            {/foreach}
+        </div>
+    </div>
+</section>
+{/if}
+
+{if isset($featuredProducts) && count($featuredProducts) > 0}
+<section class="py-4">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-end mb-3">
+            <div>
+                <h2 class="h4 fw-bold mb-1" style="color: var(--vaz-ink);">
+                    <i class="bi bi-shop" style="color: var(--vaz-green);"></i> Ze shopů azylů
+                </h2>
+                <p class="small text-muted mb-0">Nákupem přímo podporujete konkrétní azyl</p>
+            </div>
+            <a href="{link Shop:default}" class="vaz-btn vaz-btn--ghost vaz-btn--sm">
+                Celý eshop <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+        <div class="row g-3">
+            {foreach $featuredProducts as $product}
+                <div class="col-xl-3 col-md-6">
+                    <div class="vaz-card vaz-card--flush h-100 d-flex flex-column" style="overflow:hidden;">
+                        {var $photo = $product->getPhotos()->first()}
+                        {if $photo}
+                            <a href="{link Shop:product, $product->getId()}">
+                                <img src="{$basePath}{$photo->getFullPath()}" alt="{$product->getName()}"
+                                     style="width:100%; height:180px; object-fit:cover;">
+                            </a>
+                        {else}
+                            <div class="d-flex align-items-center justify-content-center bg-light"
+                                 style="height:180px;">
+                                <i class="bi bi-image text-muted" style="font-size:2.5rem; opacity:.4;"></i>
+                            </div>
+                        {/if}
+                        <div class="p-3 d-flex flex-column flex-grow-1">
+                            <p class="small text-muted mb-1">
+                                <i class="bi bi-house-heart"></i> {$product->getAzyl()->getAzylName()|truncate:28}
+                            </p>
+                            <h5 class="fw-bold mb-2" style="font-size:15px; color:var(--vaz-ink);">{$product->getName()}</h5>
+                            <div class="mt-auto d-flex justify-content-between align-items-center">
+                                <span class="fw-bold" style="color:var(--vaz-green); font-size:16px;">
+                                    {$product->getPrice()|number:0,',','&nbsp;'|noescape} Kč
+                                </span>
+                                <a href="{link Shop:product, $product->getId()}" class="vaz-btn vaz-btn--primary vaz-btn--sm">
+                                    Detail
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {/foreach}
+        </div>
+    </div>
+</section>
+{/if}
+
+</main>
+{/block}
+{block scripts-user}{/block}

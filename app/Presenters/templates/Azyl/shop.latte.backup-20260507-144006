@@ -1,0 +1,145 @@
+{templateType App\Presenters\Templates\Azyl\Layout}
+{block azylContent}
+<div class="container-fluid pt-4 px-4">
+    <div class="bg-light rounded p-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="mb-0"><i class="bi bi-shop me-2"></i>Můj eshop</h4>
+            <a href="{link Azyl:shopProduct}" class="btn btn-primary">
+                <i class="bi bi-plus-lg"></i> Nový produkt
+            </a>
+        </div>
+
+        {if !$eshopEnabled}
+            <div class="alert alert-warning">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                Eshop je v tuto chvíli centrálně vypnutý superadminem.
+            </div>
+        {/if}
+
+        {* Rychlé statistiky *}
+        <div class="row g-3 mb-4">
+            <div class="col-md-3">
+                <div class="card border-0 bg-primary text-white">
+                    <div class="card-body">
+                        <h6 class="card-title">Aktivní produkty</h6>
+                        <h3 class="mb-0">{$stats['activeProducts']}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 bg-info text-white">
+                    <div class="card-body">
+                        <h6 class="card-title">Objednávky k vyřízení</h6>
+                        <h3 class="mb-0">{$stats['pendingOrders']}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 bg-success text-white">
+                    <div class="card-body">
+                        <h6 class="card-title">Výdělek celkem</h6>
+                        <h3 class="mb-0">{$stats['totalEarnings']|number:0,',','&nbsp;'|noescape} Kč</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 bg-warning">
+                    <div class="card-body">
+                        <h6 class="card-title">K vyplacení</h6>
+                        <h3 class="mb-0">{$stats['pendingPayout']|number:0,',','&nbsp;'|noescape} Kč</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {* Seznam produktů *}
+        {if count($products) > 0}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th>Fotka</th>
+                            <th>Název</th>
+                            <th class="text-end">Cena</th>
+                            <th class="text-center">Skladem</th>
+                            <th class="text-center">Stav</th>
+                            <th class="text-center">Schváleno</th>
+                            <th class="text-end">Akce</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {foreach $products as $product}
+                            <tr>
+                                <td style="width:70px;">
+                                    {var $photo = $product->getPhotos()->first()}
+                                    {if $photo}
+                                        <img src="{$basePath}{$photo->getFullPath()}" alt=""
+                                             style="width:50px;height:50px;object-fit:cover;" class="rounded">
+                                    {else}
+                                        <div class="rounded bg-light d-flex align-items-center justify-content-center"
+                                             style="width:50px;height:50px;">
+                                            <i class="bi bi-image text-muted"></i>
+                                        </div>
+                                    {/if}
+                                </td>
+                                <td>
+                                    <strong>{$product->getName()}</strong>
+                                    {if $product->getCategory()}
+                                        <br><small class="text-muted">{$product->getCategory()}</small>
+                                    {/if}
+                                </td>
+                                <td class="text-end">
+                                    {$product->getPrice()|number:0,',','&nbsp;'|noescape} Kč
+                                </td>
+                                <td class="text-center">
+                                    {if $product->isUnlimitedStock()}
+                                        <span class="badge bg-success">Neomezeno</span>
+                                    {elseif $product->getStock() > 0}
+                                        <span class="badge bg-success">{$product->getStock()} ks</span>
+                                    {else}
+                                        <span class="badge bg-danger">Vyprodáno</span>
+                                    {/if}
+                                </td>
+                                <td class="text-center">
+                                    {if $product->isActive()}
+                                        <span class="badge bg-success">Aktivní</span>
+                                    {else}
+                                        <span class="badge bg-secondary">Neaktivní</span>
+                                    {/if}
+                                </td>
+                                <td class="text-center">
+                                    {if $product->isApproved()}
+                                        <i class="bi bi-check-circle-fill text-success" title="Schváleno"></i>
+                                    {else}
+                                        <i class="bi bi-hourglass text-warning" title="Čeká na schválení"></i>
+                                    {/if}
+                                </td>
+                                <td class="text-end">
+                                    <a href="{link Azyl:shopProduct, $product->getId()}"
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a href="{link Azyl:shopProductToggle!, $product->getId()}"
+                                       class="btn btn-sm btn-outline-warning" title="Zapnout/Vypnout">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a href="{link Azyl:shopProductDelete!, $product->getId()}"
+                                       class="btn btn-sm btn-outline-danger"
+                                       onclick="return confirm('Opravdu smazat?')">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        {/foreach}
+                    </tbody>
+                </table>
+            </div>
+        {else}
+            <div class="alert alert-info text-center">
+                <i class="bi bi-info-circle me-2"></i>
+                Zatím nemáte žádné produkty. Přidejte první produkt tlačítkem nahoře.
+            </div>
+        {/if}
+    </div>
+</div>
+{/block}

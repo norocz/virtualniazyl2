@@ -1,0 +1,67 @@
+{templateType App\Presenters\Templates\SuperAdmin\Layout}
+{block superAdminContent}
+<div class="container-fluid pt-4 px-4">
+    <div class="bg-light rounded p-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="mb-0"><i class="bi bi-archive me-2"></i>Všechny platební dávky</h4>
+            <a href="{link SuperAdmin:shoppayouts}" class="btn btn-primary">
+                <i class="bi bi-plus-lg me-1"></i>Nová dávka
+            </a>
+        </div>
+
+        {if count($batches) > 0}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Číslo dávky</th>
+                            <th class="text-end">Položek</th>
+                            <th class="text-end">Celková částka</th>
+                            <th class="text-center">Stav</th>
+                            <th>Vytvořil</th>
+                            <th>Vytvořeno</th>
+                            <th>Exportováno</th>
+                            <th>Odesláno</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {foreach $batches as $batch}
+                            <tr>
+                                <td class="font-monospace fw-semibold">{$batch->getBatchNumber()}</td>
+                                <td class="text-end">{$batch->getItemCount()}</td>
+                                <td class="text-end">
+                                    <strong>{$batch->getTotalAmount()|number:2,',','&nbsp;'|noescape} Kč</strong>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge {$batch->getBatchStatus()->badgeClass()}">
+                                        {$batch->getBatchStatus()->label()}
+                                    </span>
+                                </td>
+                                <td class="small">{$batch->getCreatedBy()->getUserName()}</td>
+                                <td class="small">{$batch->getCreatedAt()|date:'d.m.Y H:i'}</td>
+                                <td class="small">
+                                    {if $batch->getExportedAt()}{$batch->getExportedAt()|date:'d.m. H:i'}{else}—{/if}
+                                </td>
+                                <td class="small">
+                                    {if $batch->getSentAt()}{$batch->getSentAt()|date:'d.m. H:i'}{else}—{/if}
+                                </td>
+                                <td>
+                                    <a href="{link SuperAdmin:shopbatch, $batch->getId()}"
+                                       class="btn btn-sm btn-outline-primary">Detail</a>
+                                </td>
+                            </tr>
+                        {/foreach}
+                    </tbody>
+                </table>
+            </div>
+        {else}
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle me-1"></i>Žádné platební dávky.
+            </div>
+        {/if}
+    </div>
+</div>
+{/block}
+
+{block scripts}{/block}

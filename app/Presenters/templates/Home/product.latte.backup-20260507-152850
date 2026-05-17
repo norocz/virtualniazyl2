@@ -1,0 +1,123 @@
+{templateType App\Presenters\Templates\Home\Layout}
+{block title}{$product->getName()} - Eshop Virtuální azyl{/block}
+
+{block content}
+<main class="main" id="top">
+    <section class="bg-light py-5">
+        <div class="container">
+            <nav aria-label="breadcrumb" class="mb-3">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{link Home:default}">Úvod</a></li>
+                    <li class="breadcrumb-item"><a href="{link Shop:default}">Eshop</a></li>
+                    <li class="breadcrumb-item active">{$product->getName()}</li>
+                </ol>
+            </nav>
+
+            <div class="row g-4">
+                {* Galerie fotek *}
+                <div class="col-lg-7">
+                    {var $photos = $product->getPhotos()}
+                    {if count($photos) > 0}
+                        {var $firstPhoto = $photos->first()}
+                        <img id="main-product-photo" src="{$basePath}{$firstPhoto->getFullPath()}"
+                             class="img-fluid rounded mb-3" style="max-height:500px;width:100%;object-fit:cover;"
+                             alt="{$product->getName()}">
+                        {if count($photos) > 1}
+                            <div class="row g-2">
+                                {foreach $photos as $p}
+                                    <div class="col-3 col-md-2">
+                                        <img src="{$basePath}{$p->getFullPath()}"
+                                             class="img-fluid rounded cursor-pointer"
+                                             style="height:80px;width:100%;object-fit:cover;cursor:pointer;"
+                                             onclick="document.getElementById('main-product-photo').src='{$basePath}{$p->getFullPath()}'"
+                                             alt="">
+                                    </div>
+                                {/foreach}
+                            </div>
+                        {/if}
+                    {else}
+                        <div class="bg-white d-flex align-items-center justify-content-center rounded"
+                             style="height:500px;">
+                            <i class="bi bi-image text-muted" style="font-size:5rem;"></i>
+                        </div>
+                    {/if}
+                </div>
+
+                {* Detail a koupení *}
+                <div class="col-lg-5">
+                    <div class="bg-white rounded p-4">
+                        <p class="text-muted mb-1">
+                            <i class="bi bi-house-heart"></i>
+                            <a href="{link Home:azyl, $product->getAzyl()->getId()}">
+                                {$product->getAzyl()->getAzylName()}
+                            </a>
+                        </p>
+                        <h1 class="h3 mb-3">{$product->getName()}</h1>
+
+                        {if $product->getShortDescription()}
+                            <p class="lead">{$product->getShortDescription()}</p>
+                        {/if}
+
+                        <div class="d-flex align-items-center mb-4">
+                            <span class="h2 text-primary mb-0 me-3">
+                                {$product->getPrice()|number:0,',','&nbsp;'|noescape} Kč
+                            </span>
+                            {if $product->isUnlimitedStock()}
+                                <span class="badge bg-success">Dostupné</span>
+                            {elseif $product->getStock() > 0}
+                                <span class="badge bg-success">Skladem {$product->getStock()} ks</span>
+                            {else}
+                                <span class="badge bg-danger">Vyprodáno</span>
+                            {/if}
+                        </div>
+
+                        {if $product->isAvailable()}
+                            <form n:name="addToCartForm">
+                                <div class="row g-2 mb-3">
+                                    <div class="col-4">
+                                        <input type="number" class="form-control" n:name="quantity">
+                                    </div>
+                                    <div class="col-8">
+                                        <button class="btn btn-primary w-100" n:name="add">
+                                            <i class="bi bi-cart-plus me-1"></i>Přidat do košíku
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        {else}
+                            <div class="alert alert-warning">
+                                Produkt momentálně není dostupný.
+                            </div>
+                        {/if}
+
+                        <div class="small text-muted mt-3">
+                            <p class="mb-1">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Platba probíhá QR kódem na účet spolku Virtuální Azyl,
+                                který {$feePercent}&nbsp;% strhne na provoz systému a zbytek přepošle azylu.
+                            </p>
+                            {if $product->getWeightGrams()}
+                                <p class="mb-1">Váha: {$product->getWeightGrams()} g</p>
+                            {/if}
+                            {if $product->getCategory()}
+                                <p class="mb-0">Kategorie: {$product->getCategory()}</p>
+                            {/if}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {if $product->getDescription()}
+                <div class="row mt-5">
+                    <div class="col-12">
+                        <div class="bg-white rounded p-4">
+                            <h3>Popis</h3>
+                            <div>{$product->getDescription()|safeHtml|noescape}</div>
+                        </div>
+                    </div>
+                </div>
+            {/if}
+        </div>
+    </section>
+</main>
+{/block}

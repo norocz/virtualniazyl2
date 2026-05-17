@@ -1,0 +1,237 @@
+{block content}
+<link href="{$basePath}/assets/css/vaz-redesign.css" rel="stylesheet">
+<main class="vaz-redesign">
+
+<section class="vaz-section-hero">
+    <div class="container">
+        <nav class="vaz-crumbs">
+            <a n:href="Home:default">Úvod</a>
+            <span class="sep">›</span>
+            <a n:href="Home:events">Události</a>
+            <span class="sep">›</span>
+            <span class="current">{$event->getTitle()}</span>
+        </nav>
+
+        {if $headerPhoto}
+        <img src="{$basePath}{$headerPhoto->getPath()}{$headerPhoto->getName()}"
+             alt="{$event->getTitle()}"
+             class="img-fluid rounded-3 shadow-sm mb-4" style="width:100%; max-height:340px; object-fit:cover;">
+        {/if}
+
+        <div class="d-flex gap-2 flex-wrap mb-2">
+            {if $event->isRecurring()}
+                <span class="vaz-pill vaz-pill--sky"><i class="bi bi-arrow-repeat me-1"></i>{$event->getRecurrenceType()->label()}</span>
+            {/if}
+            {if $event->isOngoing()}
+                <span class="vaz-pill vaz-pill--ochre"><i class="bi bi-broadcast me-1"></i>Právě probíhá</span>
+            {elseif $event->isPast()}
+                <span class="vaz-pill"><i class="bi bi-check2-circle me-1"></i>Proběhlo</span>
+            {/if}
+        </div>
+
+        <h1 class="vaz-page-title">{$event->getTitle()}</h1>
+
+        <div class="d-flex flex-wrap gap-4 mt-3" style="color:var(--vaz-text-muted);">
+            <div>
+                <i class="bi bi-clock me-1"></i>
+                {if $event->isMultiDay()}
+                    {$event->getDateFrom()|date:'d.m.Y H:i'} – {$event->getDateTo()|date:'d.m.Y H:i'}
+                {else}
+                    {$event->getDateFrom()|date:'d.m.Y'}, {$event->getDateFrom()|date:'H:i'} – {$event->getDateTo()|date:'H:i'}
+                {/if}
+            </div>
+            {if $event->getLocation()}
+            <div><i class="bi bi-geo-alt me-1"></i>{$event->getLocation()}</div>
+            {/if}
+            <div>
+                <i class="bi bi-house-heart me-1"></i>
+                <a href="{link Home:azyl, $event->getAzyl()->getId()}" class="text-decoration-none" style="color:inherit;">
+                    {$event->getAzyl()->getAzylName()}
+                </a>
+            </div>
+            {if $event->getMaxParticipants() !== null}
+            <div>
+                <i class="bi bi-people me-1"></i>
+                {$event->getReservationCount()} / {$event->getMaxParticipants()} míst obsazeno
+            </div>
+            {/if}
+        </div>
+    </div>
+</section>
+
+<section class="py-4">
+    <div class="container">
+        <div class="row g-4">
+
+            {* Popis *}
+            <div class="col-lg-8">
+                {if $event->getDescription()}
+                <div class="vaz-card">
+                    <div class="vaz-prose" style="line-height:1.7;">{$event->getDescription()|noescape}</div>
+                </div>
+                {/if}
+
+                {* Fotky z události *}
+                {var $photos = $event->getPhotos()->filter(fn($p) => !$p->isDeleted())->toArray()}
+                {if count($photos) > 0}
+                <div class="vaz-card mt-4">
+                    <h3 class="h5 fw-bold mb-3"><i class="bi bi-images me-2"></i>Fotky</h3>
+                    <div class="row g-2">
+                        {foreach $photos as $photo}
+                        <div class="col-6 col-md-4">
+                            <a href="{$basePath}{$photo->getPath()}{$photo->getName()}" target="_blank">
+                                <img src="{$basePath}{$photo->getPath()}{$photo->getName()}"
+                                     class="img-fluid rounded" style="height:150px; width:100%; object-fit:cover;" alt="">
+                            </a>
+                        </div>
+                        {/foreach}
+                    </div>
+                </div>
+                {/if}
+            </div>
+
+            {* Sidebar *}
+            <div class="col-lg-4">
+
+                {* ── Registrace ── *}
+                {if $event->isRegistrationEnabled() && !$event->isPast()}
+
+                    {* Kapacita progress *}
+                    {if $event->getMaxParticipants() !== null}
+                    {var $rem = $event->getRemainingCapacity()}
+                    <div class="vaz-card mb-3">
+                        <div class="d-flex justify-content-between small text-muted mb-1">
+                            <span>Obsazenost</span>
+                            <span>{$event->getReservationCount()} / {$event->getMaxParticipants()}</span>
+                        </div>
+                        <div class="progress mb-2" style="height:8px;">
+                            <div class="progress-bar {if $rem === 0}bg-danger{elseif $rem <= 3}bg-warning{else}bg-success{/if}"
+                                 style="width:{($event->getReservationCount() / $event->getMaxParticipants() * 100)|number:0}%"></div>
+                        </div>
+                        {if $rem === 0}
+                            {if $waitlistCount > 0}
+                                <div class="small text-danger fw-semibold">Kapacita naplněna · {$waitlistCount} na čekací listině</div>
+                            {else}
+                                <div class="small text-danger fw-semibold">Kapacita je naplněna — registrace na čekací listinu</div>
+                            {/if}
+                        {elseif $rem <= 3}
+                            <div class="small text-warning fw-semibold">Zbývají pouze {$rem} místa!</div>
+                        {/if}
+                    </div>
+                    {/if}
+
+                    {* Uživatel už registrován *}
+                    {if $userRegistration && !$userRegistration->isCancelled()}
+                    <div class="vaz-card mb-3">
+                        {if $userRegistration->isWaitlist()}
+                        <div class="alert alert-info mb-0 py-2 small">
+                            <i class="bi bi-hourglass-split me-1"></i>
+                            Jste na <strong>čekací listině</strong>. Dáme vám vědět, jakmile se uvolní místo.
+                        </div>
+                        {else}
+                        <div class="alert alert-success mb-0 py-2 small">
+                            <i class="bi bi-check-circle me-1"></i>
+                            <strong>Jste registrováni!</strong>
+                        </div>
+                        {/if}
+                        {if $userRegistration->getToken()}
+                        <div class="mt-2 text-center">
+                            <a href="{link Home:cancelRegistration, token => $userRegistration->getToken()}"
+                               class="small text-muted"
+                               onclick="return confirm('Opravdu zrušit registraci?')">
+                                Zrušit registraci
+                            </a>
+                        </div>
+                        {/if}
+                    </div>
+                    {else}
+
+                    {* Registrační formulář *}
+                    <div class="vaz-card mb-3">
+                        <h5 class="fw-bold mb-3">
+                            <i class="bi bi-person-plus me-2"></i>Registrovat se
+                        </h5>
+                        {form eventRegisterForm}
+                        <input type="hidden" n:name="eventId" value="{$event->getId()}">
+
+                        {if !$user->isLoggedIn()}
+                        <div class="mb-3">
+                            {label email, class => 'form-label fw-semibold' /}
+                            {input email}
+                            <span class="text-danger small">{inputError email}</span>
+                        </div>
+                        <div class="mb-3">
+                            {label name, class => 'form-label' /}
+                            {input name}
+                        </div>
+                        {else}
+                        <div class="alert alert-light border small py-2 mb-3">
+                            <i class="bi bi-person-check me-1"></i>
+                            Registrujete se jako <strong>{$user->getIdentity()->getData()['User']->getUserName()}</strong>
+                        </div>
+                        {/if}
+
+                        <div class="mb-3">
+                            {label participantsCount, class => 'form-label' /}
+                            {input participantsCount}
+                        </div>
+                        <div class="mb-3">
+                            {label note, class => 'form-label' /}
+                            {input note}
+                        </div>
+                        {input register}
+                        {/form eventRegisterForm}
+                    </div>
+                    {/if}
+
+                {elseif !$event->isPast() && $event->getMaxParticipants() !== null}
+                {* Registration disabled but show capacity *}
+                <div class="vaz-card mb-3">
+                    {var $rem = $event->getRemainingCapacity()}
+                    <div class="d-flex justify-content-between small text-muted mb-1">
+                        <span>Obsazenost</span>
+                        <span>{$event->getReservationCount()} / {$event->getMaxParticipants()}</span>
+                    </div>
+                    <div class="progress" style="height:8px;">
+                        <div class="progress-bar {if $rem === 0}bg-danger{elseif $rem <= 3}bg-warning{else}bg-success{/if}"
+                             style="width:{($event->getReservationCount() / $event->getMaxParticipants() * 100)|number:0}%"></div>
+                    </div>
+                </div>
+                {/if}
+
+                {* Opakování — příští termíny *}
+                {if $event->isRecurring()}
+                {var $nextOccurrences = $event->getNextOccurrences(5)}
+                {if count($nextOccurrences) > 0}
+                <div class="vaz-card mb-3">
+                    <h6 class="fw-semibold mb-2"><i class="bi bi-arrow-repeat me-1"></i>Příští termíny</h6>
+                    {foreach $nextOccurrences as $occ}
+                    <div class="d-flex align-items-center gap-2 py-1 border-bottom small">
+                        <i class="bi bi-calendar3 text-muted"></i>
+                        {$occ|date:'d.m.Y H:i'}
+                    </div>
+                    {/foreach}
+                </div>
+                {/if}
+                {/if}
+
+                {* Azyl karta *}
+                <div class="vaz-card">
+                    <h6 class="fw-semibold mb-2"><i class="bi bi-house-heart me-1"></i>Pořadatel</h6>
+                    <div class="fw-bold mb-1">{$event->getAzyl()->getAzylName()}</div>
+                    {if $event->getAzyl()->getShortDescription()}
+                    <p class="small text-muted mb-2">{$event->getAzyl()->getShortDescription()|truncate:100}</p>
+                    {/if}
+                    <a href="{link Home:azyl, $event->getAzyl()->getId()}" class="vaz-btn vaz-btn--ghost vaz-btn--sm w-100">
+                        Profil azylu <i class="bi bi-arrow-right ms-1"></i>
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</section>
+
+</main>
+{/block}
+{block scripts-user}{/block}

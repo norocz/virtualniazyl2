@@ -1,0 +1,131 @@
+{layout @layout.latte}
+
+{block title}Faktura {$doc->getDocumentNumber()}{/block}
+
+{block content}
+
+<table class="header">
+    <tr>
+        <td style="width:60%;">
+            {if $logo}<img src="{$logo|noescape}" style="max-height:20mm;" alt=""><br>{/if}
+            <h1>Faktura{if $doc->isIssuerVatPayer()} - daňový doklad{/if}</h1>
+            <div class="muted">{$doc->getDocumentNumber()}</div>
+        </td>
+        <td style="width:40%; text-align:right;">
+            {if $doc->getPaidAt()}
+                <div class="stamp">Uhrazeno</div>
+            {/if}
+        </td>
+    </tr>
+</table>
+
+<table class="parties">
+    <tr>
+        <td>
+            <h3>Dodavatel</h3>
+            <div class="party-box">
+                <strong class="brand">{$doc->getIssuerName()}</strong><br>
+                {if $doc->getIssuerAddress()}{$doc->getIssuerAddress()}<br>{/if}
+                {if $doc->getIssuerIco()}<span class="small muted">IČO:</span> {$doc->getIssuerIco()}<br>{/if}
+                {if $doc->getIssuerDic()}<span class="small muted">DIČ:</span> {$doc->getIssuerDic()}<br>{/if}
+                {if $doc->getIssuerAccount()}
+                    <span class="small muted">Bankovní účet:</span>
+                    {$doc->getIssuerAccount()}/{$doc->getIssuerBankCode()}<br>
+                {/if}
+                {if !$doc->isIssuerVatPayer()}
+                    <span class="xsmall muted">Není plátce DPH</span>
+                {/if}
+            </div>
+        </td>
+        <td>
+            <h3>Odběratel</h3>
+            <div class="party-box">
+                <strong>{$doc->getBuyerName()}</strong><br>
+                {if $doc->getBuyerAddress()}{$doc->getBuyerAddress()}<br>{/if}
+                {if $doc->getBuyerIco()}<span class="small muted">IČO:</span> {$doc->getBuyerIco()}<br>{/if}
+                {if $doc->getBuyerDic()}<span class="small muted">DIČ:</span> {$doc->getBuyerDic()}<br>{/if}
+                {if $doc->getBuyerEmail()}
+                    <span class="xsmall muted">{$doc->getBuyerEmail()}</span>
+                {/if}
+            </div>
+        </td>
+    </tr>
+</table>
+
+<h3>Platební údaje</h3>
+<table class="details-table">
+    <tr>
+        <td class="label">Datum vystavení:</td>
+        <td>{$doc->getIssuedAt()|date:'d.m.Y'}</td>
+        <td class="label">Datum splatnosti:</td>
+        <td>{if $doc->getDueDate()}{$doc->getDueDate()|date:'d.m.Y'}{else}—{/if}</td>
+    </tr>
+    <tr>
+        <td class="label">{if $doc->isIssuerVatPayer()}DUZP:{else}Datum plnění:{/if}</td>
+        <td>{if $doc->getTaxableSupplyDate()}{$doc->getTaxableSupplyDate()|date:'d.m.Y'}{else}—{/if}</td>
+        <td class="label">Datum úhrady:</td>
+        <td>{if $doc->getPaidAt()}{$doc->getPaidAt()|date:'d.m.Y'}{else}—{/if}</td>
+    </tr>
+    <tr>
+        <td class="label">Variabilní symbol:</td>
+        <td>{$doc->getVariableSymbol()}</td>
+        <td class="label">Forma úhrady:</td>
+        <td>{$doc->getPaymentMethod()}</td>
+    </tr>
+</table>
+
+<div class="info-box">
+    <strong>Způsob úhrady:</strong> Tato faktura byla uhrazena odečtením z výplaty
+    objednávky <strong>{$meta['order_number'] ?? $doc->getVariableSymbol()}</strong>.
+    Zákazník zaplatil {$meta['gross_amount']|number:2,',','&nbsp;'|noescape}&nbsp;Kč spolku,
+    ze kterých byla provize
+    {$meta['fee_amount']|number:2,',','&nbsp;'|noescape}&nbsp;Kč ponechána spolku
+    a zbylá částka {$meta['payout_amount']|number:2,',','&nbsp;'|noescape}&nbsp;Kč
+    byla odeslána na Váš účet.
+</div>
+
+<table class="items">
+    <thead>
+        <tr>
+            <th style="width:55%;">Položka</th>
+            <th class="center" style="width:10%;">Počet</th>
+            <th class="num" style="width:17%;">Cena bez DPH</th>
+            <th class="num" style="width:18%;">Celkem bez DPH</th>
+        </tr>
+    </thead>
+    <tbody>
+        {foreach $items as $item}
+            <tr>
+                <td>{$item['name']}</td>
+                <td class="center">{$item['quantity']}</td>
+                <td class="num">{$item['unit_price']|number:2,',','&nbsp;'|noescape} Kč</td>
+                <td class="num">{$item['subtotal']|number:2,',','&nbsp;'|noescape} Kč</td>
+            </tr>
+        {/foreach}
+    </tbody>
+</table>
+
+<table class="totals">
+    <tr>
+        <td>Základ daně:</td>
+        <td class="num">{$doc->getSubtotal()|number:2,',','&nbsp;'|noescape} Kč</td>
+    </tr>
+    {if $doc->isIssuerVatPayer() && $doc->getVatRate() > 0}
+        <tr>
+            <td>DPH {$doc->getVatRate()|number:0}&nbsp;%:</td>
+            <td class="num">{$doc->getVatAmount()|number:2,',','&nbsp;'|noescape} Kč</td>
+        </tr>
+    {/if}
+    <tr class="grand">
+        <td>Celkem k úhradě</td>
+        <td class="num">{$doc->getTotal()|number:2,',','&nbsp;'|noescape} {$doc->getCurrency()}</td>
+    </tr>
+</table>
+
+{if !$doc->isIssuerVatPayer()}
+    <div class="warning-box">
+        <strong>Režim mimo DPH</strong> - dodavatel není plátcem DPH
+        dle § 4 zákona č. 235/2004 Sb. o DPH.
+    </div>
+{/if}
+{/block}

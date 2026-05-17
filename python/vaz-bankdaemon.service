@@ -1,0 +1,33 @@
+[Unit]
+Description=Virtualni Azyl - Fio bank transaction daemon
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+# Uprav podle skutečné cesty na serveru
+WorkingDirectory=/var/www/virtualniazyl/python
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/usr/bin/python3 /var/www/virtualniazyl/python/bank_daemon.py
+User=www-data
+Group=www-data
+
+# Restart při pádu
+Restart=on-failure
+RestartSec=30
+StartLimitInterval=600
+StartLimitBurst=5
+
+# Grace shutdown
+KillSignal=SIGTERM
+TimeoutStopSec=30
+
+# Security hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=/var/log
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,248 @@
+{*
+    Drop-in replacement for: vaz/app/Presenters/templates/Home/adopce.latte
+*}
+{block content}
+<link href="{$basePath}/assets/css/vaz-redesign.css" rel="stylesheet">
+<style>
+    .modal{ display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%;
+        background-color: rgba(0,0,0,.95); overflow:hidden; align-items:center; justify-content:center; }
+    .modal-content{ max-width:70vw; max-height:70vh; object-fit:contain; background:#000; }
+    .close{ position:absolute; bottom:20px; right:20px; color:#fff; font-size:30px; cursor:pointer;
+        background: rgba(0,0,0,.6); padding:5px 10px; border-radius:5px; }
+    .vaz-gallery-thumb{ cursor:pointer; border-radius:10px; overflow:hidden; }
+    .vaz-gallery-thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
+</style>
+<main class="vaz-redesign">
+
+{var $typeClass = ''}
+{switch $adopce->getAdoptionType()}
+    {case 'Virtuální adopce'} {var $typeClass = 't-virt'}
+    {case 'Dočasná péče'}     {var $typeClass = 't-doc'}
+    {case 'Předadopce'}       {var $typeClass = 't-pre'}
+    {case 'Plná adopce'}      {var $typeClass = 't-full'}
+{/switch}
+{var $multiAdopce = $adopce->getHowMuch() > 1 && $adopce->getMultiAdoption() == true}
+
+<section class="py-3" style="background:#fff; border-bottom:1px solid var(--vaz-border);">
+    <div class="container">
+        <nav class="vaz-crumbs">
+            <a n:href="Home:default">Úvod</a>
+            <span class="sep">›</span>
+            <a n:href="Home:adoptions">Zvířátka k adopci</a>
+            <span class="sep">›</span>
+            <span class="current">{$adopce->getName()}</span>
+        </nav>
+        <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap">
+            <div>
+                <div class="d-flex gap-2 mb-2 flex-wrap">
+                    <span class="vaz-adoption__type {$typeClass}" style="position:static;">{$adopce->getAdoptionType()}</span>
+                    <span class="vaz-pill vaz-pill--slate"><i class="bi bi-building"></i> {$adopce->getAzyl()->getAzylName()}</span>
+                </div>
+                <h1 class="vaz-page-title" style="font-size:32px;">
+                    {$adopce->getName()}
+                    <span class="text-muted fw-normal" style="font-size:20px;">· {$adopce->getSpecies()->getName()}</span>
+                </h1>
+                <p class="vaz-page-sub" style="font-size:13px;">
+                    {$adopce->getBreed()}
+                    {if !is_null($adopce->getBirthdate())}
+                        {var $now = new DateTimeImmutable()}
+                        {var $interval = date_diff($adopce->getBirthdate(), $now)}
+                        · {$interval->y} r.
+                    {/if}
+                    {if !is_null($adopce->getHeight())} · {$adopce->getHeight()} cm{/if}
+                    {if !is_null($adopce->getWeight())} · {$adopce->getWeight()} kg{/if}
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-4">
+    <div class="container">
+        <div class="row g-4">
+
+            {* LEFT — gallery + description + form *}
+            <div class="col-xl-8 col-lg-7">
+                <div class="d-flex flex-column gap-3">
+
+                    {if $adopce->getPhotos() != null}
+                        <div class="vaz-card vaz-card--flush">
+                            <div class="gallery row g-1 p-2">
+                                {foreach $adopce->getPhotos() as $photo}
+                                    {if $iterator->first}
+                                        <div class="col-8 col-md-8 vaz-gallery-thumb" style="height:380px;">
+                                            <img src="{$photo->getPath()}{$photo->getName()}"
+                                                 alt="{$photo->getOriginalName()}"
+                                                 onclick="showImageModal(this.src)">
+                                        </div>
+                                    {else}
+                                        <div class="col-4 col-md-4 vaz-gallery-thumb" style="height:185px;">
+                                            <img src="{$photo->getPath()}{$photo->getName()}"
+                                                 alt="{$photo->getOriginalName()}"
+                                                 onclick="showImageModal(this.src)">
+                                        </div>
+                                    {/if}
+                                {/foreach}
+                            </div>
+                        </div>
+                    {/if}
+
+                    <div class="vaz-card">
+                        <h2 class="h5 fw-bold mb-3" style="color: var(--vaz-ink);">O {$adopce->getName()}</h2>
+                        <div style="font-size:15px; line-height:1.7;">
+                            {$adopce->getDescription()|noescape}
+                        </div>
+
+                        {if $multiAdopce}
+                            <div class="p-3 mt-3 rounded-3 d-flex gap-2 align-items-start"
+                                 style="background: var(--vaz-ochre-soft); color:#5a4010;">
+                                <i class="bi bi-info-circle-fill" style="color:#7a5a15; font-size:18px;"></i>
+                                <span>Pozor, je tu možnost adoptovat více zvířat najednou (například nenarozená štěňátka). Počet míst ve Vašem srdci můžete nastavit níže.</span>
+                            </div>
+                        {/if}
+                    </div>
+
+                    {* ADOPTION FORM *}
+                    {if $status != true && $user->isLoggedIn() && !$adopce->isAdopted()}
+                        <div class="vaz-card">
+                            <h2 class="h5 fw-bold mb-2" style="color: var(--vaz-ink);">
+                                Chci {$adopce->getName()|lower} adoptovat
+                            </h2>
+                            <p class="small text-muted mb-3">
+                                Napište azylu něco o sobě. Po odeslání Vás kontaktují pro ověření a sjednání schůzky.
+                            </p>
+                            <form n:name="adoptionForm" class="vaz-form">
+                                <div class="row g-3">
+                                    <div class="{if $multiAdopce}col-xl-9{else}col-12{/if}">
+                                        <label class="vaz-form-label" n:name="description">Napište o sobě něco</label>
+                                        <textarea n:name="description" rows="5" class="form-control"
+                                                  placeholder="Dobrý den, ráda bych se zeptala…"></textarea>
+                                        <div class="invalid-feedback">{$form['description']->getOption('error')}</div>
+                                    </div>
+                                    {if $multiAdopce}
+                                        <div class="col-xl-3">
+                                            <label class="vaz-form-label" n:name="howMuch">Místa v 💚</label>
+                                            <input n:name="howMuch" type="number"
+                                                   max="{$adopce->getHowMuch()}" min="1" value="1"
+                                                   class="form-control text-center fw-bold" style="font-size:20px;">
+                                        </div>
+                                    {/if}
+                                    <div class="col-12 d-flex flex-column gap-2">
+                                        <label class="d-flex gap-2 align-items-start small">
+                                            <input n:name="info" type="checkbox" class="mt-1">
+                                            <span>Souhlas s prověřením informací <a href="{link page:provereni}">(detaily)</a></span>
+                                        </label>
+                                        <label class="d-flex gap-2 align-items-start small">
+                                            <input n:name="souhlas" type="checkbox" class="mt-1">
+                                            <span>Souhlas se zpracováním údajů <a href="{link page:souhlas}">(detaily)</a></span>
+                                        </label>
+                                    </div>
+                                    <div class="col-12 d-flex justify-content-between align-items-center flex-wrap gap-2 pt-2"
+                                         style="border-top:1px dashed var(--vaz-border);">
+                                        <div class="small text-muted">
+                                            <i class="bi bi-shield-check" style="color: var(--vaz-green);"></i>
+                                            Azyl Vás bude kontaktovat do 48 hodin
+                                        </div>
+                                        <button n:name="sendAdoption" class="vaz-btn vaz-btn--accent ajax">
+                                            <i class="bi bi-heart-fill"></i>
+                                            {switch $adopce->getAdoptionType()}
+                                                {case 'Virtuální adopce'} Virtuálně adoptovat
+                                                {case 'Dočasná péče'} Nabídnout dočasný domov
+                                                {case 'Předadopce'} Nabídnout domov
+                                                {case 'Plná adopce'} Nabídnout domov
+                                            {/switch}
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    {elseif $status == true}
+                        <div class="vaz-card" style="border-color: var(--vaz-green); background: var(--vaz-green-soft);">
+                            {if $adopt->getActionType() == 'Ověření'}
+                                <h2 class="h4 fw-bold" style="color: var(--vaz-ink);">Azyl Vaši nabídku přijal! 🎉</h2>
+                                <h3 class="h6 fw-bold mt-3">Adopční smlouva — čtěte pozorně!</h3>
+                                <div class="p-3 bg-white rounded-3" style="overflow-y:auto; max-height:40vh;">Text adopční smlouvy</div>
+                                <h3 class="h6 fw-bold mt-3">Adopční podmínky — čtěte pozorně!</h3>
+                                <div class="p-3 bg-white rounded-3" style="overflow-y:auto; max-height:40vh;">Text adopčních podmínek</div>
+                                <div class="p-3 bg-white rounded-3 mt-3">{control contractSignForm}</div>
+                            {elseif $adopt->getActionType() == 'Přerušení adopce' || $adopt->getActionType() == 'Adopce se nezdařila'}
+                                <h2 class="h4 fw-bold" style="color:#8a3a2a;">Je nám líto. Adopce byla přerušena.</h2>
+                                <p>Zkuste <a n:href="home:adoptions">jiné zvířátko</a>. Díky!</p>
+                            {else}
+                                <h2 class="h4 fw-bold" style="color: var(--vaz-ink);">Tady už jste požádali o adopci!</h2>
+                                <p>Zkuste <a n:href="home:adoptions">jiné zvířátko</a>. Díky!</p>
+                            {/if}
+                        </div>
+                    {elseif $adopce->isAdopted()}
+                        <div class="vaz-card" style="background: var(--vaz-sky-soft); border-color: var(--vaz-sky);">
+                            <h2 class="h4 fw-bold" style="color:#2a557e;">Zvířátko je už adoptované!</h2>
+                            <p class="mb-0">Zkuste <a n:href="home:adoptions">jiné zvířátko</a>. Díky!</p>
+                        </div>
+                    {elseif !$user->isLoggedIn()}
+                        <div class="vaz-card" style="background: var(--vaz-surface-2);">
+                            <h2 class="h5 fw-bold mb-2" style="color: var(--vaz-ink);">Nejste přihlášený/á</h2>
+                            <p class="small text-muted mb-3">Pro adopci se prosím přihlašte nebo vytvořte účet.</p>
+                            <div class="d-flex gap-2">
+                                <a class="vaz-btn vaz-btn--primary" n:href="home:signIn">Přihlásit se</a>
+                                <a class="vaz-btn vaz-btn--ghost" n:href="home:registration">Registrovat se</a>
+                            </div>
+                        </div>
+                    {/if}
+
+                </div>
+            </div>
+
+            {* RIGHT — sidebar with azyl info *}
+            <div class="col-xl-4 col-lg-5">
+                <div class="d-flex flex-column gap-3" style="position:sticky; top:16px;">
+                    <div class="vaz-card">
+                        <div class="text-uppercase fw-bold small text-muted mb-1" style="letter-spacing:.06em; font-size:11px;">Azyl</div>
+                        <h3 class="h5 fw-bold mb-2" style="color: var(--vaz-ink);">{$adopce->getAzyl()->getAzylName()}</h3>
+                        <p class="small text-muted mb-3" style="line-height:1.55;">
+                            {$adopce->getAzyl()->getShortDescription()|noescape}
+                        </p>
+                        <a href="{link Home:azyl $adopce->getAzyl()->getId()}" class="vaz-btn vaz-btn--primary w-100 justify-content-center">
+                            Stránka azylu <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+
+                    <div class="vaz-card">
+                        <div class="fw-bold mb-2" style="color: var(--vaz-ink); font-size:14px;">Jak to funguje</div>
+                        <ol class="list-unstyled m-0 d-flex flex-column gap-2">
+                            {foreach ['Napíšete azylu o sobě','Azyl Vás do 48 h kontaktuje','Domluvíte se na návštěvě / ověření','Podepíšete adopční smlouvu'] as $i => $step}
+                                <li class="d-flex gap-2 align-items-start">
+                                    <span class="rounded-circle d-grid flex-shrink-0"
+                                          style="width:22px; height:22px; background: var(--vaz-green); color:#fff; font-size:12px; font-weight:800; place-items:center; text-align:center; line-height:22px;">
+                                        {$i+1}
+                                    </span>
+                                    <span style="font-size:13px;">{$step}</span>
+                                </li>
+                            {/foreach}
+                        </ol>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+</main>
+
+<div id="imageModal" class="modal">
+    <span class="close" onclick="closeModal()">×</span>
+    <img class="modal-content" id="modalImage">
+</div>
+
+{/block}
+{block scripts-user}
+<script>
+    function showImageModal(src) {
+        const modal = document.getElementById("imageModal");
+        document.getElementById("modalImage").src = src;
+        modal.style.display = "flex";
+    }
+    function closeModal() { document.getElementById("imageModal").style.display = "none"; }
+    document.getElementById("imageModal").addEventListener('click', closeModal);
+</script>
+{/block}

@@ -1,0 +1,149 @@
+{*
+    Drop-in replacement for: vaz/app/Presenters/templates/User/messages.latte
+    Komunikace — seznam chatů + detail
+*}
+{block content}
+<link href="{$basePath}/assets/css/vaz-redesign.css" rel="stylesheet">
+<main class="vaz-redesign">
+
+<section class="vaz-section-hero">
+    <div class="container">
+        <nav class="vaz-crumbs">
+            <a n:href="Home:default">Úvod</a>
+            <span class="sep">›</span>
+            <span class="current">Komunikace</span>
+        </nav>
+        <h1 class="vaz-page-title">Komunikace</h1>
+        <p class="vaz-page-sub">Vaše konverzace s azyly.</p>
+    </div>
+</section>
+
+<section class="py-4">
+    <div class="container">
+        <div class="vaz-chat">
+
+            {* Kontakty *}
+            <aside class="vaz-chat__list">
+                <div class="vaz-chat__list-title">
+                    <i class="bi bi-people-fill"></i> Kontakty
+                </div>
+                {ifset $chats}
+                    {snippet chats}
+                        <div id="messages">
+                            {var $adminChats = []}
+                            {var $azylChats = []}
+                            {foreach $chats as $chat}
+                                {if $chat->getAzyl() === null}
+                                    {do $adminChats[] = $chat}
+                                {else}
+                                    {do $azylChats[] = $chat}
+                                {/if}
+                            {/foreach}
+
+                            {* Admin / Podpora — vždy nahoře, oranžově *}
+                            {if count($adminChats) > 0}
+                                <div class="vaz-chat__section-label" style="color:var(--vaz-ochre); font-size:.7rem; text-transform:uppercase; letter-spacing:.05em; padding:6px 12px 2px;">
+                                    <i class="bi bi-shield-check me-1"></i>Podpora &amp; Administrátoři
+                                </div>
+                                {foreach $adminChats as $chat}
+                                    <a class="vaz-chat__contact vaz-chat__contact--admin"
+                                       href="{link chat!, $chat->getId()}"
+                                       style="border-left:3px solid var(--vaz-ochre);">
+                                        <div class="vaz-chat__contact-sub" style="color:var(--vaz-ochre);">
+                                            <i class="bi bi-shield-check"></i> Administrátor
+                                        </div>
+                                        <div class="vaz-chat__contact-name">
+                                            {$chat->getComment() ?? 'Podpora & Administrátoři'}
+                                        </div>
+                                    </a>
+                                {/foreach}
+                                <hr style="margin:4px 12px; opacity:.2;">
+                            {/if}
+
+                            {* Běžné konverzace s azyly *}
+                            {foreach $azylChats as $chat}
+                                <a class="vaz-chat__contact" href="{link chat!, $chat->getId()}">
+                                    {if $chat->getAdoption() != null}
+                                        <div class="vaz-chat__contact-sub">
+                                            <i class="bi bi-heart-fill"></i> {$chat->getAdoption()->getAnimal()->getName()}
+                                        </div>
+                                    {else}
+                                        <div class="vaz-chat__contact-sub">
+                                            <i class="bi bi-building"></i> Azyl
+                                        </div>
+                                    {/if}
+                                    <div class="vaz-chat__contact-name">{$chat->getAzyl()->getAzylName()}</div>
+                                </a>
+                            {/foreach}
+                        </div>
+                    {/snippet}
+                {/ifset}
+            </aside>
+
+            {* Chat detail *}
+            <div class="vaz-chat__panel">
+                <div class="vaz-chat__panel-head">
+                    <h4><i class="bi bi-chat-dots-fill" style="color: var(--vaz-green); margin-right:6px;"></i>Vzkazy</h4>
+                </div>
+
+                {snippet messages}
+                {ifset $messages}
+                    <div class="vaz-chat__scroll" id="chat-detail">
+                        {foreach $messages as $message}
+                            <div class="vaz-msg {if $message->getAzyl() == null}vaz-msg--out{else}vaz-msg--in{/if}">
+                                <div class="vaz-msg__title">
+                                    {$message->getTitle()}
+                                    {if $message->getReaded() == false}
+                                        <i class="bi bi-envelope-fill" style="color: var(--vaz-ochre); font-size:12px;" title="Nepřečteno"></i>
+                                    {/if}
+                                    {if $message->getAzyl() == null}
+                                        <a class="vaz-msg__del ajax" href="{link deleteMsg!, $message->getId()}" title="Smazat">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    {/if}
+                                </div>
+                                <div>{$message->getMessage()|safeHtml|noescape}</div>
+                                <div class="vaz-msg__time">{$message->getCreatedAt()|date:'H:i d.m.Y'}</div>
+                            </div>
+                        {/foreach}
+                    </div>
+
+                    {if $conversation == 'sys'}
+                        <div class="vaz-chat__compose" style="display:block; background: var(--vaz-surface-2);">
+                            <div class="small text-muted" style="line-height:1.6;">
+                                <i class="bi bi-info-circle"></i> <b>Virtuálnímu Azylu nejde napsat.</b>
+                                Zpráva je jen informativní — často určená pro všechny uživatele nebo nějakou skupinu.
+                            </div>
+                        </div>
+                    {else}
+                        <form n:name="messagesForm" class="ajax vaz-chat__compose" data-reciver="{$conversation}">
+                            <label n:name="message" style="flex:1; margin:0;">
+                                <textarea class="font-monospace ajax chat-textarray" rows="2" n:name="message" placeholder="Napište zprávu…" autofocus></textarea>
+                            </label>
+                            <input n:name="address" value="{$conversation}" type="hidden">
+                            <input class="ajax chat-send" n:name="send" type="submit" value="Odeslat">
+                        </form>
+                    {/if}
+                {else}
+                    <div class="vaz-chat__empty">
+                        <i class="bi bi-chat-left-heart"></i>
+                        <div>
+                            <div style="font-weight:600; color: var(--vaz-ink);">Vyberte konverzaci</div>
+                            <div class="small mt-1">Klikněte na kontakt v levém sloupci.</div>
+                        </div>
+                    </div>
+                {/ifset}
+                {/snippet}
+            </div>
+        </div>
+    </div>
+</section>
+
+</main>
+{/block}
+{block scripts-user}
+<script>
+    const chatDetail = document.getElementById('chat-detail');
+    if (chatDetail) chatDetail.scrollTop = chatDetail.scrollHeight;
+</script>
+{/block}

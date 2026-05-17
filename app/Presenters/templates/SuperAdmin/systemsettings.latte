@@ -1,0 +1,207 @@
+{templateType App\Presenters\Templates\SuperAdmin\Layout}
+{block superAdminContent}
+<div class="container-fluid pt-4 px-4">
+    <div class="bg-light rounded p-4">
+        <h4 class="mb-4"><i class="bi bi-shield-lock me-2"></i>Systémová nastavení (SuperAdmin)</h4>
+
+        <div class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <strong>Pozor!</strong> Změny v této sekci ovlivňují celý systém.
+            Pro API klíče, hesla a citlivá data použijte přímo soubor
+            <code>app/config/secrets.neon</code> na serveru.
+        </div>
+
+        <ul class="nav nav-tabs mb-4" role="tablist">
+            <li class="nav-item">
+                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#sys-general">Obecné</button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#sys-security">Bezpečnost</button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#sys-integrations">Integrace</button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#sys-health">Stav systému</button>
+            </li>
+        </ul>
+
+        <div class="tab-content">
+            <div class="tab-pane fade show active" id="sys-general">
+                {ifset $systemSettingsForm}
+                    <form n:name="systemSettingsForm">
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" n:name="maintenanceMode">
+                                    <label class="form-check-label" n:name="maintenanceMode">
+                                        <strong>Režim údržby</strong> — web bude nedostupný pro běžné uživatele
+                                    </label>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" n:name="registrationEnabled">
+                                    <label class="form-check-label" n:name="registrationEnabled">
+                                        Povolit nové registrace
+                                    </label>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" n:name="allowNewAzyls">
+                                    <label class="form-check-label" n:name="allowNewAzyls">
+                                        Povolit vznik nových azylů
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label" n:name="maxUploadSize">Maximální velikost nahrávky (MB)</label>
+                                <input class="form-control" type="number" n:name="maxUploadSize">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" n:name="sessionLifetime">Platnost session (minut)</label>
+                                <input class="form-control" type="number" n:name="sessionLifetime">
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label" n:name="maintenanceMessage">Text zprávy při údržbě</label>
+                                <textarea class="form-control" rows="3" n:name="maintenanceMessage"></textarea>
+                            </div>
+
+                            <div class="col-12 mt-4">
+                                <button class="btn btn-primary" n:name="save">Uložit systémová nastavení</button>
+                            </div>
+                        </div>
+                    </form>
+                {else}
+                    <div class="alert alert-info">Formulář systémových nastavení není napojený.</div>
+                {/ifset}
+            </div>
+
+            <div class="tab-pane fade" id="sys-security">
+                <h6>Firewall</h6>
+                <dl class="row small">
+                    <dt class="col-sm-4">Aktivní zablokované IP:</dt>
+                    <dd class="col-sm-8">{$securityInfo['blockedIps'] ?? 0}</dd>
+                    <dt class="col-sm-4">Max pokusů o přihlášení:</dt>
+                    <dd class="col-sm-8">{$securityInfo['maxLoginAttempts'] ?? '—'}</dd>
+                    <dt class="col-sm-4">Doba blokace (minut):</dt>
+                    <dd class="col-sm-8">{$securityInfo['blockDuration'] ?? '—'}</dd>
+                </dl>
+
+                <a href="{link SuperAdmin:firewall}" class="btn btn-outline-danger btn-sm">
+                    <i class="bi bi-shield-lock me-1"></i>Správa firewallu
+                </a>
+                <a href="{link clearFirewall!}" class="btn btn-outline-warning btn-sm"
+                   onclick="return confirm('Opravdu odblokovat VŠECHNY zablokované IP?')">
+                    Odblokovat všechny IP
+                </a>
+            </div>
+
+            <div class="tab-pane fade" id="sys-integrations">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Služba</th>
+                            <th>Stav</th>
+                            <th>Konfigurace</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><i class="bi bi-robot me-2"></i>OpenAI (překlady)</td>
+                            <td>
+                                {if $integrations['openai'] ?? false}
+                                    <span class="badge bg-success">Aktivní</span>
+                                {else}
+                                    <span class="badge bg-secondary">Vypnuto</span>
+                                {/if}
+                            </td>
+                            <td><code>secrets.neon → openai</code></td>
+                        </tr>
+                        <tr>
+                            <td><i class="bi bi-search me-2"></i>OpenSearch</td>
+                            <td>
+                                {if $integrations['opensearch'] ?? false}
+                                    <span class="badge bg-success">Aktivní</span>
+                                {else}
+                                    <span class="badge bg-secondary">Vypnuto</span>
+                                {/if}
+                            </td>
+                            <td><code>secrets.neon → opensearch</code></td>
+                        </tr>
+                        <tr>
+                            <td><i class="bi bi-geo-alt me-2"></i>OpenStreetMap Nominatim</td>
+                            <td><span class="badge bg-success">Aktivní</span></td>
+                            <td><code>secrets.neon → nominatim</code></td>
+                        </tr>
+                        <tr>
+                            <td><i class="bi bi-info-circle me-2"></i>IPInfo (geolokace IP)</td>
+                            <td><span class="badge bg-success">Aktivní</span></td>
+                            <td>ipinfo.io (zdarma, cache)</td>
+                        </tr>
+                        <tr>
+                            <td><i class="bi bi-envelope me-2"></i>SMTP (e-maily)</td>
+                            <td><span class="badge bg-success">Aktivní</span></td>
+                            <td><code>secrets.neon → smtp</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="tab-pane fade" id="sys-health">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <h6>PHP</h6>
+                                <p class="mb-0 small">
+                                    Verze: <code>{$healthInfo['phpVersion'] ?? '—'}</code><br>
+                                    Memory limit: <code>{$healthInfo['memoryLimit'] ?? '—'}</code><br>
+                                    Upload max: <code>{$healthInfo['uploadMax'] ?? '—'}</code>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <h6>Databáze</h6>
+                                <p class="mb-0 small">
+                                    Typ: <code>{$healthInfo['dbType'] ?? '—'}</code><br>
+                                    Verze: <code>{$healthInfo['dbVersion'] ?? '—'}</code><br>
+                                    Velikost: <code>{$healthInfo['dbSize'] ?? '—'}</code>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <h6>Disk</h6>
+                                <p class="mb-0 small">
+                                    Volno: <code>{$healthInfo['diskFree'] ?? '—'}</code><br>
+                                    Celkem: <code>{$healthInfo['diskTotal'] ?? '—'}</code><br>
+                                    Temp: <code>{$healthInfo['tempSize'] ?? '—'}</code>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <h6>Čas serveru</h6>
+                                <p class="mb-0 small">
+                                    Aktuální: <code>{date('d.m.Y H:i:s')}</code><br>
+                                    Timezone: <code>{$healthInfo['timezone'] ?? '—'}</code><br>
+                                    Uptime: <code>{$healthInfo['uptime'] ?? '—'}</code>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{/block}
+
+{block scripts}{/block}

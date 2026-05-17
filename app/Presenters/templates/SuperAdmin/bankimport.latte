@@ -1,0 +1,263 @@
+{templateType App\Presenters\Templates\SuperAdmin\Layout}
+{block superAdminContent}
+<div class="container-fluid pt-4 px-4">
+
+    <div class="d-flex align-items-center gap-3 mb-4">
+        <a href="{link SuperAdmin:bankimports}" class="btn btn-sm btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Zpět na výpisy
+        </a>
+        <h4 class="mb-0">
+            <i class="bi bi-bank me-2"></i>
+            Platba #{$payment->getId()} —
+            {$payment->getObjem()|number:2,',','&nbsp;'|noescape} Kč
+            ze dne {$payment->getDatum()|date:'d.m.Y H:i'}
+        </h4>
+        {if $payment->isPaired()}
+            <span class="badge bg-success fs-6">Spárováno</span>
+        {else}
+            <span class="badge bg-warning text-dark fs-6">Nespárováno</span>
+        {/if}
+    </div>
+
+    <div class="row g-4">
+
+        {* ── Levý sloupec: detail platby ── *}
+        <div class="col-lg-5">
+
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header fw-semibold" style="background:#1565c0; color:#fff;">
+                    <i class="bi bi-receipt me-2"></i>Detail bankovní platby
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-sm mb-0">
+                        <tbody>
+                            <tr>
+                                <th class="text-muted fw-normal ps-3" style="width:40%;">Datum</th>
+                                <td class="fw-semibold">{$payment->getDatum()|date:'d.m.Y H:i'}</td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted fw-normal ps-3">Částka</th>
+                                <td class="fw-bold text-success fs-5">
+                                    {$payment->getObjem()|number:2,',','&nbsp;'|noescape} Kč
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted fw-normal ps-3">Protiúčet</th>
+                                <td>
+                                    {$payment->getProtiucet()}/{$payment->getKodBanky()}
+                                    {if $payment->getBankName()}<br><small class="text-muted">{$payment->getBankName()}</small>{/if}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted fw-normal ps-3">Název protiúčtu</th>
+                                <td>{$payment->getNazevProtiuctu()}</td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted fw-normal ps-3">VS / KS / SS</th>
+                                <td class="font-monospace">
+                                    VS: <strong>{$payment->getVs() ?? '—'}</strong>
+                                    &nbsp;|&nbsp;KS: {$payment->getKs() ?? '—'}
+                                    &nbsp;|&nbsp;SS: {$payment->getSs() ?? '—'}
+                                </td>
+                            </tr>
+                            {if $payment->getRecipientMessage()}
+                            <tr>
+                                <th class="text-muted fw-normal ps-3">Zpráva</th>
+                                <td>{$payment->getRecipientMessage()}</td>
+                            </tr>
+                            {/if}
+                            {if $payment->getUserIdentification()}
+                            <tr>
+                                <th class="text-muted fw-normal ps-3">ID plátce</th>
+                                <td class="small font-monospace">{$payment->getUserIdentification()}</td>
+                            </tr>
+                            {/if}
+                            {if $payment->getPayerReference()}
+                            <tr>
+                                <th class="text-muted fw-normal ps-3">Reference plátce</th>
+                                <td class="small">{$payment->getPayerReference()}</td>
+                            </tr>
+                            {/if}
+                            <tr>
+                                <th class="text-muted fw-normal ps-3">Typ operace</th>
+                                <td><span class="badge bg-light text-dark border">{$payment->getOperationType()}</span></td>
+                            </tr>
+                            {if $payment->getDetails()}
+                            <tr>
+                                <th class="text-muted fw-normal ps-3">Detaily</th>
+                                <td class="small">{$payment->getDetails()}</td>
+                            </tr>
+                            {/if}
+                            <tr>
+                                <th class="text-muted fw-normal ps-3">Účet (accountId)</th>
+                                <td class="small font-monospace">{$payment->getAccountId()}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            {* Stav párování *}
+            {if $payment->isPaired()}
+            <div class="card border-0 shadow-sm border-success">
+                <div class="card-header fw-semibold bg-success text-white">
+                    <i class="bi bi-link-45deg me-2"></i>Spárováno s platbou
+                </div>
+                <div class="card-body">
+                    {var $p = $payment->getPairedPayment()}
+                    <table class="table table-sm mb-3">
+                        <tbody>
+                            <tr>
+                                <th class="text-muted fw-normal" style="width:40%;">ID platby</th>
+                                <td>#{$p->getId()}</td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted fw-normal">VS</th>
+                                <td class="font-monospace fw-bold">{$p->getVariableSymbol()}</td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted fw-normal">Částka</th>
+                                <td>{$p->getPay()|number:0,',','&nbsp;'|noescape} Kč</td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted fw-normal">Stav</th>
+                                <td><span class="badge bg-success">{$p->getPaymentStatus()->value}</span></td>
+                            </tr>
+                            {if $p->getCollections()}
+                            <tr>
+                                <th class="text-muted fw-normal">Sbírka</th>
+                                <td>{$p->getCollections()->getCollectionName()}</td>
+                            </tr>
+                            {/if}
+                            {if $p->getAdoption()}
+                            <tr>
+                                <th class="text-muted fw-normal">Adopce</th>
+                                <td>#{$p->getAdoption()->getId()}</td>
+                            </tr>
+                            {/if}
+                            {if $p->getAzyl()}
+                            <tr>
+                                <th class="text-muted fw-normal">Azyl</th>
+                                <td>{$p->getAzyl()->getAzylName()}</td>
+                            </tr>
+                            {/if}
+                            <tr>
+                                <th class="text-muted fw-normal">Komentář</th>
+                                <td class="small">{$p->getComment()}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    {if $payment->getPairedNote()}
+                    <div class="alert alert-light border small py-2">
+                        <i class="bi bi-chat-left-text me-1"></i>
+                        <strong>Poznámka:</strong> {$payment->getPairedNote()}
+                    </div>
+                    {/if}
+                    <div class="d-flex gap-2 align-items-center small text-muted mb-3">
+                        <i class="bi bi-clock me-1"></i>Spárováno: {$payment->getPairedAt()|date:'d.m.Y H:i'}
+                        {if $payment->getPairedByUser()}
+                            uživatelem <strong>{$payment->getPairedByUser()->getUserName()}</strong>
+                        {/if}
+                    </div>
+                    <a href="{link unpairPayment!, paymentsInId => $payment->getId()}"
+                       class="btn btn-outline-danger btn-sm"
+                       onclick="return confirm('Zrušit párování? Platba se vrátí do stavu Očekávaná.')">
+                        <i class="bi bi-x-circle me-1"></i>Zrušit párování
+                    </a>
+                </div>
+            </div>
+            {/if}
+
+        </div>
+
+        {* ── Pravý sloupec: kandidáti k párování ── *}
+        <div class="col-lg-7">
+
+            {if !$payment->isPaired()}
+            <div class="card border-0 shadow-sm">
+                <div class="card-header fw-semibold" style="background:#e65100; color:#fff;">
+                    <i class="bi bi-search me-2"></i>Vyberte platbu k spárování
+                    <span class="badge bg-light text-dark ms-2 fw-normal">{count($candidates)} očekávaných plateb</span>
+                </div>
+                <div class="card-body p-0">
+                    {if count($candidates) === 0}
+                    <div class="text-center text-muted py-4">
+                        <i class="bi bi-inbox" style="font-size:2rem; opacity:.4;"></i>
+                        <p class="mt-2 mb-0">Žádné platby čekající na spárování.</p>
+                    </div>
+                    {else}
+                    <div class="table-responsive" style="max-height:600px; overflow-y:auto;">
+                        <table class="table table-hover table-sm align-middle mb-0">
+                            <thead class="table-light sticky-top">
+                                <tr>
+                                    <th>VS</th>
+                                    <th>Částka</th>
+                                    <th>Účel</th>
+                                    <th>Komentář</th>
+                                    <th>Vytvořeno</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            {foreach $candidates as $c}
+                            {var $vsMatch = $payment->getVs() !== null && (string)$c->getVariableSymbol() === $payment->getVs()}
+                            <tr class="{if $vsMatch}table-success{/if}">
+                                <td class="font-monospace fw-bold">
+                                    {$c->getVariableSymbol()}
+                                    {if $vsMatch}
+                                        <span class="badge bg-success ms-1" title="VS se shoduje">✓ VS</span>
+                                    {/if}
+                                </td>
+                                <td class="fw-semibold {if $c->getPay() == (int)$payment->getObjem()}text-success{/if}">
+                                    {$c->getPay()|number:0,',','&nbsp;'|noescape} Kč
+                                    {if $c->getPay() == (int)$payment->getObjem()}
+                                        <i class="bi bi-check-circle-fill text-success ms-1" title="Částka odpovídá"></i>
+                                    {/if}
+                                </td>
+                                <td class="small">
+                                    {if $c->getCollections()}
+                                        <i class="bi bi-piggy-bank me-1 text-primary"></i>
+                                        {$c->getCollections()->getCollectionName()|truncate:30}
+                                    {elseif $c->getAdoption()}
+                                        <i class="bi bi-heart me-1 text-danger"></i>
+                                        Adopce #{$c->getAdoption()->getId()}
+                                    {elseif $c->getAzyl()}
+                                        <i class="bi bi-house-heart me-1 text-success"></i>
+                                        {$c->getAzyl()->getAzylName()|truncate:24}
+                                    {else}
+                                        <span class="text-muted">—</span>
+                                    {/if}
+                                </td>
+                                <td class="small text-muted">{$c->getComment()|truncate:30}</td>
+                                <td class="small text-muted">{$c->getCreatedAt()|date:'d.m.Y'}</td>
+                                <td>
+                                    <a href="{link pairPayment!, paymentsInId => $payment->getId(), paymentsId => $c->getId()}"
+                                       class="btn btn-sm {if $vsMatch}btn-success{else}btn-outline-primary{/if}"
+                                       data-confirm="Spárovat tuto bankovní platbu s platbou VS {$c->getVariableSymbol()}?"
+                                       onclick="return confirm(this.dataset.confirm)">
+                                        <i class="bi bi-link-45deg me-1"></i>Spárovat
+                                    </a>
+                                </td>
+                            </tr>
+                            {/foreach}
+                            </tbody>
+                        </table>
+                    </div>
+                    {/if}
+                </div>
+            </div>
+            {else}
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center text-muted py-5">
+                    <i class="bi bi-check-circle-fill text-success" style="font-size:3rem;"></i>
+                    <p class="mt-3 mb-0 fw-semibold">Tato platba je již spárována.</p>
+                    <p class="small">Chcete-li ji přiřadit jinam, nejprve zrušte párování.</p>
+                </div>
+            </div>
+            {/if}
+
+        </div>
+    </div>
+</div>
+{/block}
+{block scripts}{/block}

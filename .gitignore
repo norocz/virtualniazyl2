@@ -1,0 +1,41 @@
+# === Composer ===
+/vendor/
+
+# === Nette runtime ===
+/temp/
+/log/
+
+# === Citlivé config soubory — NIKDY nekomitovat ===
+/config/local.neon
+/config/secrets.local.neon
+/config/fio.neon
+/config/server.neon
+/config/*.backup-*
+
+# === Uživatelský obsah ===
+/www/upload/
+
+# === Vygenerované soubory ===
+/data/invoices/
+/data/nominatim-cache/
+/data/translations-cache/
+
+# === IDE & OS ===
+.idea/
+.vscode/
+*.DS_Store
+Thumbs.db
+*.swp
+
+# === Python ===
+python/.env
+python/__pycache__/
+python/*.pyc
+
+# Keepery prázdných adresářů potřebných za runtime
+!/temp/.gitkeep
+!/log/.gitkeep
+!/www/upload/.gitkeep
+!/data/invoices/.gitkeep
+!/data/nominatim-cache/.gitkeep
+!/data/translations-cache/.gitkeep

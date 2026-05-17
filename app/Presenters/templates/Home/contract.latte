@@ -1,0 +1,45 @@
+{*
+    Drop-in replacement for: vaz/app/Presenters/templates/Home/contract.latte
+*}
+{block content}
+<link href="{$basePath}/assets/css/vaz-redesign.css" rel="stylesheet">
+<main class="vaz-redesign">
+
+<section class="vaz-section-hero">
+    <div class="container">
+        <nav class="vaz-crumbs">
+            <a n:href="Home:default">Úvod</a>
+            <span class="sep">›</span>
+            <span class="current">Azyly</span>
+        </nav>
+        <h1 class="vaz-page-title">Azyly</h1>
+        <p class="vaz-page-sub">Přehled spolupracujících azylů.</p>
+    </div>
+</section>
+
+<section class="py-4">
+    <div class="container">
+        <div class="row g-3">
+            {foreach $azyls as $azyl}
+                <div class="col-xl-4 col-md-6 col-sm-12">
+                    <article class="vaz-card h-100 d-flex flex-column">
+                        <div class="d-flex gap-2 mb-2 flex-wrap">
+                            <span class="vaz-pill"><i class="bi bi-building"></i> Azyl</span>
+                        </div>
+                        <h5 class="fw-bold mb-2" style="color: var(--vaz-ink);">{$azyl->getAzylName()}</h5>
+                        <p class="small text-muted mb-3" style="flex:1; line-height:1.55;">{$azyl->getShortDescription()}</p>
+                        <div>
+                            <a href="{link Home:azyl, $azyl->getId()}" class="vaz-btn vaz-btn--primary vaz-btn--sm">
+                                Stránka azylu <i class="bi bi-arrow-right"></i>
+                            </a>
+                        </div>
+                    </article>
+                </div>
+            {/foreach}
+        </div>
+    </div>
+</section>
+
+</main>
+{/block}
+{block scripts-user}{/block}

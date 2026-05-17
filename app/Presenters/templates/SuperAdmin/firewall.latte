@@ -1,0 +1,90 @@
+{templateType App\Presenters\Templates\SuperAdmin\Layout}
+{block superAdminContent}
+<div class="container-fluid pt-4 px-4">
+    <div class="bg-light rounded p-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="mb-0"><i class="bi bi-shield-lock me-2"></i>Firewall</h4>
+            <a href="{link clearFirewall!}" class="btn btn-outline-warning"
+               onclick="return confirm('Opravdu smazat VŠECHNY záznamy firewallu?')">
+                <i class="bi bi-trash me-1"></i>Smazat vše
+            </a>
+        </div>
+
+        {ifset $firewallLogs}
+            {if count($firewallLogs) > 0}
+                <div class="table-responsive" n:snippet="firewallTable">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>IP adresa</th>
+                                <th>Datum</th>
+                                <th>Pokusy</th>
+                                <th>Stav</th>
+                                <th>Poznámka</th>
+                                <th class="text-end">Akce</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {foreach $firewallLogs as $log}
+                                <tr>
+                                    <td><code>{$log->getIp()}</code></td>
+                                    <td class="text-nowrap">{$log->getCreatedAt()|date:'d.m.Y H:i'}</td>
+                                    <td>
+                                        <span class="badge {if $log->getAttempts() >= 10}bg-danger{elseif $log->getAttempts() >= 5}bg-warning text-dark{else}bg-secondary{/if}">
+                                            {$log->getAttempts()}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {if $log->getAction() === 'firewall_blocked'}
+                                            <span class="badge bg-danger"><i class="bi bi-shield-fill-x me-1"></i>UFW</span>
+                                        {elseif $log->getAction() === 'blocked'}
+                                            <span class="badge bg-warning text-dark"><i class="bi bi-slash-circle me-1"></i>Blokováno</span>
+                                        {elseif $log->getAction() === 'unblocked'}
+                                            <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Odblokováno</span>
+                                        {else}
+                                            <span class="badge bg-secondary">—</span>
+                                        {/if}
+                                    </td>
+                                    <td class="small text-muted">{$log->getNotes() ?? '—'}</td>
+                                    <td class="text-end">
+                                        <div class="btn-group btn-group-sm">
+                                            {if $log->getAction() !== 'unblocked'}
+                                                <a href="{link unblockIp!, $log->getId()}"
+                                                   class="btn btn-outline-success"
+                                                   title="Odblokovat">
+                                                    <i class="bi bi-unlock"></i>
+                                                </a>
+                                            {/if}
+                                            {if $log->getAction() !== 'firewall_blocked'}
+                                                <a href="{link firewallLogAddToUFW!, $log->getId()}"
+                                                   class="btn btn-outline-danger"
+                                                   title="Přidat do UFW"
+                                                   onclick="return confirm('Zablokovat IP {$log->getIp()} na úrovni UFW?')">
+                                                    <i class="bi bi-shield-fill-x"></i>
+                                                </a>
+                                            {/if}
+                                            <a href="{link firewallLogDelete!, $log->getId()}"
+                                               class="btn btn-outline-secondary"
+                                               title="Smazat záznam"
+                                               onclick="return confirm('Smazat záznam?')">
+                                                <i class="bi bi-trash"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {/foreach}
+                        </tbody>
+                    </table>
+                </div>
+            {else}
+                <div class="alert alert-success mb-0">
+                    <i class="bi bi-check-circle me-2"></i>
+                    Žádné záznamy. Firewall je čistý.
+                </div>
+            {/if}
+        {/ifset}
+    </div>
+</div>
+{/block}
+
+{block scripts}{/block}

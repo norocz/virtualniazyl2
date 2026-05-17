@@ -1,0 +1,157 @@
+{block content}
+<link href="{$basePath}/assets/css/vaz-redesign.css" rel="stylesheet">
+<main class="vaz-redesign">
+
+<section class="vaz-section-hero">
+    <div class="container">
+        <nav class="vaz-crumbs">
+            <a n:href="Home:default">Úvod</a>
+            <span class="sep">›</span>
+            <a n:href="Home:azyls">Azyly</a>
+            <span class="sep">›</span>
+            <a n:href="Home:azyl, $azylProfil->getId()">{$azylProfil->getAzylName()}</a>
+            <span class="sep">›</span>
+            <span class="current">Události</span>
+        </nav>
+        <h1 class="vaz-page-title">
+            <i class="bi bi-calendar-event-fill me-2" style="color:var(--vaz-ochre,#c8960c);"></i>
+            Události — {$azylProfil->getAzylName()}
+        </h1>
+    </div>
+</section>
+
+<section class="py-4">
+    <div class="container">
+        <div class="row g-4">
+
+        {* Sidebar — navigace azylu *}
+        <div class="col-lg-3">
+            <div class="vaz-card" style="padding:14px; position:sticky; top:16px;">
+                <div class="text-uppercase fw-bold small text-muted mb-2 px-1" style="letter-spacing:.08em; font-size:11px;">
+                    {$azylProfil->getAzylName()}
+                </div>
+                <nav class="vaz-sidenav">
+                    <a n:href="Home:azyl, $azylProfil->getId()">
+                        <i class="bi bi-house-heart"></i><span>Profil azylu</span>
+                    </a>
+                    <a n:class="true ? 'active'" n:href="Home:azylevents, $azylProfil->getId()">
+                        <i class="bi bi-calendar-event"></i>
+                        <span>Události</span>
+                        {if count($upcomingEvents) > 0}<span class="count">{count($upcomingEvents)}</span>{/if}
+                    </a>
+                    <a n:href="Home:azyladoptions, $azylProfil->getId()">
+                        <i class="bi bi-heart"></i><span>Adopce</span>
+                    </a>
+                    <a n:href="Home:azylnews, $azylProfil->getId()">
+                        <i class="bi bi-newspaper"></i><span>Aktuality</span>
+                    </a>
+                </nav>
+            </div>
+        </div>
+
+        {* Hlavní obsah *}
+        <div class="col-lg-9">
+
+            {* Nadcházející *}
+            {if count($upcomingEvents) > 0}
+            <h2 class="h5 fw-bold mb-3" style="color:var(--vaz-ink);">Nadcházející</h2>
+            <div class="row g-3 mb-5">
+                {foreach $upcomingEvents as $ev}
+                <div class="col-md-6">
+                    <article class="vaz-card vaz-card--flush h-100 d-flex flex-column" style="overflow:hidden;">
+                        <div style="background:linear-gradient(135deg,var(--vaz-ochre-soft,#fdf6e3),#fff);
+                                    padding:16px 20px; display:flex; align-items:center; gap:16px;">
+                            <div class="text-center flex-shrink-0" style="min-width:48px;">
+                                <div class="fw-bold" style="font-size:26px; line-height:1; color:var(--vaz-ochre,#c8960c);">
+                                    {$ev->getDateFrom()|date:'d'}
+                                </div>
+                                <div class="text-uppercase small" style="color:#888; letter-spacing:.04em;">
+                                    {$ev->getDateFrom()|date:'M Y'}
+                                </div>
+                            </div>
+                            <div>
+                                <div class="fw-bold" style="font-size:15px;">{$ev->getTitle()}</div>
+                                <div class="small text-muted">
+                                    {$ev->getDateFrom()|date:'H:i'}
+                                    {if $ev->isMultiDay()} – {$ev->getDateTo()|date:'d.M H:i'}{else} – {$ev->getDateTo()|date:'H:i'}{/if}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-3 d-flex flex-column flex-grow-1">
+                            <div class="d-flex gap-2 flex-wrap mb-2">
+                                {if $ev->isRecurring()}
+                                    <span class="badge" style="background:var(--vaz-sky,#e8f4fd); color:#0369a1; font-size:11px;">
+                                        <i class="bi bi-arrow-repeat me-1"></i>{$ev->getRecurrenceType()->label()}
+                                    </span>
+                                {/if}
+                                {if $ev->getMaxParticipants() !== null}
+                                    {var $rem = $ev->getRemainingCapacity()}
+                                    <span class="badge {if $rem === 0}bg-danger{elseif $rem <= 3}bg-warning text-dark{else}bg-light text-muted border{/if}" style="font-size:11px;">
+                                        {if $rem === 0}Obsazeno{elseif $rem <= 3}{$rem} míst{else}{$ev->getMaxParticipants()} míst celkem{/if}
+                                    </span>
+                                {/if}
+                            </div>
+                            {if $ev->getLocation()}
+                            <div class="small text-muted mb-2">
+                                <i class="bi bi-geo-alt me-1"></i>{$ev->getLocation()}
+                            </div>
+                            {/if}
+                            {if $ev->getShortDescription()}
+                            <p class="small text-muted mb-3 flex-grow-1">{$ev->getShortDescription()|truncate:110}</p>
+                            {/if}
+                            <a href="{link Home:event, id => $ev->getId()}" class="vaz-btn vaz-btn--primary vaz-btn--sm mt-auto">
+                                Detail události
+                            </a>
+                        </div>
+                    </article>
+                </div>
+                {/foreach}
+            </div>
+            {else}
+            <div class="vaz-card text-center text-muted py-4 mb-4">
+                <i class="bi bi-calendar-x" style="font-size:2rem; opacity:.4;"></i>
+                <p class="mt-2 mb-0">Žádné nadcházející události.</p>
+            </div>
+            {/if}
+
+            {* Proběhlé *}
+            {if count($pastEvents) > 0}
+            <h2 class="h5 fw-bold mb-3" style="color:var(--vaz-ink);">
+                <i class="bi bi-clock-history me-1 text-muted"></i>Proběhlé
+            </h2>
+            <div class="vaz-card vaz-card--flush">
+                {foreach $pastEvents as $ev}
+                <a href="{link Home:event, id => $ev->getId()}"
+                   class="d-flex align-items-center gap-3 px-3 py-2 border-bottom text-decoration-none"
+                   style="color:inherit; opacity:.8;">
+                    <div class="flex-shrink-0 text-center" style="min-width:44px;">
+                        <div class="fw-semibold" style="font-size:16px; color:#999;">{$ev->getDateFrom()|date:'d'}</div>
+                        <div class="text-uppercase" style="font-size:10px; color:#aaa;">{$ev->getDateFrom()|date:'M Y'}</div>
+                    </div>
+                    <div style="flex:1; min-width:0;">
+                        <div class="fw-semibold text-truncate" style="font-size:13px;">{$ev->getTitle()}</div>
+                        {if $ev->getLocation()}
+                        <div class="small text-muted text-truncate">
+                            <i class="bi bi-geo-alt me-1"></i>{$ev->getLocation()}
+                        </div>
+                        {/if}
+                    </div>
+                    {if $ev->getPhotos()->count() > 0}
+                    <span class="badge bg-light text-muted border flex-shrink-0" style="font-size:11px;">
+                        <i class="bi bi-images me-1"></i>{$ev->getPhotos()->count()} fotek
+                    </span>
+                    {/if}
+                    <i class="bi bi-chevron-right text-muted flex-shrink-0"></i>
+                </a>
+                {/foreach}
+            </div>
+            {/if}
+
+        </div>
+        </div>
+    </div>
+</section>
+
+</main>
+{/block}
+{block scripts-user}{/block}

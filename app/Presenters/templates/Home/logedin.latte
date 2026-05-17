@@ -1,0 +1,37 @@
+{*
+    Drop-in replacement for: vaz/app/Presenters/templates/Home/logedin.latte
+*}
+{block content}
+<link href="{$basePath}/assets/css/vaz-redesign.css" rel="stylesheet">
+<main class="vaz-redesign">
+
+<section class="py-5">
+    <div class="container" style="max-width: 1000px;">
+        {snippet signin}
+        <div class="vaz-auth" id="signIn">
+            <div class="vaz-auth__media">
+                <img src="{$basePath}/assets/vazdata/img/pic/happy1.jpeg" alt="Přihlášeno">
+            </div>
+            <div class="vaz-auth__body">
+                <div class="vaz-auth__eyebrow" style="color: var(--vaz-green);">
+                    <i class="bi bi-check-circle-fill"></i> Úspěch
+                </div>
+                <h2 class="vaz-auth__title">Přihlášení se zdařilo</h2>
+                <p class="vaz-auth__lead">Vítejte zpět! Můžete pokračovat kamkoliv chcete.</p>
+                <div class="d-flex gap-2 flex-wrap">
+                    <a n:href="Home:default" class="vaz-btn vaz-btn--primary">
+                        <i class="bi bi-house"></i> Na úvod
+                    </a>
+                    <a n:href="Home:adoptions" class="vaz-btn vaz-btn--ghost">
+                        <i class="bi bi-heart"></i> Procházet adopce
+                    </a>
+                </div>
+            </div>
+        </div>
+        {/snippet}
+    </div>
+</section>
+
+</main>
+{/block}
+{block scripts-user}{/block}

@@ -1,0 +1,181 @@
+{*
+    Drop-in replacement for: vaz/app/Presenters/templates/Home/collection.latte
+*}
+{block content}
+<link href="{$basePath}/assets/css/vaz-redesign.css" rel="stylesheet">
+<main class="vaz-redesign">
+
+<section class="py-4">
+    <div class="container">
+        <nav class="vaz-crumbs">
+            <a n:href="Home:default">Úvod</a>
+            <span class="sep">›</span>
+            <a n:href="Home:collections">Sbírky</a>
+            <span class="sep">›</span>
+            <span class="current">{$collection->getCollectionName()|truncate:60}</span>
+        </nav>
+
+        {* Hero *}
+        <div class="vaz-collection-hero">
+            {if $collection->getPhoto() != null}
+                <img class="vaz-collection-hero__img" src="{$basePath}{$collection->getPhoto()->getPath().$collection->getPhoto()->getName()}" alt="{$collection->getCollectionName()}">
+            {else}
+                <img class="vaz-collection-hero__img" src="{$basePath}/assets/vazdata/img/pic/collectionDefault.png" alt="{$collection->getCollectionName()}">
+            {/if}
+            <div class="vaz-collection-hero__overlay">
+                <div>
+                    <span class="vaz-pill vaz-pill--ochre mb-2"><i class="bi bi-piggy-bank-fill"></i> Veřejná sbírka</span>
+                    <h1 class="vaz-collection-hero__title">{$collection->getCollectionName()}</h1>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-xl-8 col-12">
+                {* Description *}
+                <div class="vaz-card mb-4">
+                    <h3 class="h5 fw-bold mb-3" style="color: var(--vaz-ink);">O sbírce</h3>
+                    <div style="line-height:1.7; color: var(--vaz-text);">{$collection->getCollectionDescription()|safeHtml|noescape}</div>
+                </div>
+
+                {* Progress — money *}
+                {var $progressWidth = min(round(($collectionPayments / $collection->getResultAmount()) * 100), 100)}
+                {var $excessWidth = max(round((($collectionPayments - $collection->getResultAmount()) / $collection->getResultAmount()) * 100), 0)}
+                {var $isTargetExceeded = $collectionPayments > intval($collection->getResultAmount())}
+
+                <div class="vaz-card mb-4">
+                    <div class="vaz-progress-labels">
+                        <div class="now">{$collectionPayments} Kč</div>
+                        <div class="goal">z cíle {$collection->getResultAmount()} Kč</div>
+                    </div>
+                    <div class="vaz-progress">
+                        <div class="vaz-progress__bar" style="width: {$progressWidth}%;"></div>
+                    </div>
+                    {if $isTargetExceeded}
+                        <div class="mt-2 small" style="color: var(--vaz-rose);">
+                            <i class="bi bi-stars"></i> Cíl byl překročen — <b>{$excessWidth}%</b> navíc, děkujeme!
+                        </div>
+                    {/if}
+                </div>
+
+                {* Countdown *}
+                <div class="vaz-card mb-4" id="countdown">
+                    <div class="text-center mb-3">
+                        <span class="vaz-pill"><i class="bi bi-hourglass-split"></i> Do konce zbývá</span>
+                    </div>
+                    <div class="vaz-countdown mb-3">
+                        <div class="vaz-countdown__cell"><div class="n" id="days">00</div><div class="l">Dní</div></div>
+                        <div class="vaz-countdown__cell"><div class="n" id="hours">00</div><div class="l">Hodin</div></div>
+                        <div class="vaz-countdown__cell"><div class="n" id="minutes">00</div><div class="l">Minut</div></div>
+                        <div class="vaz-countdown__cell"><div class="n" id="seconds">00</div><div class="l">Sekund</div></div>
+                    </div>
+                    <div class="vaz-progress">
+                        <div id="progressBar" class="vaz-progress__bar vaz-progress__bar--time" style="width:100%;"></div>
+                    </div>
+                </div>
+
+                {* Share *}
+                <div class="vaz-card">
+                    <h3 class="h6 fw-bold mb-2" style="color: var(--vaz-ink);">Sdílet sbírku</h3>
+                    <div class="vaz-share mb-2">
+                        <a href="https://www.facebook.com/sharer/sharer.php?u={link //Home:collection, $collection->getCollectionKey()}" target="_blank" title="Facebook"><i class="bi bi-facebook"></i></a>
+                        <a href="https://www.instagram.com/?url={link //Home:collection, $collection->getCollectionKey()}" target="_blank" title="Instagram"><i class="bi bi-instagram"></i></a>
+                        <a href="https://twitter.com/intent/tweet?url={link //Home:collection, $collection->getCollectionKey()}" target="_blank" title="X"><i class="bi bi-twitter-x"></i></a>
+                        <a href="https://www.linkedin.com/shareArticle?url={link //Home:collection, $collection->getCollectionKey()}" target="_blank" title="LinkedIn"><i class="bi bi-linkedin"></i></a>
+                    </div>
+                    <div class="small text-muted" style="word-break:break-all;">
+                        <i class="bi bi-link-45deg"></i> {link //Home:collection, $collection->getCollectionKey()}
+                    </div>
+                </div>
+            </div>
+
+            {* Payment + QR *}
+            <div class="col-xl-4 col-12">
+                <div class="vaz-card vaz-form" style="position: sticky; top: 20px;">
+                    <h3 class="h5 fw-bold mb-3" style="color: var(--vaz-ink);">
+                        <i class="bi bi-heart-fill" style="color: var(--vaz-rose);"></i> Přispět
+                    </h3>
+                    {var $now = new DateTime()}
+                    {var $endingAt = $collection->getEndingAt()}
+                    {if $now < $endingAt}
+                        {control paymentForm}
+                    {else}
+                        <div class="text-muted small" style="line-height:1.6;">
+                            <i class="bi bi-info-circle"></i> Sbírka už skončila. Zkuste jinou nebo
+                            <a class="fw-600" href="{link Home:azyladoptions, $collection->getAzyl()->getId()}" style="color: var(--vaz-green);">virtuální adopci</a>.
+                        </div>
+                    {/if}
+
+                    {snippet qr}
+                        {ifset $qr}
+                            <hr style="border-color: var(--vaz-border);">
+                            <div class="text-center">
+                                {$qr|noescape}
+                                <p class="small text-muted mt-2 mb-0">Naskenujte QR kód bankovní aplikací. Platba se připíše do 24 hodin.</p>
+                            </div>
+                        {/ifset}
+                    {/snippet}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+</main>
+{/block}
+{block head}
+    <meta property="og:title" content="Virtualní azyl - sbírka - {$collection->getCollectionName()}">
+    <meta property="og:description" content="{$collection->getCollectionDescription()|truncate:200|safeHtml}">
+    {if $collection->getPhoto() != null}
+    <meta property="og:image" content="{$basePath}{$collection->getPhoto()->getPath().$collection->getPhoto()->getName()}">
+    {else}
+    <meta property="og:image" content="{$basePath}/assets/vazdata/img/pic/collectionDefault.png">
+    {/if}
+    <meta property="og:url" content="{link //Home:collection, $collection->getCollectionKey()}">
+    <meta property="og:type" content="website">
+    <meta name="twitter:title" content="Virtualní azyl - sbírka - {$collection->getCollectionName()}">
+    <meta name="twitter:description" content="{$collection->getCollectionDescription()|truncate:200|safeHtml}">
+    {if $collection->getPhoto() != null}
+    <meta name="twitter:image" content="{$basePath}{$collection->getPhoto()->getPath().$collection->getPhoto()->getName()}">
+    {else}
+    <meta name="twitter:image" content="{$basePath}/assets/vazdata/img/pic/collectionDefault.png">
+    {/if}
+{/block}
+{block scripts-user}
+{var $dateE = $collection->getEndingAt()->format('Y-m-d\TH:i:s')}
+{var $dateS = $collection->getStartAt()->format('Y-m-d\TH:i:s')}
+<script>
+    const startDate = new Date({$dateS}).getTime();
+    const endDate = new Date({$dateE}).getTime();
+
+    function updateCountdown() {
+        const now = new Date().getTime();
+        const timeLeft = endDate - now;
+        const totalTime = endDate - startDate;
+        const elapsedTime = now - startDate;
+
+        const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+
+        document.getElementById('days').textContent = String(days).padStart(2, '0');
+        document.getElementById('hours').textContent = String(hours).padStart(2, '0');
+        document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
+        document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
+
+        let progressWidth = Math.ceil((elapsedTime / totalTime) * 100);
+        progressWidth = Math.min(Math.max(progressWidth, 0), 100);
+        document.getElementById('progressBar').style.width = progressWidth + '%';
+
+        if (timeLeft < 0) {
+            clearInterval(interval);
+            document.getElementById('countdown').querySelector('.vaz-countdown').innerHTML = '<div style="padding:20px; color: var(--vaz-text-muted); font-weight:600;">Sbírka skončila</div>';
+            document.getElementById('progressBar').style.width = '100%';
+        }
+    }
+
+    const interval = setInterval(updateCountdown, 1000);
+    updateCountdown();
+</script>
+{/block}

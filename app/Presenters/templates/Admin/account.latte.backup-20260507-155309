@@ -1,0 +1,166 @@
+{templateType App\Presenters\Templates\Admin\Layout}
+{block adminContent}
+<div class="container-fluid pt-4 px-4">
+    <div class="row g-4">
+
+        {* Levý panel - info o účtu *}
+        <div class="col-lg-4">
+            <div class="bg-light rounded p-4 text-center">
+                <img src="{$basePath}{if $pphoto}{$personalPhoto->getPath()}{$personalPhoto->getName()}{else}/dashmin/img/user.jpg{/if}"
+                     alt="Profilová fotka"
+                     class="rounded-circle mb-3"
+                     style="width:120px; height:120px; object-fit:cover;">
+
+                <h5 class="mb-0">{$user->getIdentity()->getData()['User']->getUserName()}</h5>
+                <p class="text-muted mb-1">{$user->getIdentity()->getData()['User']->getEmail()}</p>
+
+                <div class="mb-3">
+                    {foreach $user->getRoles() as $role}
+                        <span class="badge bg-primary me-1">{$role}</span>
+                    {/foreach}
+                </div>
+
+                <div class="d-grid gap-2">
+                    <a href="{link User:profil}" class="btn btn-outline-primary">
+                        <i class="bi bi-person me-2"></i>Můj veřejný profil
+                    </a>
+                    <a href="{link Admin:changePassword}" class="btn btn-outline-secondary">
+                        <i class="bi bi-key me-2"></i>Změnit heslo
+                    </a>
+                </div>
+            </div>
+
+            {* Metadata účtu *}
+            <div class="bg-light rounded p-4 mt-4">
+                <h6 class="mb-3">Informace o účtu</h6>
+                <dl class="row mb-0 small">
+                    <dt class="col-5 text-muted">Účet vytvořen:</dt>
+                    <dd class="col-7">{$user->getIdentity()->getData()['User']->getCreatedAt()|date:'d.m.Y'}</dd>
+
+                    <dt class="col-5 text-muted">Email ověřen:</dt>
+                    <dd class="col-7">
+                        {if $user->getIdentity()->getData()['User']->isMailVerified() || $user->getIdentity()->getData()['User']->isVerified()}
+                            <span class="text-success"><i class="bi bi-check-circle-fill"></i> Ano</span>
+                        {else}
+                            <span class="text-danger"><i class="bi bi-x-circle-fill"></i> Ne</span>
+                        {/if}
+                    </dd>
+
+                    <dt class="col-5 text-muted">Telefon ověřen:</dt>
+                    <dd class="col-7">
+                        {if $user->getIdentity()->getData()['User']->isPhoneVerified()}
+                            <span class="text-success"><i class="bi bi-check-circle-fill"></i> Ano</span>
+                        {else}
+                            <span class="text-warning"><i class="bi bi-dash-circle"></i> Ne</span>
+                        {/if}
+                    </dd>
+
+                    {ifset $lastLogin}
+                        <dt class="col-5 text-muted">Poslední přihlášení:</dt>
+                        <dd class="col-7">{$lastLogin|date:'d.m.Y H:i'}</dd>
+                    {/ifset}
+                </dl>
+            </div>
+        </div>
+
+        {* Pravý panel - formulář pro úpravu *}
+        <div class="col-lg-8">
+            <div class="bg-light rounded p-4">
+                <h5 class="mb-4"><i class="bi bi-gear me-2"></i>Nastavení účtu</h5>
+
+                {ifset $accountForm}
+                    <form n:name="accountForm">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label" n:name="userName">Uživatelské jméno</label>
+                                <input class="form-control" n:name="userName">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" n:name="email">E-mail</label>
+                                <input class="form-control" n:name="email">
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label" n:name="firstName">Jméno</label>
+                                <input class="form-control" n:name="firstName">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" n:name="lastName">Příjmení</label>
+                                <input class="form-control" n:name="lastName">
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label" n:name="phone">Telefon</label>
+                                <input class="form-control" n:name="phone">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" n:name="preferredLanguage">Preferovaný jazyk</label>
+                                <select class="form-select" n:name="preferredLanguage"></select>
+                            </div>
+
+                            <div class="col-12">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" n:name="emailNotifications">
+                                    <label class="form-check-label" n:name="emailNotifications">
+                                        Zasílat e-mailová upozornění
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="col-12 mt-4">
+                                <button class="btn btn-primary" n:name="save">
+                                    <i class="bi bi-check-lg me-1"></i>Uložit změny
+                                </button>
+                                <a href="{link Admin:default}" class="btn btn-outline-secondary">Zrušit</a>
+                            </div>
+                        </div>
+                    </form>
+                {else}
+                    <div class="alert alert-warning mb-0">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        Formulář nastavení účtu zatím není napojený. Presenter musí zaregistrovat
+                        <code>createComponentAccountForm()</code> a poslat ho do šablony.
+                    </div>
+                {/ifset}
+            </div>
+
+            {* Bezpečnostní sekce *}
+            <div class="bg-light rounded p-4 mt-4">
+                <h5 class="mb-4"><i class="bi bi-shield-lock me-2"></i>Bezpečnost</h5>
+
+                <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3">
+                    <div>
+                        <strong>Heslo</strong>
+                        <p class="text-muted mb-0 small">
+                            {ifset $passwordChangedAt}
+                                Naposledy změněno: {$passwordChangedAt|date:'d.m.Y'}
+                            {else}
+                                Doporučujeme měnit heslo alespoň jednou za 6 měsíců.
+                            {/ifset}
+                        </p>
+                    </div>
+                    <a href="{link Admin:changePassword}" class="btn btn-outline-primary btn-sm">Změnit heslo</a>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3">
+                    <div>
+                        <strong>Dvoufaktorové ověření (2FA)</strong>
+                        <p class="text-muted mb-0 small">Přidá další vrstvu zabezpečení při přihlášení.</p>
+                    </div>
+                    <span class="badge bg-secondary">Připravujeme</span>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong class="text-danger">Smazání účtu</strong>
+                        <p class="text-muted mb-0 small">Trvalé smazání všech dat. Tuto akci nelze vrátit.</p>
+                    </div>
+                    <a href="{link Admin:deleteAccountRequest}" class="btn btn-outline-danger btn-sm">Smazat účet</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{/block}
+
+{block scripts}{/block}

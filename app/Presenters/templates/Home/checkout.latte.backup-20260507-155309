@@ -1,0 +1,114 @@
+{templateType App\Presenters\Templates\Home\Layout}
+{block title}Dokončení objednávky{/block}
+
+{block content}
+<main class="main" id="top">
+    <section class="bg-light py-5">
+        <div class="container">
+            <h1 class="mb-4">Dokončení objednávky</h1>
+
+            <div class="row g-4">
+                {* Formulář *}
+                <div class="col-lg-8">
+                    <div class="bg-white rounded p-4">
+                        <form n:name="checkoutForm">
+
+                            <h5 class="mb-3">Kontaktní údaje</h5>
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-6">
+                                    <label class="form-label" n:name="buyerName">Jméno a příjmení *</label>
+                                    <input class="form-control" n:name="buyerName">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label" n:name="buyerEmail">E-mail *</label>
+                                    <input type="email" class="form-control" n:name="buyerEmail">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label" n:name="buyerPhone">Telefon</label>
+                                    <input type="tel" class="form-control" n:name="buyerPhone">
+                                </div>
+                            </div>
+
+                            <h5 class="mb-3">Dodací adresa</h5>
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-8">
+                                    <label class="form-label" n:name="deliveryStreet">Ulice *</label>
+                                    <input class="form-control" n:name="deliveryStreet">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label" n:name="deliveryHouseNumber">Č.p. *</label>
+                                    <input class="form-control" n:name="deliveryHouseNumber">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label" n:name="deliveryPsc">PSČ *</label>
+                                    <input class="form-control" n:name="deliveryPsc">
+                                </div>
+                                <div class="col-md-8">
+                                    <label class="form-label" n:name="deliveryCity">Město *</label>
+                                    <input class="form-control" n:name="deliveryCity">
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label" n:name="deliveryNote">
+                                        Poznámka pro azyl (nepovinné)
+                                    </label>
+                                    <textarea class="form-control" rows="2" n:name="deliveryNote"></textarea>
+                                </div>
+                            </div>
+
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" n:name="agreeTerms">
+                                <label class="form-check-label" n:name="agreeTerms">
+                                    Souhlasím s <a href="{link Page:polici}" target="_blank">podmínkami</a>
+                                    a <a href="{link Page:cookies}" target="_blank">zpracováním osobních údajů</a>.
+                                </label>
+                            </div>
+
+                            <button class="btn btn-primary btn-lg" n:name="submit">
+                                Závazně objednat <i class="bi bi-arrow-right"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                {* Shrnutí *}
+                <div class="col-lg-4">
+                    <div class="bg-white rounded p-4 sticky-top" style="top:20px;">
+                        <h5 class="mb-3">Vaše objednávka</h5>
+                        {foreach $cart->getHydratedItems() as $item}
+                            <div class="d-flex justify-content-between border-bottom py-2">
+                                <div>
+                                    {$item['product']->getName()}
+                                    <br><small class="text-muted">{$item['quantity']}&times;</small>
+                                </div>
+                                <div class="text-end">
+                                    {$item['subtotal']|number:0,',','&nbsp;'|noescape} Kč
+                                </div>
+                            </div>
+                        {/foreach}
+
+                        <div class="d-flex justify-content-between mt-3">
+                            <span>Mezisoučet:</span>
+                            <strong>{$cart->getSubtotal()|number:0,',','&nbsp;'|noescape} Kč</strong>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Poštovné:</span>
+                            <strong>{$shippingCost|number:0,',','&nbsp;'|noescape} Kč</strong>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between h5">
+                            <span>Celkem:</span>
+                            <span class="text-primary">
+                                {($cart->getSubtotal() + $shippingCost)|number:0,',','&nbsp;'|noescape} Kč
+                            </span>
+                        </div>
+
+                        <small class="text-muted d-block mt-3">
+                            Po odeslání dostanete QR platbu. Objednávka platí 72 hodin.
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+{/block}

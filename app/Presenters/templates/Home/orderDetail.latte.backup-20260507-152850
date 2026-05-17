@@ -1,0 +1,152 @@
+{templateType App\Presenters\Templates\Home\Layout}
+{block title}Objednávka {$order->getOrderNumber()}{/block}
+
+{block content}
+<main class="main" id="top">
+    <section class="bg-light py-5">
+        <div class="container">
+
+            {if $order->getOrderStatus()->value === 'new'}
+                <div class="alert alert-info d-flex align-items-center">
+                    <i class="bi bi-hourglass-split me-3" style="font-size:2rem;"></i>
+                    <div>
+                        <h5 class="mb-1">Čekáme na platbu</h5>
+                        Objednávka platí do <strong>{$order->getExpiresAt()|date:'d.m.Y H:i'}</strong>.
+                        Jakmile peníze přijdou na účet spolku, pošleme vám potvrzení e-mailem.
+                    </div>
+                </div>
+            {elseif $order->getOrderStatus()->value === 'paid'}
+                <div class="alert alert-success d-flex align-items-center">
+                    <i class="bi bi-check-circle me-3" style="font-size:2rem;"></i>
+                    <div>
+                        <h5 class="mb-1">Platba přijata</h5>
+                        Azyl bude vyřizovat objednávku a ozve se vám.
+                    </div>
+                </div>
+            {elseif $order->getOrderStatus()->value === 'shipped'}
+                <div class="alert alert-primary d-flex align-items-center">
+                    <i class="bi bi-truck me-3" style="font-size:2rem;"></i>
+                    <div>
+                        <h5 class="mb-1">Odesláno</h5>
+                        {if $order->getShippingTracking()}
+                            Sledovací číslo: <strong>{$order->getShippingTracking()}</strong>
+                        {/if}
+                    </div>
+                </div>
+            {elseif $order->getOrderStatus()->value === 'cancelled' || $order->getOrderStatus()->value === 'refunded'}
+                <div class="alert alert-secondary d-flex align-items-center">
+                    <i class="bi bi-x-circle me-3" style="font-size:2rem;"></i>
+                    <div>
+                        <h5 class="mb-1">Objednávka stornována</h5>
+                        {if $order->getOrderStatus()->value === 'refunded'}
+                            Peníze vám budou vráceny v nejbližší platební dávce.
+                        {/if}
+                    </div>
+                </div>
+            {/if}
+
+            <div class="row g-4">
+                <div class="col-lg-7">
+                    <div class="bg-white rounded p-4">
+                        <h5 class="mb-3">Objednávka č. {$order->getOrderNumber()}</h5>
+
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Produkt</th>
+                                    <th class="text-center">Množství</th>
+                                    <th class="text-end">Cena</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {foreach $order->getItems() as $item}
+                                    <tr>
+                                        <td>{$item->getProductName()}</td>
+                                        <td class="text-center">{$item->getQuantity()}</td>
+                                        <td class="text-end">{$item->getSubtotal()|number:0,',','&nbsp;'|noescape} Kč</td>
+                                    </tr>
+                                {/foreach}
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="2" class="text-end">Mezisoučet:</td>
+                                    <td class="text-end">{$order->getItemsTotal()|number:0,',','&nbsp;'|noescape} Kč</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2" class="text-end">Poštovné:</td>
+                                    <td class="text-end">{$order->getShippingCost()|number:0,',','&nbsp;'|noescape} Kč</td>
+                                </tr>
+                                <tr class="table-primary">
+                                    <td colspan="2" class="text-end fw-bold">Celkem:</td>
+                                    <td class="text-end fw-bold">
+                                        {$order->getTotalAmount()|number:0,',','&nbsp;'|noescape} Kč
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+
+                        <h6 class="mt-4 mb-2">Dodací adresa</h6>
+                        <address class="mb-0">
+                            {$order->getBuyerName()}<br>
+                            {$order->getFullDeliveryAddress()}<br>
+                            {$order->getBuyerEmail()}
+                            {if $order->getBuyerPhone()} · {$order->getBuyerPhone()}{/if}
+                        </address>
+                    </div>
+                </div>
+
+                {* QR platba *}
+                <div class="col-lg-5">
+                    {if $order->getOrderStatus()->value === 'new'}
+                        <div class="bg-white rounded p-4 text-center">
+                            <h5 class="mb-3">Zaplaťte QR kódem</h5>
+
+                            {if $qrImage}
+                                <img src="{$qrImage}" alt="QR platba"
+                                     class="img-fluid mb-3" style="max-width:280px;">
+                            {else}
+                                <div class="alert alert-warning">
+                                    QR kód se nepodařilo vygenerovat. Použijte údaje níže.
+                                </div>
+                            {/if}
+
+                            <div class="text-start small">
+                                <dl class="row mb-0">
+                                    <dt class="col-5">Číslo účtu:</dt>
+                                    <dd class="col-7 font-monospace">
+                                        {$paymentDetails['account']}/{$paymentDetails['bankCode']}
+                                    </dd>
+                                    <dt class="col-5">Částka:</dt>
+                                    <dd class="col-7 font-monospace">
+                                        {$paymentDetails['amount']|number:2,',','&nbsp;'|noescape} {$paymentDetails['currency']}
+                                    </dd>
+                                    <dt class="col-5">Variabilní symbol:</dt>
+                                    <dd class="col-7 font-monospace"><strong>{$paymentDetails['vs']}</strong></dd>
+                                    <dt class="col-5">Zpráva:</dt>
+                                    <dd class="col-7 font-monospace">{$paymentDetails['message']}</dd>
+                                </dl>
+                            </div>
+                        </div>
+
+                        <div class="bg-light rounded p-3 mt-3 small">
+                            <i class="bi bi-shield-check me-1"></i>
+                            <strong>Důležité:</strong> Platbu musí obdržet spolek Virtuální Azyl,
+                            který pak peníze přepošle azylu. Použijte prosím správný variabilní symbol,
+                            jinak platbu nepůjde spárovat.
+                        </div>
+                    {/if}
+                </div>
+            </div>
+
+            {if $order->isAnonymous()}
+                <div class="alert alert-info mt-4">
+                    <i class="bi bi-bookmark me-2"></i>
+                    Uložte si adresu této stránky:
+                    <code>{$baseUrl}{link Shop:orderDetail, $order->getOrderNumber()}</code>
+                    Jinak ji později nenajdete (nejste přihlášeni).
+                </div>
+            {/if}
+        </div>
+    </section>
+</main>
+{/block}

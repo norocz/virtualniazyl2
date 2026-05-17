@@ -1,0 +1,21 @@
+<style rel="stylesheet" href="{$basePath}/vendors/prism2/prism.css">></style>
+{block adminContent}
+    <h2> Smlouvy </h2>
+    {snippet datagrid}
+        {control contractPartsDatagrid}
+    {/snippet}
+
+    {foreach $contracts as $contract}
+        <div class="contract-part">
+            <div class="contract-name"><a target="_blank" href="{link admin:contractPdf, $contract->getId() }">{$contract->getName()}</a></div>
+            <div class="contract-content">
+                {$contract->getContent()|truncate:40}
+            </div>
+        </div>
+
+    {/foreach}
+{/block}
+
+{block scripts}
+    <script src="{$basePath}/vendors/prism2/prism.js"></script>
+{/block}

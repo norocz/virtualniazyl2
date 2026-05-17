@@ -1,0 +1,214 @@
+{block content}
+<style>
+
+    /* Styly pro kontakty (obdélníky roztažené na celou šířku) */
+    #messages {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        background-color: #f0f0f0;
+        padding: 10px;
+    }
+
+    .chat {
+
+    }
+
+    .chat:hover {
+
+    }
+
+    a.cont {
+      display: flex;
+        flex-direction: column;
+        width: 100%;
+        background-color: #8ab6d6;
+        margin-bottom: 10px;
+        padding: 15px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+
+
+    }
+
+    a.cont:hover {
+    background-color: #9aC6D6;
+
+    }
+
+    /* Styl pro chat detail */
+    #chat-detail {
+        width: 70%;
+        background-color: #fff;
+        padding: 20px;
+        border-left: 1px solid #ddd;
+        justify-content: flex-end; /* Zajišťuje, že se zprávy zarovnají dole */
+        height: 50vh; /* Nastaví výšku chatu, můžeš upravit dle potřeby */
+        overflow-y: auto; /* Umožňuje skrolování, pokud je více zpráv */
+    }
+
+    /* Společné styly pro zprávy */
+    .msg {
+        padding: 10px;
+        margin-bottom: 15px;
+        border-radius: 8px;
+        max-width: 60%;
+        word-wrap: break-word;
+    }
+
+    /* Příchozí zprávy */
+    .frs, .fra, .fru {
+        background-color: #d1e7dd;
+        text-align: left;
+        margin-left: 0;
+    }
+
+    /* Odchozí zprávy */
+    .fou, .foa, .fos {
+        background-color: #f0f0f0;
+        text-align: right;
+        margin-left: auto;
+    }
+
+    /* Styl pro nadpis zprávy */
+    .msg-title {
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+
+    /* Styl pro tělo zprávy */
+    .msg-message {
+        font-size: 14px;
+        line-height: 1.5;
+    }
+    .msg-unreaded {
+
+        background-color: darkolivegreen;
+    }
+    .chat-container {
+    display: flex;
+    flex-direction: column;
+}
+
+.message {
+    max-width: 50%;
+    padding: 10px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+}
+
+.incoming {
+    background-color: #f1f1f1;
+    align-self: flex-start;
+    text-align: left;
+    margin-left: 0;
+}
+
+.outgoing {
+    background-color: #d1e7dd;
+    align-self: flex-end;
+    text-align: right;
+        margin-left: auto;
+}
+
+
+
+</style>
+<main class="main" id="top">
+    <div class="bg">
+        <div class="content">
+            <h2>Komunikace</h2>
+            <div class="row g-12 g-lg-6 g-xl-7 pt-6">
+                <div class ="col-lg-4 bg-light">
+                    <h4>Kontakty</h4>
+
+
+                    {ifset $chats}
+
+                        {snippet chats}
+                    <div class="messages bg-100" id="messages" style=" overflow-y: auto;">
+                            {foreach $chats as $chat}
+                            <div class="chat">
+                             <a class="ajax cont btn-light" n:href="chat! $chat->getId()">
+                             {if $chat->getAdoption() != null}
+                             Adopce: <br> {$chat->getAdoption()->getAnimal()->getName()} -
+                             {/if}
+                             {$chat->getAzyl()->getAzylName()}</a>
+                            </div>
+
+                            {/foreach}
+                    </div>
+                        {/snippet}
+                    {/ifset}
+
+
+                </div>
+
+                <div class="col-lg-8 border-primary">
+                    <h4>Vzkazy</h4>
+
+
+                        {snippet messages}
+                        {ifset $messages}
+
+                            <div class="chat-detail" id="chat-detail">
+                            {foreach $messages as $message}
+                                <div class="message {if $message->getAzyl() == null}outgoing{else}incoming{/if}">
+                                <div class="row">
+                                    <div class="col-lg-10">
+                                        <div class="msg-title">{$message->getTitle()}
+                                            {if $message->getReaded() == false}
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-through-heart" viewBox="0 0 16 16">
+  <path fill-rule="evenodd" d="M2.854 15.854A.5.5 0 0 1 2 15.5V14H.5a.5.5 0 0 1-.354-.854l1.5-1.5A.5.5 0 0 1 2 11.5h1.793l.53-.53c-.771-.802-1.328-1.58-1.704-2.32-.798-1.575-.775-2.996-.213-4.092C3.426 2.565 6.18 1.809 8 3.233c1.25-.98 2.944-.928 4.212-.152L13.292 2 12.147.854A.5.5 0 0 1 12.5 0h3a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-.854.354L14 2.707l-1.006 1.006c.236.248.44.531.6.845.562 1.096.585 2.517-.213 4.092-.793 1.563-2.395 3.288-5.105 5.08L8 13.912l-.276-.182a22 22 0 0 1-2.685-2.062l-.539.54V14a.5.5 0 0 1-.146.354zm2.893-4.894A20.4 20.4 0 0 0 8 12.71c2.456-1.666 3.827-3.207 4.489-4.512.679-1.34.607-2.42.215-3.185-.817-1.595-3.087-2.054-4.346-.761L8 4.62l-.358-.368c-1.259-1.293-3.53-.834-4.346.761-.392.766-.464 1.845.215 3.185.323.636.815 1.33 1.519 2.065l1.866-1.867a.5.5 0 1 1 .708.708z"/>
+</svg>
+                                            {/if}
+                                        </div>
+                                    <div class="msg-message">{$message->getMessage()|safeHtml|noescape}<br><small>{$message->getCreatedAt()|date:'H:i d.m.Y'}</small></div>
+                                    </div>
+                                    <div class="col-lg-2">
+                                     {if $message->getAzyl() == null}
+                                    <a class="align-center align-right ajax" n:href="deleteMsg! $message->getId()">(X)</a>
+                                    {/if}
+                                    </div>
+                                </div>
+                                </div>
+
+                            {/foreach}
+
+                            </div>
+                            {if $conversation == 'sys'}
+                            <div class="row"> <div class="msg-text-array col-lg-9"><b>Virtuálnímu Azylu nejde napsat.</b> ;-) Zpráva je jen informativní. Často určená pro všechny uživatele nebo nějakou skupinu.</div> </div>
+                            {else}
+                            <div class="row m-1 p-2">
+                                <form n:name=messagesForm class="ajax form row col-auto" data-reciver="{$conversation}">
+                                    <div class="msg-text-array col-lg-9">
+                                     <label n:name=message><textarea class="font-monospace form-control ajax chat-textarray" cols="55" rows="2" n:name=message autofocus></textarea></label>
+                                    </div>
+                                     <div class="msg-text-array col-lg-3">
+                                     <input n:name=address value="{$conversation}">
+                                     <input class="align-center ajax chat-send btn btn-secondary" n:name=send>
+                                     </div>
+
+                                </form>
+                        </div>
+                        {/if}
+                        {/ifset}
+
+
+                        {/snippet}
+
+                </div>
+            </div>
+        </div>
+
+        {/block}
+
+{block scripts-user}
+<script src="https://unpkg.com/naja@2/dist/Naja.min.js"></script>
+
+        <script>
+        const chatDetail = document.getElementById('chat-detail');
+        chatDetail.scrollTop = chatDetail.scrollHeight;
+        </script>
+{/block}

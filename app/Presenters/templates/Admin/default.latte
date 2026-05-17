@@ -1,0 +1,353 @@
+{block adminContent}
+
+{* ==================== HORNÍ KARTY ==================== *}
+<div class="container-fluid pt-4 px-4">
+    <div class="row g-4">
+        <div class="col-sm-6 col-xl-3">
+            <div class="bg-light rounded d-flex align-items-center justify-content-between p-4">
+                <i class="fa fa-chart-line fa-3x text-primary"></i>
+                <div class="ms-3">
+                    <p class="mb-2">Registrace</p>
+                    <h6 class="mb-0">{$newUsersCount}</h6>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="bg-light rounded d-flex align-items-center justify-content-between p-4">
+                <i class="fa fa-chart-bar fa-3x text-primary"></i>
+                <div class="ms-3">
+                    <p class="mb-2">Počet azylů</p>
+                    <h6 class="mb-0">{$azylsCount}</h6>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="bg-light rounded d-flex align-items-center justify-content-between p-4">
+                <i class="fa fa-chart-area fa-3x text-primary"></i>
+                <div class="ms-3">
+                    <p class="mb-2">Počet uživatelů</p>
+                    <h6 class="mb-0">{$usersCount}</h6>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="bg-light rounded d-flex align-items-center justify-content-between p-4">
+                <i class="fa fa-heart fa-3x text-danger"></i>
+                <div class="ms-3">
+                    <p class="mb-2">Adopcí (30 dní)</p>
+                    <h6 class="mb-0">{$adoptionsStats['total']}</h6>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{* ==================== PŮVODNÍ GRAFY ==================== *}
+<div class="container-fluid pt-4 px-4">
+    <div class="row g-4">
+        <div class="col-sm-12 col-xl-6">
+            <div class="bg-light rounded p-4">
+                <h6 class="mb-3">Registrace po měsících</h6>
+                <canvas id="barChart-{$barId}" width="740" height="200"></canvas>
+            </div>
+        </div>
+        <div class="col-sm-12 col-xl-6">
+            <div class="bg-light rounded p-4">
+                <h6 class="mb-3">Návštěvnost po dnech</h6>
+                <canvas id="lineChart-{$lineId}" width="740" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+{* ==================== NOVÉ GRAFY: ADOPCE ==================== *}
+<div class="container-fluid pt-4 px-4">
+    <div class="row g-4">
+        <div class="col-sm-12 col-xl-6">
+            <div class="bg-light rounded p-4">
+                <h6 class="mb-3">Adopce podle typu (30 dní)</h6>
+                <div style="max-height:280px;">
+                    <canvas id="adoptionTypeChart" style="max-height:280px;"></canvas>
+                </div>
+                <div class="row small mt-3 text-center">
+                    <div class="col"><span class="badge bg-info">Virtuální</span><br><strong>{$adoptionsStats['virtualni']}</strong></div>
+                    <div class="col"><span class="badge bg-warning text-dark">Dočasná</span><br><strong>{$adoptionsStats['docasna']}</strong></div>
+                    <div class="col"><span class="badge bg-primary">Předadopce</span><br><strong>{$adoptionsStats['predadopce']}</strong></div>
+                    <div class="col"><span class="badge bg-success">Plná</span><br><strong>{$adoptionsStats['plna']}</strong></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-12 col-xl-6">
+            <div class="bg-light rounded p-4">
+                <h6 class="mb-3">Trend adopcí (12 měsíců)</h6>
+                <canvas id="adoptionTrendChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+{* ==================== ZVÍŘATA + SBÍRKY ==================== *}
+<div class="container-fluid pt-4 px-4">
+    <div class="row g-4">
+        <div class="col-sm-12 col-xl-6">
+            <div class="bg-light rounded p-4">
+                <h6 class="mb-3">Zvířátka k adopci podle druhu</h6>
+                {if count($animalsStats['by_species']) > 0}
+                    <table class="table table-sm">
+                        <tbody>
+                            {foreach $animalsStats['by_species'] as $row}
+                                {var $percent = $animalsStats['to_adoption'] > 0
+                                    ? round($row['cnt'] / $animalsStats['to_adoption'] * 100) : 0}
+                                <tr>
+                                    <td style="width:120px;">{$row['species']}</td>
+                                    <td>
+                                        <div class="progress" style="height:20px;">
+                                            <div class="progress-bar"
+                                                 style="width:{$percent}%;">{$row['cnt']}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {/foreach}
+                        </tbody>
+                    </table>
+                {else}
+                    <p class="text-muted">Zatím žádná zvířata k adopci.</p>
+                {/if}
+                <div class="small text-muted mt-3">
+                    Celkem: <strong>{$animalsStats['total']}</strong> ·
+                    Nalezlo domov: <strong>{$animalsStats['adopted']}</strong>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-12 col-xl-6">
+            <div class="bg-light rounded p-4">
+                <h6 class="mb-3">TOP 5 sbírek</h6>
+                {if count($collectionsStats['top_collections']) > 0}
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Sbírka</th>
+                                <th class="text-end">Vybráno</th>
+                                <th class="text-center">%</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {foreach $collectionsStats['top_collections'] as $c}
+                                {var $progress = $c['goal'] > 0 ? min(100, round($c['raised'] / $c['goal'] * 100)) : null}
+                                <tr>
+                                    <td>
+                                        <a href="{link Home:collection, $c['key']}">{$c['name']}</a><br>
+                                        <small class="text-muted">{$c['payments_count']} plateb</small>
+                                    </td>
+                                    <td class="text-end">
+                                        <strong>{$c['raised']|number:0,',','&nbsp;'|noescape}</strong> Kč
+                                        {if $c['goal']}<br><small class="text-muted">z {$c['goal']|number:0,',','&nbsp;'|noescape} Kč</small>{/if}
+                                    </td>
+                                    <td class="text-center">
+                                        {if $progress !== null}
+                                            <span class="badge {if $progress >= 100}bg-success{elseif $progress >= 50}bg-info{else}bg-warning text-dark{/if}">{$progress}%</span>
+                                        {else}<span class="text-muted">—</span>{/if}
+                                    </td>
+                                </tr>
+                            {/foreach}
+                        </tbody>
+                    </table>
+                {else}
+                    <p class="text-muted">Zatím žádné aktivní sbírky.</p>
+                {/if}
+                <div class="small text-muted mt-3">
+                    Celkem vybráno: <strong>{$collectionsStats['total_raised']|number:0,',','&nbsp;'|noescape} Kč</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{* ==================== AZYLY + KOMUNIKACE ==================== *}
+<div class="container-fluid pt-4 px-4">
+    <div class="row g-4">
+        <div class="col-sm-12 col-xl-8">
+            <div class="bg-light rounded p-4">
+                <h6 class="mb-3">Nejaktivnější azyly (30 dní)</h6>
+                {if count($mostActiveAzyls) > 0}
+                    <table class="table table-sm">
+                        <thead>
+                            <tr><th>Azyl</th><th class="text-center">Adopce</th><th class="text-center">Sbírky</th><th class="text-center">Skóre</th></tr>
+                        </thead>
+                        <tbody>
+                            {foreach $mostActiveAzyls as $a}
+                                <tr>
+                                    <td><a href="{link Home:azyl, $a['id']}">{$a['name']}</a></td>
+                                    <td class="text-center">{$a['adoptions']}</td>
+                                    <td class="text-center">{$a['collections']}</td>
+                                    <td class="text-center"><span class="badge bg-primary">{$a['score']}</span></td>
+                                </tr>
+                            {/foreach}
+                        </tbody>
+                    </table>
+                {else}
+                    <p class="text-muted">Zatím žádná data.</p>
+                {/if}
+            </div>
+
+            {if count($azylsOverview['inactive_30_days']) > 0}
+                <div class="bg-light rounded p-4 mt-4">
+                    <h6 class="mb-3">
+                        <i class="bi bi-exclamation-triangle text-warning me-1"></i>
+                        Azyly bez aktivity (30 dní)
+                    </h6>
+                    <div class="row">
+                        {foreach $azylsOverview['inactive_30_days'] as $az}
+                            <div class="col-md-6">
+                                <a href="{link Home:azyl, $az['id']}">
+                                    <span class="badge bg-secondary me-1">#{$az['id']}</span> {$az['name']}
+                                </a>
+                            </div>
+                        {/foreach}
+                    </div>
+                </div>
+            {/if}
+        </div>
+
+        <div class="col-sm-12 col-xl-4">
+            <div class="bg-light rounded p-4">
+                <h6 class="mb-3">
+                    <a href="{link Admin:messages}" class="text-dark text-decoration-none">
+                        <i class="bi bi-chat-dots me-1"></i>Komunikace
+                    </a>
+                </h6>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Zpráv (7 dní):</span>
+                    <strong>{$messagingStats['messages_total']}</strong>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Aktivních konverzací:</span>
+                    <strong>{$messagingStats['active_conversations']}</strong>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Zablokovaných:</span>
+                    <strong class="text-warning">{$messagingStats['blocked_conversations']}</strong>
+                </div>
+                <div class="d-flex justify-content-between mb-3">
+                    <span>Banovaných uživatelů:</span>
+                    <strong class="text-danger">{$messagingStats['banned_users']}</strong>
+                </div>
+                <a href="{link Admin:messages}" class="btn btn-outline-primary btn-sm w-100">
+                    Přejít do moderace
+                </a>
+            </div>
+
+            <div class="bg-light rounded p-4 mt-4">
+                <h6 class="mb-3"><i class="bi bi-broadcast me-1"></i>Feed API</h6>
+                <p class="small">Adopce se exportují jako veřejný RSS/JSON/GeoJSON feed.</p>
+                <a href="{link Admin:feedDocs}" class="btn btn-outline-primary btn-sm w-100">
+                    <i class="bi bi-box-arrow-up-right me-1"></i>Dokumentace API
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{/block}
+
+{block scripts}
+<script>
+    // Bar chart - registrace
+    const barCtx = document.getElementById('barChart-{ $barId }').getContext('2d');
+    new Chart(barCtx, {
+        type: 'bar',
+        data: {
+            labels: {$labels|noescape},
+            datasets: [{
+                label: {$label|noescape},
+                data: {$data|noescape},
+                backgroundColor: 'rgba(13, 110, 253, 0.6)',
+                borderColor: 'rgba(13, 110, 253, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+    });
+
+    // Line chart - návštěvnost
+    const lineCtx = document.getElementById('lineChart-{ $lineId }').getContext('2d');
+    new Chart(lineCtx, {
+        type: 'line',
+        data: {
+            labels: {$visitorsByDayLabel|noescape},
+            datasets: [
+                {
+                    label: 'Unikátní návštěvy',
+                    data: { $visitorsByDayData|noescape },
+                    borderColor: 'rgba(25, 135, 84, 1)',
+                    fill: false
+                },
+                {
+                    label: 'Všechny návštěvy',
+                    data: { $allVisitorsByDayData|noescape },
+                    borderColor: 'rgba(108, 117, 125, 0.5)',
+                    fill: false
+                }
+            ]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+    });
+
+    // Doughnut - adopce podle typu
+    const adoptionTypeCtx = document.getElementById('adoptionTypeChart').getContext('2d');
+    new Chart(adoptionTypeCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Virtuální', 'Dočasná péče', 'Předadopce', 'Plná adopce'],
+            datasets: [{
+                data: [
+                    { $adoptionsStats['virtualni'] },
+                    { $adoptionsStats['docasna'] },
+                    { $adoptionsStats['predadopce'] },
+                    { $adoptionsStats['plna'] }
+                ],
+                backgroundColor: [
+                    'rgba(13, 202, 240, 0.8)',
+                    'rgba(255, 193, 7, 0.8)',
+                    'rgba(13, 110, 253, 0.8)',
+                    'rgba(25, 135, 84, 0.8)'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom' } }
+        }
+    });
+
+    // Line - trend adopcí
+    const trendCtx = document.getElementById('adoptionTrendChart').getContext('2d');
+    const trendData = { $adoptionsMonthlyTrend|noescape };
+    new Chart(trendCtx, {
+        type: 'line',
+        data: {
+            labels: trendData.map(r => r.month),
+            datasets: [
+                { label: 'Virtuální', data: trendData.map(r => r.virtualni),
+                  borderColor: 'rgba(13, 202, 240, 1)',
+                  backgroundColor: 'rgba(13, 202, 240, 0.1)', fill: true },
+                { label: 'Plná', data: trendData.map(r => r.plna),
+                  borderColor: 'rgba(25, 135, 84, 1)', fill: false },
+                { label: 'Dočasná', data: trendData.map(r => r.docasna),
+                  borderColor: 'rgba(255, 193, 7, 1)', fill: false },
+                { label: 'Předadopce', data: trendData.map(r => r.predadopce),
+                  borderColor: 'rgba(13, 110, 253, 1)', fill: false }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom' } },
+            scales: { y: { beginAtZero: true } }
+        }
+    });
+</script>
+{/block}

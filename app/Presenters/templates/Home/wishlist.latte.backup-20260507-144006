@@ -1,0 +1,106 @@
+{templateType App\Presenters\Templates\Home\Layout}
+{block title}Uložené položky - Virtuální azyl{/block}
+
+{block content}
+<main class="main" id="top">
+    <section class="bg-light py-5">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-start mb-4">
+                <div>
+                    <h1 class="mb-2">Uložené položky</h1>
+                    <p class="text-muted mb-0">
+                        Zboží z různých azylů si ukládejte sem. Každý azyl má
+                        samostatnou objednávku a samostatnou platbu -
+                        je to férovější vůči azylům (jinak by se komplikovala
+                        administrace plateb).
+                    </p>
+                </div>
+                {if $wishlist->count() > 0}
+                    <a href="{link Shop:wishlistClear!}" class="btn btn-outline-danger btn-sm"
+                       onclick="return confirm('Smazat všechny uložené položky?')">
+                        <i class="bi bi-trash me-1"></i>Smazat vše
+                    </a>
+                {/if}
+            </div>
+
+            {if $wishlist->count() === 0}
+                <div class="alert alert-info text-center">
+                    <i class="bi bi-bookmark me-2"></i>
+                    Zatím tu nic nemáte. <a href="{link Shop:default}">Pokračovat v nákupu</a>
+                </div>
+            {else}
+                {if $cartItemCount > 0 && $cartAzyl}
+                    <div class="alert alert-warning">
+                        <i class="bi bi-cart me-2"></i>
+                        <strong>Pozor:</strong> v košíku máte zboží z azylu
+                        <strong>{$cartAzyl->getAzylName()}</strong>.
+                        Pokud začnete přesouvat položky z jiného azylu,
+                        <a href="{link Shop:cart}">dokončete nejprve aktuální objednávku</a>
+                        nebo si košík vyprázdněte.
+                    </div>
+                {/if}
+
+                {foreach $groupedProducts as $azylId => $group}
+                    <div class="bg-white rounded p-4 mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="mb-0">
+                                <i class="bi bi-house-heart me-2"></i>
+                                <a href="{link Home:azyl, $azylId}" class="text-dark">
+                                    {$group['azyl']->getAzylName()}
+                                </a>
+                            </h5>
+                            {if $cartItemCount === 0 || ($cartAzyl && $cartAzyl->getId() === $azylId)}
+                                <a href="{link Shop:moveToCartFromWishlist!, $azylId}"
+                                   class="btn btn-primary btn-sm">
+                                    <i class="bi bi-cart-plus me-1"></i>
+                                    Přesunout všechny do košíku
+                                </a>
+                            {else}
+                                <span class="text-muted small">
+                                    Dokončete nejprve objednávku z košíku
+                                </span>
+                            {/if}
+                        </div>
+
+                        <div class="row g-3">
+                            {foreach $group['products'] as $product}
+                                <div class="col-md-6 col-lg-4">
+                                    <div class="card">
+                                        <div class="row g-0">
+                                            {var $photo = $product->getPhotos()->first()}
+                                            {if $photo}
+                                                <div class="col-4">
+                                                    <img src="{$basePath}{$photo->getFullPath()}"
+                                                         class="img-fluid rounded-start h-100"
+                                                         style="object-fit:cover;" alt="">
+                                                </div>
+                                            {/if}
+                                            <div class="{if $photo}col-8{else}col-12{/if}">
+                                                <div class="card-body p-2">
+                                                    <h6 class="card-title mb-1">
+                                                        <a href="{link Shop:product, $product->getId()}"
+                                                           class="text-dark">
+                                                            {$product->getName()}
+                                                        </a>
+                                                    </h6>
+                                                    <p class="mb-2 small text-primary">
+                                                        <strong>{$product->getPrice()|number:0,',','&nbsp;'|noescape} Kč</strong>
+                                                    </p>
+                                                    <a href="{link Shop:wishlistRemove!, $product->getId()}"
+                                                       class="btn btn-sm btn-outline-danger">
+                                                        <i class="bi bi-trash"></i>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {/foreach}
+                        </div>
+                    </div>
+                {/foreach}
+            {/if}
+        </div>
+    </section>
+</main>
+{/block}

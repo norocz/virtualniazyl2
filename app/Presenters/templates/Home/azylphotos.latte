@@ -1,0 +1,113 @@
+{*
+    Drop-in replacement for: vaz/app/Presenters/templates/Home/azylphotos.latte
+*}
+{block content}
+<link href="{$basePath}/assets/css/vaz-redesign.css" rel="stylesheet">
+<style>
+    .vaz-modal{
+      display:none; position:fixed; inset:0; z-index:1000;
+      background: rgba(13,48,37,.92); align-items:center; justify-content:center;
+      backdrop-filter: blur(6px);
+    }
+    .vaz-modal__img{ max-width:85vw; max-height:85vh; object-fit:contain; border-radius:10px; box-shadow: 0 20px 60px rgba(0,0,0,.6); }
+    .vaz-modal__close{
+      position:absolute; top:24px; right:28px; width:44px; height:44px;
+      border-radius:99px; background:#fff; color: var(--vaz-ink);
+      display:flex; align-items:center; justify-content:center;
+      font-size:22px; cursor:pointer; border:none;
+    }
+</style>
+<main class="vaz-redesign">
+
+<section class="vaz-section-hero">
+    <div class="container">
+        <nav class="vaz-crumbs">
+            <a n:href="Home:default">Úvod</a>
+            <span class="sep">›</span>
+            <a n:href="Home:azyls">Azyly</a>
+            <span class="sep">›</span>
+            <a n:href="Home:azyl $presenter->getParameter('id')">{$azylProfil->getAzylName()}</a>
+            <span class="sep">›</span>
+            <span class="current">Fotky</span>
+        </nav>
+        <h1 class="vaz-page-title">{$azylProfil->getAzylName()}</h1>
+        <p class="vaz-page-sub">Galerie fotografií z azylu. Klikněte pro zvětšení.</p>
+    </div>
+</section>
+
+<section class="py-4">
+    <div class="container">
+        <div class="vaz-azyl-layout">
+
+            <aside>
+                <div class="vaz-card vaz-card--flush" style="padding:14px;">
+                    <nav class="vaz-sidenav">
+                        <a n:class="$presenter->isLinkCurrent('Home:azyl') ? 'active'" n:href="Home:azyl $presenter->getParameter('id')">
+                            <i class="bi bi-postcard-heart"></i> <span>Profil azylu</span>
+                        </a>
+                        <a n:class="$presenter->isLinkCurrent('Home:azyladoptions') ? 'active'" n:href="Home:azyladoptions $presenter->getParameter('id')">
+                            <i class="bi bi-house-heart"></i> <span>Všechny adopce</span>
+                        </a>
+                        <a n:class="$presenter->isLinkCurrent('Home:azylnews') ? 'active'" n:href="Home:azylnews $presenter->getParameter('id')">
+                            <i class="bi bi-calendar2"></i> <span>Aktuality azylu</span>
+                        </a>
+                        <a n:class="$presenter->isLinkCurrent('Home:azylphotos') ? 'active'" n:href="Home:azylphotos $presenter->getParameter('id')">
+                            <i class="bi bi-camera"></i> <span>Fotky azylu</span>
+                        </a>
+                    </nav>
+                </div>
+
+                <div class="vaz-card vaz-card--flush mt-3" style="overflow:hidden;">
+                    {if $azylPhoto !== null}
+                        <img src="{$basePath}{$azylPhoto->getPath().$azylPhoto->getName()}" alt="{$azylProfil->getAzylName()}" style="width:100%; height:auto; display:block;">
+                    {else}
+                        <img src="{$basePath}/assets/vazdata/img/pic/defaultPhoto.jpeg" alt="{$azylProfil->getAzylName()}" style="width:100%; height:auto; display:block;">
+                    {/if}
+                </div>
+            </aside>
+
+            <div>
+                <h2 class="h4 fw-bold mb-3" style="color: var(--vaz-ink);">
+                    <i class="bi bi-camera-fill" style="color: var(--vaz-green);"></i> Fotogalerie
+                </h2>
+
+                {if count($azylPhotos) > 0}
+                    <div class="vaz-gallery">
+                        {foreach $azylPhotos as $photo}
+                            <div class="vaz-gallery__item{if $iterator->first} vaz-gallery__item--large{/if}">
+                                <img src="{$basePath}{$photo->getPath()}{$photo->getName()}" alt="{$photo->getOriginalName()}" onclick="showImageModal(this.src)">
+                            </div>
+                        {/foreach}
+                    </div>
+                {else}
+                    <div class="vaz-card text-center py-5">
+                        <i class="bi bi-camera" style="font-size:36px; color: var(--vaz-text-muted); opacity:.4;"></i>
+                        <p class="mt-3 mb-0 text-muted">Zatím žádné fotky.</p>
+                    </div>
+                {/if}
+            </div>
+        </div>
+    </div>
+</section>
+
+<div id="imageModal" class="vaz-modal">
+    <button class="vaz-modal__close" onclick="closeModal()" aria-label="Zavřít">×</button>
+    <img class="vaz-modal__img" id="modalImage" alt="">
+</div>
+
+</main>
+{/block}
+{block scripts-user}
+<script>
+    function showImageModal(src){
+        const m = document.getElementById('imageModal');
+        document.getElementById('modalImage').src = src;
+        m.style.display = 'flex';
+    }
+    function closeModal(){ document.getElementById('imageModal').style.display = 'none'; }
+    document.getElementById('imageModal').addEventListener('click', function(e){
+        if (e.target === this) closeModal();
+    });
+    document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closeModal(); });
+</script>
+{/block}

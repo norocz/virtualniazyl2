@@ -1,0 +1,129 @@
+{layout @layout.latte}
+
+{block title}Potvrzení o platbě {$doc->getDocumentNumber()}{/block}
+
+{block content}
+
+{* Hlavička *}
+<table class="header">
+    <tr>
+        <td style="width:60%;">
+            {if $logo}<img src="{$logo|noescape}" style="max-height:20mm;" alt=""><br>{/if}
+            <h1>Potvrzení o platbě</h1>
+            <div class="muted">{$doc->getDocumentNumber()}</div>
+        </td>
+        <td style="width:40%; text-align:right;">
+            {if $doc->getPaidAt()}
+                <div class="stamp">Zaplaceno</div>
+            {/if}
+        </td>
+    </tr>
+</table>
+
+{* Strany *}
+<table class="parties">
+    <tr>
+        <td>
+            <h3>Vystavitel (zprostředkovatel)</h3>
+            <div class="party-box">
+                <strong class="brand">{$doc->getIssuerName()}</strong><br>
+                {if $doc->getIssuerAddress()}{$doc->getIssuerAddress()}<br>{/if}
+                {if $doc->getIssuerIco()}<span class="small muted">IČO:</span> {$doc->getIssuerIco()}<br>{/if}
+                {if $doc->getIssuerDic()}<span class="small muted">DIČ:</span> {$doc->getIssuerDic()}<br>{/if}
+                {if !$doc->isIssuerVatPayer()}
+                    <span class="xsmall muted">Není plátce DPH</span>
+                {/if}
+            </div>
+        </td>
+        <td>
+            <h3>Zákazník</h3>
+            <div class="party-box">
+                <strong>{$doc->getBuyerName()}</strong><br>
+                {if $doc->getBuyerAddress()}{$doc->getBuyerAddress()}<br>{/if}
+                {if $doc->getBuyerIco()}<span class="small muted">IČO:</span> {$doc->getBuyerIco()}<br>{/if}
+                {if $doc->getBuyerDic()}<span class="small muted">DIČ:</span> {$doc->getBuyerDic()}<br>{/if}
+                {if $doc->getBuyerEmail()}
+                    <span class="xsmall muted">{$doc->getBuyerEmail()}</span>
+                {/if}
+            </div>
+        </td>
+    </tr>
+</table>
+
+{* Informační box o modelu *}
+<div class="info-box">
+    <strong>⚠ Informace o modelu zprostředkování</strong><br>
+    Platba byla přijata zprostředkovatelem (<strong>{$doc->getIssuerName()}</strong>)
+    jménem azylu <strong>{$meta['azyl_name']}</strong>
+    {if !empty($meta['azyl_ico'])}(IČO {$meta['azyl_ico']}){/if}.
+    Skutečným dodavatelem zboží je uvedený azyl.
+    Zprostředkovatel si z částky odečte provozní poplatek
+    ({$meta['fee_percent']}&nbsp;%, tj. {$meta['fee_amount']|number:2,',','&nbsp;'|noescape} Kč)
+    a zbylou částku ({$meta['payout_amount']|number:2,',','&nbsp;'|noescape} Kč)
+    přepošle azylu.
+</div>
+
+{* Detaily platby *}
+<h3>Detaily</h3>
+<table class="details-table">
+    <tr>
+        <td class="label">Číslo dokladu:</td>
+        <td><strong>{$doc->getDocumentNumber()}</strong></td>
+        <td class="label">Datum vystavení:</td>
+        <td>{$doc->getIssuedAt()|date:'d.m.Y'}</td>
+    </tr>
+    <tr>
+        <td class="label">Variabilní symbol:</td>
+        <td>{$doc->getVariableSymbol()}</td>
+        <td class="label">Datum přijetí platby:</td>
+        <td>{if $doc->getPaidAt()}{$doc->getPaidAt()|date:'d.m.Y'}{else}—{/if}</td>
+    </tr>
+    <tr>
+        <td class="label">Způsob platby:</td>
+        <td>{$doc->getPaymentMethod()}</td>
+        <td class="label">Číslo objednávky:</td>
+        <td>{$meta['order_number']}</td>
+    </tr>
+</table>
+
+{* Položky *}
+<table class="items">
+    <thead>
+        <tr>
+            <th style="width:55%;">Položka</th>
+            <th class="center" style="width:10%;">Množství</th>
+            <th class="num" style="width:17%;">Cena / ks</th>
+            <th class="num" style="width:18%;">Celkem</th>
+        </tr>
+    </thead>
+    <tbody>
+        {foreach $items as $item}
+            <tr>
+                <td>{$item['name']}</td>
+                <td class="center">{$item['quantity']}</td>
+                <td class="num">{$item['unit_price']|number:2,',','&nbsp;'|noescape} Kč</td>
+                <td class="num">{$item['subtotal']|number:2,',','&nbsp;'|noescape} Kč</td>
+            </tr>
+        {/foreach}
+    </tbody>
+</table>
+
+{* Součty *}
+<table class="totals">
+    <tr class="grand">
+        <td>Celkem zaplaceno</td>
+        <td class="num">{$doc->getTotal()|number:2,',','&nbsp;'|noescape} {$doc->getCurrency()}</td>
+    </tr>
+</table>
+
+{if !$doc->isIssuerVatPayer()}
+    <div class="warning-box">
+        <strong>Režim mimo DPH</strong> - {$doc->getIssuerName()} není plátcem DPH.
+        Doklad není daňovým dokladem ve smyslu § 28 zákona č. 235/2004 Sb. o DPH.
+    </div>
+{/if}
+
+{if !empty($meta['customer_phone'])}
+    <div class="xsmall muted">Kontakt na zákazníka: {$meta['customer_phone']}</div>
+{/if}
+{/block}

@@ -1,0 +1,196 @@
+{templateType App\Presenters\Templates\Admin\Layout}
+{block adminContent}
+<div class="container-fluid pt-4 px-4">
+    <div class="bg-light rounded p-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="mb-0"><i class="bi bi-chat-dots me-2"></i>Moderace zpráv</h4>
+
+            <form class="d-flex gap-2" method="get">
+                <input type="hidden" name="filter" value="{$filter}">
+                <input type="search" name="search" class="form-control form-control-sm"
+                       placeholder="Hledat v textu zpráv..."
+                       value="{$search ?? ''}"
+                       style="width:260px;">
+                <button class="btn btn-sm btn-primary">
+                    <i class="bi bi-search"></i>
+                </button>
+            </form>
+        </div>
+
+        {* Stats bar *}
+        <div class="row g-3 mb-4">
+            <div class="col-md-3">
+                <div class="card border-0 bg-primary text-white">
+                    <div class="card-body py-2">
+                        <small>Zpráv (7 dní)</small>
+                        <h4 class="mb-0">{$stats['messages_total']}</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 bg-info text-white">
+                    <div class="card-body py-2">
+                        <small>Aktivních konverzací</small>
+                        <h4 class="mb-0">{$stats['active_conversations']}</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 bg-warning">
+                    <div class="card-body py-2">
+                        <small>Zablokovaných konverzací</small>
+                        <h4 class="mb-0">{$stats['blocked_conversations']}</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 bg-danger text-white">
+                    <div class="card-body py-2">
+                        <small>Zablokovaných uživatelů</small>
+                        <h4 class="mb-0">{$stats['banned_users']}</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {* Filter taby *}
+        <ul class="nav nav-pills mb-3">
+            <li class="nav-item">
+                <a href="{link Admin:messages, 'filter' => 'recent'}"
+                   class="nav-link {if $filter === 'recent'}active{/if}">
+                    <i class="bi bi-clock"></i> Nedávné (7 dní)
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{link Admin:messages, 'filter' => 'all'}"
+                   class="nav-link {if $filter === 'all'}active{/if}">
+                    Všechny
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{link Admin:messages, 'filter' => 'blocked'}"
+                   class="nav-link {if $filter === 'blocked'}active{/if}">
+                    <i class="bi bi-slash-circle"></i> Zablokované
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{link Admin:messages, 'filter' => 'banned_users'}"
+                   class="nav-link {if $filter === 'banned_users'}active{/if}">
+                    <i class="bi bi-person-x"></i> Banovaní uživatelé
+                </a>
+            </li>
+        </ul>
+
+        {* Tabulka konverzací *}
+        {if count($conversations) > 0}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th>Uživatel</th>
+                            <th>Azyl</th>
+                            <th>Kontext</th>
+                            <th>Poslední zpráva</th>
+                            <th class="text-center">Počet</th>
+                            <th class="text-center">Stav</th>
+                            <th class="text-end">Akce</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {foreach $conversations as $c}
+                            <tr class="{if $c['is_blocked']}table-warning{elseif $c['user_banned']}table-danger{/if}">
+                                <td>
+                                    {if $c['user']}
+                                        <div>
+                                            <strong>{$c['user']->getUserName()}</strong>
+                                            {if $c['user_banned']}
+                                                <span class="badge bg-danger">BAN</span>
+                                            {/if}
+                                        </div>
+                                        <small class="text-muted">{$c['user']->getEmail()}</small>
+                                    {else}
+                                        <span class="text-muted">—</span>
+                                    {/if}
+                                </td>
+                                <td>
+                                    {if $c['azyl_name']}
+                                        {$c['azyl_name']}
+                                    {else}
+                                        <span class="text-muted">—</span>
+                                    {/if}
+                                </td>
+                                <td>
+                                    <small class="text-muted">
+                                        {$c['conversation']->getComment() ?? '—'}
+                                    </small>
+                                </td>
+                                <td style="max-width:300px;">
+                                    <small>
+                                        {if $c['last_message_excerpt']}
+                                            {$c['last_message_excerpt']}
+                                        {else}
+                                            <em class="text-muted">(prázdná konverzace)</em>
+                                        {/if}
+                                    </small>
+                                    {if $c['last_message_at']}
+                                        <br><small class="text-muted">
+                                            {$c['last_message_at']|date:'d.m.Y H:i'}
+                                        </small>
+                                    {/if}
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-secondary">{$c['message_count']}</span>
+                                </td>
+                                <td class="text-center">
+                                    {if $c['is_blocked']}
+                                        <span class="badge bg-warning text-dark" title="Konverzace zablokována">
+                                            <i class="bi bi-slash-circle"></i>
+                                        </span>
+                                    {else}
+                                        <span class="badge bg-success">OK</span>
+                                    {/if}
+                                </td>
+                                <td class="text-end">
+                                    <a href="{link Admin:messageDetail, $c['conversation']->getId()}"
+                                       class="btn btn-sm btn-outline-primary" title="Zobrazit konverzaci">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    {if !$c['is_blocked']}
+                                        <a href="{link Admin:blockConversation!, $c['conversation']->getId()}"
+                                           class="btn btn-sm btn-outline-warning" title="Zablokovat konverzaci"
+                                           onclick="return confirm('Zablokovat konverzaci?')">
+                                            <i class="bi bi-slash-circle"></i>
+                                        </a>
+                                    {else}
+                                        <a href="{link Admin:unblockConversation!, $c['conversation']->getId()}"
+                                           class="btn btn-sm btn-outline-success" title="Odblokovat">
+                                            <i class="bi bi-unlock"></i>
+                                        </a>
+                                    {/if}
+                                    {if $c['user'] && !$c['user_banned']}
+                                        <a href="{link Admin:banUser!, $c['user']->getId()}"
+                                           class="btn btn-sm btn-outline-danger" title="Banovat uživatele"
+                                           onclick="return confirm('BANOVAT uživatele {$c['user']->getUserName()}? Nebude se moci přihlásit ani psát.')">
+                                            <i class="bi bi-person-x"></i>
+                                        </a>
+                                    {elseif $c['user'] && $c['user_banned']}
+                                        <a href="{link Admin:unbanUser!, $c['user']->getId()}"
+                                           class="btn btn-sm btn-outline-success" title="Odebrat ban">
+                                            <i class="bi bi-person-check"></i>
+                                        </a>
+                                    {/if}
+                                </td>
+                            </tr>
+                        {/foreach}
+                    </tbody>
+                </table>
+            </div>
+        {else}
+            <div class="alert alert-info">
+                <i class="bi bi-inbox me-2"></i>
+                Žádné konverzace odpovídající filtru.
+            </div>
+        {/if}
+    </div>
+</div>
+{/block}

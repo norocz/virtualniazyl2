@@ -1,0 +1,178 @@
+{block content}
+<link href="{$basePath}/assets/css/vaz-redesign.css" rel="stylesheet">
+<main class="vaz-redesign">
+
+<section class="vaz-section-hero">
+    <div class="container">
+        <nav class="vaz-crumbs">
+            <a n:href="Home:default">Úvod</a>
+            <span class="sep">›</span>
+            <a n:href="ZN:default">Z&amp;N</a>
+            <span class="sep">›</span>
+            <span class="current">{if $animal}Upravit inzerát{else}Nahlásit ztracené zvíře{/if}</span>
+        </nav>
+        <h1 class="vaz-page-title">
+            <i class="bi bi-exclamation-triangle me-2" style="color:#dc2626;"></i>
+            {if $animal}Upravit inzerát{else}Hledám ztracené zvíře{/if}
+        </h1>
+        <p class="vaz-page-sub">Vyplňte co nejvíce informací — pomůže to při hledání.</p>
+    </div>
+</section>
+
+<section class="py-4">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="vaz-card">
+                    {form lostForm}
+                    {input id}
+
+                    <div class="mb-4">
+                        <h5 class="fw-bold mb-3"><i class="bi bi-tag me-2"></i>Základní informace</h5>
+                        <div class="row g-3">
+                            <div class="col-sm-6">
+                                {label species, class => 'form-label fw-semibold' /}
+                                {input species, class => 'form-select'}
+                                <span class="text-danger small">{inputError species}</span>
+                            </div>
+                            <div class="col-sm-6">
+                                {label name, class => 'form-label fw-semibold' /}
+                                {input name, class => 'form-control', placeholder => 'Jméno vašeho mazlíčka'}
+                            </div>
+                            <div class="col-sm-6">
+                                {label aliases, class => 'form-label fw-semibold' /}
+                                {input aliases, class => 'form-control', placeholder => 'Bella, Bela, Belička…'}
+                            </div>
+                            <div class="col-sm-6">
+                                {label breed, class => 'form-label fw-semibold' /}
+                                {input breed, class => 'form-control', placeholder => 'Rasa nebo plemeno'}
+                            </div>
+                            <div class="col-sm-6">
+                                {label color, class => 'form-label fw-semibold' /}
+                                {input color, class => 'form-control', placeholder => 'Např. hnědočerná, tříbarevná…'}
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="mb-4">
+                        <h5 class="fw-bold mb-3"><i class="bi bi-card-text me-2"></i>Popis</h5>
+                        <div class="mb-3">
+                            {label description, class => 'form-label fw-semibold' /}
+                            {input description, class => 'form-control', placeholder => 'Vzhled, chování, zvláštní vlastnosti…'}
+                            <span class="text-danger small">{inputError description}</span>
+                        </div>
+                        <div class="mb-3">
+                            {label specialMarks, class => 'form-label fw-semibold' /}
+                            {input specialMarks, class => 'form-control', placeholder => 'Jizvy, zbarvení, jiné výrazné znaky…'}
+                        </div>
+                        <div class="mb-3">
+                            {label eventDescription, class => 'form-label fw-semibold' /}
+                            {input eventDescription, class => 'form-control', placeholder => 'Kdy, kde a jak se zvíře ztratilo…'}
+                            <span class="text-danger small">{inputError eventDescription}</span>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="mb-4">
+                        <h5 class="fw-bold mb-3"><i class="bi bi-cpu me-2"></i>Identifikace</h5>
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <div class="form-check d-flex align-items-center gap-2 p-0 mb-0">
+                                    {label hasChip, class => 'form-check-label mb-0' /}
+                                    {input hasChip, class=> 'form-check-input flex-shrink-0'}
+
+                                </div>
+                            </div>
+                            <div class="col-sm-6" id="chipNumberBox">
+                                {label chipNumber, class => 'form-label' /}
+                                {input chipNumber, class => 'form-control', placeholder => '15místné číslo čipu'}
+                            </div>
+                            <div class="col-12">
+                                <div class="form-check d-flex align-items-center gap-2 p-0 mb-0">
+                                    {label hasTattoo, class => 'form-check-label p-1' /}
+                                    {input hasTattoo, class=> 'form-check-input flex-shrink-0'}
+
+                                </div>
+                            </div>
+                            <div class="col-sm-6" id="tattooValueBox">
+                                {label tattooValue, class => 'form-label' /}
+                                {input tattooValue, class => 'form-control', placeholder => 'Text tetování'}
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="mb-4">
+                        <h5 class="fw-bold mb-3"><i class="bi bi-geo-alt me-2"></i>Místo a čas</h5>
+                        <div class="row g-3">
+                            <div class="col-sm-8">
+                                {label location, class => 'form-label fw-semibold' /}
+                                {input location, class => 'form-control', placeholder => 'Ulice, čtvrť, město — co nejpřesněji'}
+                                <span class="text-danger small">{inputError location}</span>
+                                <div class="form-text">Zadejte co nejpřesněji — použijeme pro geolokaci.</div>
+                            </div>
+                            <div class="col-sm-4">
+                                {label lostAt, class => 'form-label fw-semibold' /}
+                                {input lostAt, class => 'form-control'}
+                                <span class="text-danger small">{inputError lostAt}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="mb-4">
+                        <h5 class="fw-bold mb-3"><i class="bi bi-images me-2"></i>Fotografie</h5>
+                        {input photos, class => 'form-control'}
+                        <div class="form-text">Nahrajte 1–3 fotografie. Maximálně 5 MB na soubor. Formáty JPG, PNG.</div>
+                        <span class="text-danger small">{inputError photos}</span>
+
+                        {if $animal && count($animal->getPhotos()->filter(fn($p) => !$p->isDeleted())) > 0}
+                        <div class="d-flex gap-2 mt-3 flex-wrap">
+                            {foreach $animal->getPhotos()->filter(fn($p) => !$p->isDeleted()) as $p}
+                            <img src="{$basePath}{$p->getPath()}{$p->getName()}"
+                                 style="height:80px; width:80px; object-fit:cover; border-radius:6px;"
+                                 alt="">
+                            {/foreach}
+                        </div>
+                        <div class="form-text text-muted">Stávající fotky (nové nahrání přidá další).</div>
+                        {/if}
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        {input save, class => 'vaz-btn vaz-btn--primary'}
+                        <a n:href="ZN:default" class="vaz-btn vaz-btn--ghost">Zrušit</a>
+                    </div>
+
+                    {/form}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+</main>
+{/block}
+
+{block scripts-user}
+<script>
+function toggleChipTattoo() {
+    var chip = document.getElementById('hasChip');
+    var tattoo = document.getElementById('hasTattoo');
+    var chipBox = document.getElementById('chipNumberBox');
+    var tattooBox = document.getElementById('tattooValueBox');
+    if (chip && chipBox) chipBox.style.display = chip.checked ? '' : 'none';
+    if (tattoo && tattooBox) tattooBox.style.display = tattoo.checked ? '' : 'none';
+}
+document.addEventListener('DOMContentLoaded', function () {
+    var chip = document.getElementById('hasChip');
+    var tattoo = document.getElementById('hasTattoo');
+    if (chip) chip.addEventListener('change', toggleChipTattoo);
+    if (tattoo) tattoo.addEventListener('change', toggleChipTattoo);
+    toggleChipTattoo();
+});
+</script>
+{/block}

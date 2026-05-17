@@ -1,0 +1,45 @@
+{block content}
+<link href="{$basePath}/assets/css/vaz-redesign.css" rel="stylesheet">
+<main class="vaz-redesign">
+
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-6">
+                <div class="vaz-card text-center">
+                    {if $status === 'found'}
+                    <i class="bi bi-emoji-smile-fill text-success" style="font-size:3.5rem;"></i>
+                    <h2 class="mt-3 fw-bold text-success">Označit jako nalezeno</h2>
+                    <p class="text-muted mt-2">
+                        To je skvělá zpráva! Potvrďte prosím, že se <strong>{$animal->getName() ?? $animal->getSpecies()->getName()}</strong> vrátil/a domů.
+                        Inzerát bude uzavřen.
+                    </p>
+                    {else}
+                    <i class="bi bi-x-circle-fill text-secondary" style="font-size:3.5rem;"></i>
+                    <h2 class="mt-3 fw-bold">Uzavřít inzerát</h2>
+                    <p class="text-muted mt-2">
+                        Potvrdíte uzavření inzerátu pro
+                        <strong>{$animal->getName() ?? $animal->getSpecies()->getName()}</strong>?
+                        Stav bude nastaven jako <em>nenalezeno</em>.
+                    </p>
+                    {/if}
+
+                    <div class="d-flex gap-3 justify-content-center mt-4 flex-wrap">
+                        <a href="{link closeReport!, token => $animal->getSecretToken(), status => $status}"
+                           class="vaz-btn vaz-btn--primary {if $status === 'found'}vaz-btn--success{/if}"
+                           style="{if $status === 'found'}background:#16a34a;{/if}">
+                            <i class="bi bi-check-circle me-1"></i>
+                            {if $status === 'found'}Ano, zvíře je doma!{else}Potvrdit uzavření{/if}
+                        </a>
+                        <a n:href="ZN:lost, $animal->getId()" class="vaz-btn vaz-btn--ghost">
+                            <i class="bi bi-arrow-left me-1"></i>Zrušit
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+</main>
+{/block}
+{block scripts-user}{/block}

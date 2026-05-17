@@ -1,0 +1,55 @@
+# Zkopírujte jako local.neon a vyplňte hodnoty pro vaše prostředí.
+# NIKDY nekomitujte local.neon do repozitáře!
+
+parameters:
+    adminEmail: admin@example.cz
+    ufwPath: /usr/sbin/ufw
+    firewall:
+        temporaryBlockDuration: 30 seconds
+        maxAttemptsBeforeTemporaryBlock: 3
+        maxAttemptsBeforePermanentBlock: 5
+    flashMessages:
+        success: 'alert alert-success'
+        error: 'alert alert-danger'
+        warning: 'alert alert-warning'
+
+database:
+    dsn: 'mysql:dbname=DBNAME;host=DB_HOST'
+    user: 'DB_USER'
+    password: 'DB_PASSWORD'
+    options:
+        lazy: true
+
+nettrine.dbal:
+  debug:
+    panel: %debugMode%
+    sourcePaths: [%appDir%]
+  connection:
+    serverVersion: '8.1'
+    host: 'DB_HOST'
+    driver: pdo_mysql
+    dbname: DBNAME
+    user: DB_USER
+    password: DB_PASSWORD
+    charset: UTF8
+    types:
+        roleTypeEnum: App\Model\Orm\Enums\RoleTypeEnum
+        adoptionsTypeEnum: App\Model\Orm\Enums\AdoptionsTypeEnum
+        sexTypeEnum: App\Model\Orm\Enums\SexTypeEnum
+        actionTypeEnum: App\Model\Orm\Enums\ActionTypeEnum
+        messageTypeEnum: App\Model\Orm\Enums\MessageTypeEnum
+        payment_status: App\Doctrine\Type\PaymentStatusType
+    typesMapping:
+        enum: string
+
+nettrine.migrations:
+  directory: %appDir%/migrations
+
+nettrine.orm:
+  configuration:
+    autoGenerateProxyClasses: true
+
+nettrine.orm.attributes:
+  mapping:
+    App\Entity: %appDir%/Model/Orm/Entity
+    App\Enums: %appDir%/Model/Orm/Enums

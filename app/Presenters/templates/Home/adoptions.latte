@@ -1,0 +1,107 @@
+{*
+    Drop-in replacement for: vaz/app/Presenters/templates/Home/adoptions.latte
+    Requires: vaz-redesign.css linked in @layout.latte
+*}
+{block content}
+<link href="{$basePath}/assets/css/vaz-redesign.css" rel="stylesheet">
+<main class="vaz-redesign">
+
+<section class="vaz-section-hero">
+    <div class="container">
+        <nav class="vaz-crumbs">
+            <a n:href="Home:default">Úvod</a>
+            <span class="sep">›</span>
+            <span class="current">Zvířátka k adopci</span>
+        </nav>
+        <div class="d-flex justify-content-between align-items-end flex-wrap gap-3">
+            <div>
+                <h1 class="vaz-page-title">Zvířátka k adopci</h1>
+                <p class="vaz-page-sub" style="max-width:640px;">
+                    Najděte svého nového parťáka. Každé zvířátko prošlo veterinární prohlídkou a čeká na člověka, který ho pustí do srdce i do života.
+                </p>
+            </div>
+            <form n:name="searchForm" class="vaz-form d-flex gap-2 align-items-center">
+                <div class="position-relative">
+                    <i class="bi bi-search position-absolute" style="left:12px; top:50%; transform:translateY(-50%); color: var(--vaz-text-muted);"></i>
+                    <input n:name="search" type="text" class="form-control" placeholder="{$placeholders}"
+                           style="padding-left:36px; width:320px;">
+                </div>
+                <button n:name="send" type="submit" class="vaz-btn vaz-btn--primary">Hledat</button>
+            </form>
+        </div>
+
+        {ifset $words}
+            <div class="d-flex gap-2 mt-3 flex-wrap align-items-center">
+                <small class="text-muted">Hledáno:</small>
+                {foreach $words as $word}
+                    <span class="vaz-pill vaz-pill--slate">{$word}</span>
+                {/foreach}
+            </div>
+        {/ifset}
+    </div>
+</section>
+
+<section class="py-4">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="small text-muted">
+                Nalezeno: <strong style="color: var(--vaz-ink);">{count($adoptions)}</strong> zvířátek
+            </div>
+        </div>
+
+        <div class="row g-3">
+            {foreach $adoptions as $adoption}
+                <div class="col-xl-3 col-md-6 col-sm-12">
+                    <article class="vaz-adoption h-100">
+                        <div class="vaz-adoption__media">
+                            {if !is_null($adoption->getPhotos()[0])}
+                                <img src="{$basePath}{$adoption->getPhotos()[0]->getPath().$adoption->getPhotos()[0]->getName()}" alt="{$adoption->getName()}">
+                            {else}
+                                <img src="{$basePath}/assets/vazdata/img/pic/love1.jpeg" alt="{$adoption->getName()}">
+                            {/if}
+                            <span class="vaz-adoption__type
+                                {switch $adoption->getAdoptionType()}
+                                {case 'Virtuální adopce'} t-virt
+                                {case 'Dočasná péče'} t-doc
+                                {case 'Předadopce'} t-pre
+                                {case 'Plná adopce'} t-full
+                                {/switch}">
+                                {$adoption->getAdoptionType()}
+                            </span>
+                        </div>
+                        <div class="vaz-adoption__body">
+                            <h3 class="vaz-adoption__title">{$adoption->getName()}</h3>
+                            {if !is_null($adoption->getBirthdate())}
+                                {var $now = new DateTimeImmutable()}
+                                {var $interval = date_diff($adoption->getBirthdate(), $now)}
+                                <div class="vaz-adoption__meta">{$adoption->getBreed()} · {$interval->y} r.</div>
+                            {else}
+                                <div class="vaz-adoption__meta">{$adoption->getBreed()}</div>
+                            {/if}
+                            <p class="vaz-adoption__desc">
+                                {if !is_null($adoption->getHeight())}Výška: {$adoption->getHeight()} cm · {/if}
+                                {if !is_null($adoption->getWeight())}{$adoption->getWeight()} kg{/if}
+                                <br>
+                                {$adoption->getDescription()|truncate:90}
+                            </p>
+                            <div class="d-flex gap-2 mt-auto">
+                                {if $user->isLoggedIn()}
+                                    <a href="{link Home:adopce $adoption->getId()}" class="vaz-btn vaz-btn--primary vaz-btn--sm">Adoptovat <i class="bi bi-arrow-right"></i></a>
+                                {else}
+                                    <a href="{link Home:SignIn}" class="vaz-btn vaz-btn--ghost vaz-btn--sm">Přihlášení</a>
+                                {/if}
+                                <a href="{link Home:azyl $adoption->getAzyl()->getId()}" class="vaz-btn vaz-btn--ghost vaz-btn--sm" title="Stránka azylu">
+                                    <i class="bi bi-building"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            {/foreach}
+        </div>
+    </div>
+</section>
+
+</main>
+{/block}
+{block scripts-user}{/block}

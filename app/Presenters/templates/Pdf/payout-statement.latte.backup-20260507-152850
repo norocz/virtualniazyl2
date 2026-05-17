@@ -1,0 +1,106 @@
+{layout @layout.latte}
+
+{block title}Výpis o výplatě {$doc->getDocumentNumber()}{/block}
+
+{block content}
+
+<table class="header">
+    <tr>
+        <td style="width:60%;">
+            {if $logo}<img src="{$logo|noescape}" style="max-height:20mm;" alt=""><br>{/if}
+            <h1>Výpis o výplatě</h1>
+            <div class="muted">{$doc->getDocumentNumber()}</div>
+        </td>
+        <td style="width:40%; text-align:right;">
+            <div class="stamp" style="border-color:#0d6efd; color:#0d6efd;">Informativní</div>
+        </td>
+    </tr>
+</table>
+
+<div class="info-box">
+    <strong>Co je tento dokument:</strong> Informativní výpis o tom, jak byla objednávka
+    z eshopu vyřízena a kolik peněz bylo Vašemu azylu vyplaceno. <strong>Není to faktura ani
+    daňový doklad</strong> - je to transparenční sumář, aby azyl věděl co se dělo.
+    Pro účetnictví si doklad vystavuje sám azyl jako příjem z prodeje zboží.
+</div>
+
+<table class="parties">
+    <tr>
+        <td>
+            <h3>Odeslal (zprostředkovatel)</h3>
+            <div class="party-box">
+                <strong class="brand">{$doc->getIssuerName()}</strong><br>
+                {if $doc->getIssuerAddress()}{$doc->getIssuerAddress()}<br>{/if}
+                {if $doc->getIssuerIco()}<span class="small muted">IČO:</span> {$doc->getIssuerIco()}<br>{/if}
+                {if $doc->getIssuerAccount()}
+                    <span class="small muted">Z účtu:</span>
+                    {$doc->getIssuerAccount()}/{$doc->getIssuerBankCode()}
+                {/if}
+            </div>
+        </td>
+        <td>
+            <h3>Příjemce (azyl)</h3>
+            <div class="party-box">
+                <strong>{$doc->getBuyerName()}</strong><br>
+                {if $doc->getBuyerAddress()}{$doc->getBuyerAddress()}<br>{/if}
+                {if $doc->getBuyerIco()}<span class="small muted">IČO:</span> {$doc->getBuyerIco()}<br>{/if}
+                {if $doc->getBuyerEmail()}
+                    <span class="xsmall muted">{$doc->getBuyerEmail()}</span>
+                {/if}
+            </div>
+        </td>
+    </tr>
+</table>
+
+<h3>Rozpis platby</h3>
+
+<table class="items">
+    <thead>
+        <tr>
+            <th style="width:70%;">Položka</th>
+            <th class="num" style="width:30%;">Částka</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Celková platba od zákazníka za objednávku {$meta['order_id'] ?? $doc->getVariableSymbol()}</td>
+            <td class="num">{$meta['gross_amount']|number:2,',','&nbsp;'|noescape} Kč</td>
+        </tr>
+        <tr>
+            <td class="muted">&nbsp;&nbsp;– Provozní poplatek spolku (viz samostatná faktura)</td>
+            <td class="num muted">-{$meta['fee_amount']|number:2,',','&nbsp;'|noescape} Kč</td>
+        </tr>
+    </tbody>
+</table>
+
+<table class="totals">
+    <tr class="grand">
+        <td>Vyplaceno na Váš účet</td>
+        <td class="num">{$doc->getTotal()|number:2,',','&nbsp;'|noescape} {$doc->getCurrency()}</td>
+    </tr>
+</table>
+
+<h3>Platební údaje</h3>
+<table class="details-table">
+    <tr>
+        <td class="label">Variabilní symbol:</td>
+        <td>{$doc->getVariableSymbol()}</td>
+        <td class="label">Datum odeslání:</td>
+        <td>{if $doc->getPaidAt()}{$doc->getPaidAt()|date:'d.m.Y'}{else}—{/if}</td>
+    </tr>
+    <tr>
+        <td class="label">Způsob platby:</td>
+        <td>{$doc->getPaymentMethod()}</td>
+        <td class="label">Datum vystavení:</td>
+        <td>{$doc->getIssuedAt()|date:'d.m.Y'}</td>
+    </tr>
+</table>
+
+<div class="warning-box">
+    <strong>Pro účetnictví azylu:</strong> Přijatou platbu si zaúčtujte jako
+    příjem z prodeje zboží v hrubé výši {$meta['gross_amount']|number:2,',','&nbsp;'|noescape}&nbsp;Kč.
+    Provozní poplatek spolku ({$meta['fee_amount']|number:2,',','&nbsp;'|noescape}&nbsp;Kč)
+    je Vaším nákladem a doložíte ho samostatnou přijatou fakturou od spolku
+    ({$doc->getIssuerName()}), kterou jste obdrželi ve stejné době.
+</div>
+{/block}

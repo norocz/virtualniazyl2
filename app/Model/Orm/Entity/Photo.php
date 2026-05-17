@@ -1,0 +1,376 @@
+<?php
+// src/Entity/Photo.php
+
+namespace App\Model\Orm\Entity;
+
+use App\Model\Orm\Repository\PhotosRepository;
+use DateTimeImmutable;
+use Doctrine\ORM\Mapping as ORM;
+use Nette\Http\FileUpload;
+use Nette\IOException;
+use Nette\Utils\Random;
+
+#[ORM\Entity(repositoryClass: PhotosRepository::class)]
+#[ORM\Table(name: 'photos')]
+class Photo
+{
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
+    #[ORM\Column(type: 'integer')]
+    private int $id;
+
+    #[ORM\Column(type: 'datetime_immutable')]
+    private DateTimeImmutable $date;
+
+    #[ORM\Column(type: 'string', length: 512)]
+    private string $path;
+
+    #[ORM\Column(type: 'string', length: 512)]
+    private string $name;
+
+    #[ORM\Column(type: 'string', length: 512)]
+    private string $originalName;
+
+    #[ORM\Column(type: 'boolean')]
+    private bool $deleted = false;
+
+    #[ORM\ManyToOne(targetEntity: Animal::class, fetch: "EAGER", inversedBy: "photos")]
+    #[ORM\JoinColumn(name: "animal_id", referencedColumnName: "id", nullable: true)]
+    private ?Animal $animal = null;
+
+    #[ORM\ManyToOne(targetEntity: Users::class, fetch: "LAZY",inversedBy: "photos")]
+    #[ORM\JoinColumn(name: "user_id", referencedColumnName: "id", nullable: true)]
+    private ?Users $user = null;
+
+    #[ORM\ManyToOne(targetEntity: Owner::class,fetch: "EAGER", inversedBy: "photos")]
+    #[ORM\JoinColumn(name: "owner_id", referencedColumnName: "id",nullable: true)]
+    private ?Owner $owner = null;
+
+    #[ORM\ManyToOne (targetEntity: UsersRatings::class, inversedBy: "photos")]
+    private UsersRatings $userRatings;
+
+    #[ORM\ManyToOne(targetEntity: Azyl::class, fetch: "EAGER", inversedBy: "photos")]
+    #[ORM\JoinColumn(name: "azyl_id", referencedColumnName: "id", nullable: true)]
+    private ?Azyl $azyl = null;
+
+    #[ORM\OneToOne(inversedBy: "photo", targetEntity: Collections::class, fetch: "EAGER")]
+    #[ORM\JoinColumn(name: "collections_id", referencedColumnName: "id", nullable: true)]
+    private ?Collections $collections = null;
+
+    #[ORM\ManyToOne(targetEntity: AzylEvent::class, inversedBy: "photos")]
+    #[ORM\JoinColumn(name: "azyl_event_id", referencedColumnName: "id", nullable: true)]
+    private ?AzylEvent $azylEvent = null;
+
+    const REAL_UPLOAD_PATH = '/upload/photos/';
+    const WWW_UPLOAD_PATH = '/upload/photos/';
+    const UPLOAD_PATH = '/../../../../www' . self::WWW_UPLOAD_PATH;
+
+    /**
+     * @param Azyl $azyl
+     */
+    public function __construct()
+    {
+        $this->azyl = null;
+    }
+
+
+    public function uploadAzylPhoto(FileUpload $fileUpload) : void
+    {
+        if (!$fileUpload->isOk()) {
+            throw new IOException('File is not OK!');
+        }
+        $this->originalName = $fileUpload->getSanitizedName();
+        $array = explode('.', $this->originalName);
+        $extension = array_pop($array);
+        $this->name = Random::generate(39) . "." . $extension;
+
+        $pathPart = self::REAL_UPLOAD_PATH."azyl/" .$this->getAzyl()->id.'/';
+        $path = __DIR__ . self::UPLOAD_PATH . "azyl/" .$this->getAzyl()->id.'/';
+
+
+        $this->setPath($pathPart);
+
+        if (!file_exists($path)) {
+            if (!mkdir($path, 0755, true)) {
+                throw new IOException('Path creating error!');
+            }
+        }
+
+        $fileUpload->move($path . $this->name);
+    }
+
+    public function uploadUserPhoto(FileUpload $fileUpload):void
+    {
+        if (!$fileUpload->isOk()) {
+            throw new IOException('File is not OK!');
+        }
+        $this->originalName = $fileUpload->getSanitizedName();
+        $array = explode('.', $this->originalName);
+        $extension = array_pop($array);
+        $this->name = Random::generate(39) . "." . $extension;
+        $pathPart = self::REAL_UPLOAD_PATH."user/" .$this->getUser()->getId().'/';
+        $path = __DIR__ . self::UPLOAD_PATH . "user/" .$this->getUser()->getId().'/';
+        $this->setPath($pathPart);
+
+        if (!file_exists($path)) {
+            if (!mkdir($path, 0755, true)) {
+                throw new IOException('Path creating error!');
+            }
+        }
+
+        $fileUpload->move($path . $this->name);
+    }
+
+    public function uploadUserPersonalPhoto(FileUpload $fileUpload):void
+    {
+        if (!$fileUpload->isOk()) {
+            throw new IOException('File is not OK!');
+        }
+        $this->originalName = $fileUpload->getSanitizedName();
+        $array = explode('.', $this->originalName);
+        $extension = array_pop($array);
+        $this->name = Random::generate(39) . "." . $extension;
+        $pathPart = self::REAL_UPLOAD_PATH."user/personal/" .$this->getUser()->getId().'/';
+        $path = __DIR__ . self::UPLOAD_PATH . "user/personal/" .$this->getUser()->getId().'/';
+        $this->setPath($pathPart);
+
+        if (!file_exists($path)) {
+            if (!mkdir($path, 0755, true)) {
+                throw new IOException('Path creating error!');
+            }
+        }
+
+        $fileUpload->move($path . $this->name);
+    }
+
+    public function uploadOwnerPhoto(FileUpload $fileUpload)
+    {
+
+        if (!$fileUpload->isOk()) {
+            throw new IOException('File is not OK!');
+        }
+        $this->originalName = $fileUpload->getSanitizedName();
+        $array = explode('.', $this->originalName);
+        $extension = array_pop($array);
+        $this->name = Random::generate(39) . "." . $extension;
+        $pathPart = self::REAL_UPLOAD_PATH."owner/" .$this->getAzyl()->getId().'/';
+        $path = __DIR__ . self::UPLOAD_PATH . "owner/" .$this->getAzyl()->getId().'/';
+        $this->setPath($pathPart);
+
+        if (!file_exists($path)) {
+            if (!mkdir($path, 0755, true)) {
+                throw new IOException('Path creating error!');
+            }
+        }
+
+        $fileUpload->move($path . $this->name);
+    }
+
+    public function uploadCollectionHeadlinePhoto(FileUpload $fileUpload)
+    {
+        if (!$fileUpload->isOk()) {
+            throw new IOException('File is not OK!');
+        }
+        $this->originalName = $fileUpload->getSanitizedName();
+        $array = explode('.', $this->originalName);
+        $extension = array_pop($array);
+        $this->name = Random::generate(39) . "." . $extension;
+        $pathPart = self::REAL_UPLOAD_PATH."azyl/collection/" .$this->getAzyl()->getId().'/';
+        $path = __DIR__ . self::UPLOAD_PATH . "azyl/collection" .$this->getAzyl()->getId().'/';
+        $this->setPath($pathPart);
+
+        if (!file_exists($path)) {
+            if (!mkdir($path, 0755, true)) {
+                throw new IOException('Path creating error!');
+            }
+        }
+
+        $fileUpload->move($path . $this->name);
+    }
+
+    public function getId(): int
+    {
+        return $this->id;
+    }
+
+    public function setId(int $id): Photo
+    {
+        $this->id = $id;
+        return $this;
+    }
+
+    public function getDate(): DateTimeImmutable
+    {
+        return $this->date;
+    }
+
+    public function setDate(DateTimeImmutable $date): Photo
+    {
+        $this->date = $date;
+        return $this;
+    }
+
+    public function getPath(): string
+    {
+        return $this->path;
+    }
+
+    public function setPath(string $path): Photo
+    {
+        $this->path = $path;
+        return $this;
+    }
+
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    public function setName(string $name): Photo
+    {
+        $this->name = $name;
+        return $this;
+    }
+
+    public function getOriginalName(): string
+    {
+        return $this->originalName;
+    }
+
+    public function setOriginalName(string $originalName): void
+    {
+        $this->originalName = $originalName;
+
+    }
+
+    public function getAnimal(): Animal
+    {
+        return $this->animal;
+    }
+
+    public function setAnimal(Animal $animal): void
+    {
+        $this->animal = $animal;
+
+    }
+
+    public function getUser(): Users
+    {
+        return $this->user;
+    }
+
+    public function setUser(Users $user): Users
+    {
+        return $this->user = $user;
+    }
+
+    public function getOwner(): Owner
+    {
+        return $this->owner;
+    }
+
+    public function setOwner(Owner $owner): Owner
+    {
+        return $this->owner = $owner;
+    }
+
+    public function getAzyl(): ?Azyl
+    {
+        return $this->azyl;
+    }
+
+    public function setAzyl(Azyl $azyl): void
+    {
+        $this->azyl = $azyl;
+
+    }
+
+    public function toArray(): array
+    {
+        return ['id' => $this->id
+        , 'date' => $this->date
+        , 'path' => $this->path
+        , 'name' => $this->name
+        , 'originalName' => $this->originalName];
+    }
+
+    public function isDeleted(): bool
+    {
+        return $this->deleted;
+    }
+
+    public function setDeleted(bool $deleted): Photo
+    {
+        $this->deleted = $deleted;
+        return $this;
+    }
+
+    public function getUserRatings(): UsersRatings
+    {
+        return $this->userRatings;
+    }
+
+    public function setUserRatings(UsersRatings $userRatings): Photo
+    {
+        $this->userRatings = $userRatings;
+        return $this;
+    }
+
+    public function getCollections(): ?Collections
+    {
+        return $this->collections;
+    }
+
+    public function setCollections(?Collections $collections): Photo
+    {
+        $this->collections = $collections;
+        return $this;
+    }
+
+    public function getAzylEvent(): ?AzylEvent
+    {
+        return $this->azylEvent;
+    }
+
+    public function setAzylEvent(?AzylEvent $azylEvent): self
+    {
+        $this->azylEvent = $azylEvent;
+        return $this;
+    }
+
+    #[ORM\ManyToOne(targetEntity: LostAnimal::class, inversedBy: 'photos')]
+    #[ORM\JoinColumn(name: 'lost_animal_id', referencedColumnName: 'id', nullable: true)]
+    private ?LostAnimal $lostAnimal = null;
+
+    #[ORM\ManyToOne(targetEntity: FoundAnimal::class, inversedBy: 'photos')]
+    #[ORM\JoinColumn(name: 'found_animal_id', referencedColumnName: 'id', nullable: true)]
+    private ?FoundAnimal $foundAnimal = null;
+
+    public function getLostAnimal(): ?LostAnimal { return $this->lostAnimal; }
+    public function setLostAnimal(?LostAnimal $lostAnimal): self { $this->lostAnimal = $lostAnimal; return $this; }
+
+    public function getFoundAnimal(): ?FoundAnimal { return $this->foundAnimal; }
+    public function setFoundAnimal(?FoundAnimal $foundAnimal): self { $this->foundAnimal = $foundAnimal; return $this; }
+
+    public function uploadZNPhoto(FileUpload $fileUpload, string $subPath): void
+    {
+        if (!$fileUpload->isOk()) {
+            throw new IOException('File is not OK!');
+        }
+        $this->originalName = $fileUpload->getSanitizedName();
+        $array = explode('.', $this->originalName);
+        $extension = array_pop($array);
+        $this->name = Random::generate(39) . '.' . $extension;
+
+        $pathPart = self::REAL_UPLOAD_PATH . 'zn/' . $subPath . '/';
+        $path = __DIR__ . self::UPLOAD_PATH . 'zn/' . $subPath . '/';
+
+        $this->setPath($pathPart);
+
+        if (!file_exists($path)) {
+            mkdir($path, 0755, true);
+        }
+
+        $fileUpload->move($path . $this->name);
+    }
+}

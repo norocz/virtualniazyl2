@@ -1,0 +1,312 @@
+{templateType App\Presenters\Templates\SuperAdmin\Layout}
+{block superAdminContent}
+<div class="container-fluid pt-4 px-4">
+    <div class="bg-light rounded p-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="mb-0"><i class="bi bi-calculator me-2"></i>Účetní reporty eshopu</h4>
+            <form class="d-flex gap-2" method="get">
+                <select name="year" class="form-select form-select-sm">
+                    {foreach $availableYears as $y}
+                        <option value="{$y}" {if $y === $year}selected{/if}>{$y}</option>
+                    {/foreach}
+                </select>
+                <button class="btn btn-sm btn-primary">Zobrazit</button>
+            </form>
+        </div>
+
+        <ul class="nav nav-tabs mb-4">
+            <li class="nav-item">
+                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-overview">
+                    <i class="bi bi-graph-up me-1"></i>Přehled {$year}
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-monthly">
+                    <i class="bi bi-calendar3 me-1"></i>Měsíční souhrn
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-azyls">
+                    <i class="bi bi-building me-1"></i>Podle azylů
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-journal">
+                    <i class="bi bi-journal-text me-1"></i>Deník
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content">
+            {* ========= Přehled ========= *}
+            <div class="tab-pane fade show active" id="tab-overview">
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3">
+                        <div class="card border-0 bg-success text-white">
+                            <div class="card-body">
+                                <h6 class="card-title">Celkem příjem</h6>
+                                <h3 class="mb-0">{$yearly['year_totals']['incoming']|number:0,',','&nbsp;'|noescape} Kč</h3>
+                                <small>za {$year}</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card border-0 bg-warning">
+                            <div class="card-body">
+                                <h6 class="card-title">Vyplaceno azylům</h6>
+                                <h3 class="mb-0">{$yearly['year_totals']['payouts']|number:0,',','&nbsp;'|noescape} Kč</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card border-0 bg-info text-white">
+                            <div class="card-body">
+                                <h6 class="card-title">Provize spolku</h6>
+                                <h3 class="mb-0">{$yearly['year_totals']['fees_revenue']|number:0,',','&nbsp;'|noescape} Kč</h3>
+                                <small>k zdanění</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card border-0 bg-danger text-white">
+                            <div class="card-body">
+                                <h6 class="card-title">Vratky</h6>
+                                <h3 class="mb-0">{$yearly['year_totals']['refunds']|number:0,',','&nbsp;'|noescape} Kč</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="alert alert-info">
+                    <h6 class="mb-2"><i class="bi bi-info-circle me-1"></i>Pro účetní</h6>
+                    <p class="small mb-2">
+                        <strong>Provize spolku</strong> = daňově relevantní výnos spolku.
+                        V tomto roce: <strong>{$yearly['year_totals']['fees_revenue']|number:2,',','&nbsp;'|noescape} Kč</strong>.
+                    </p>
+                    <p class="small mb-0">
+                        <strong>Vyplaceno azylům</strong> = přeposlané peníze, NEJSOU výnosem spolku
+                        (spolek je jen prostředník). Azyly si to daní samy.
+                    </p>
+                </div>
+
+                <h5 class="mt-4">Exporty pro účetní</h5>
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="{link SuperAdmin:shopReportExport, type => 'journal', year => $year}"
+                       class="btn btn-outline-primary">
+                        <i class="bi bi-file-earmark-spreadsheet me-1"></i>
+                        Účetní deník {$year} (CSV)
+                    </a>
+                    <a href="{link SuperAdmin:shopReportExport, type => 'azyls', year => $year}"
+                       class="btn btn-outline-primary">
+                        <i class="bi bi-file-earmark-spreadsheet me-1"></i>
+                        Souhrn podle azylů (CSV)
+                    </a>
+                    <a href="{link SuperAdmin:shopReportExport, type => 'monthly', year => $year}"
+                       class="btn btn-outline-primary">
+                        <i class="bi bi-file-earmark-spreadsheet me-1"></i>
+                        Měsíční souhrny (CSV)
+                    </a>
+                </div>
+
+                <h5 class="mt-4">Kontrolní kontrola</h5>
+                <table class="table table-sm">
+                    <tr>
+                        <th>Čistý cash flow (příjmy - výdaje - vratky):</th>
+                        <td class="text-end">
+                            <strong>
+                                {$yearly['year_totals']['net_cash_flow']|number:2,',','&nbsp;'|noescape} Kč
+                            </strong>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Měl by se rovnat provizi:</th>
+                        <td class="text-end">
+                            <strong>
+                                {$yearly['year_totals']['fees_revenue']|number:2,',','&nbsp;'|noescape} Kč
+                            </strong>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Rozdíl (pending výplaty, unmatched platby):</th>
+                        <td class="text-end">
+                            {var $diff = $yearly['year_totals']['net_cash_flow'] - $yearly['year_totals']['fees_revenue']}
+                            <strong class="{if abs($diff) > 1}text-danger{else}text-success{/if}">
+                                {$diff|number:2,',','&nbsp;'|noescape} Kč
+                            </strong>
+                        </td>
+                    </tr>
+                </table>
+                {var $diff = $yearly['year_totals']['net_cash_flow'] - $yearly['year_totals']['fees_revenue']}
+                {if abs($diff) > 1}
+                    <div class="alert alert-warning small">
+                        <i class="bi bi-exclamation-triangle me-1"></i>
+                        Rozdíl větší než 1 Kč - může znamenat nespárované platby nebo čekající výplaty.
+                        Zkontrolujte deník a frontu plateb.
+                    </div>
+                {/if}
+            </div>
+
+            {* ========= Měsíční souhrn ========= *}
+            <div class="tab-pane fade" id="tab-monthly">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Měsíc</th>
+                                <th class="text-end">Příjem</th>
+                                <th class="text-end">Výplaty</th>
+                                <th class="text-end">Vratky</th>
+                                <th class="text-end">Provize</th>
+                                <th class="text-end">Objednávek</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {foreach $yearly['monthly'] as $month}
+                                <tr>
+                                    <td>
+                                        <strong>{$month['month']}</strong>
+                                    </td>
+                                    <td class="text-end text-success">
+                                        {$month['incoming_total']|number:2,',','&nbsp;'|noescape} Kč
+                                    </td>
+                                    <td class="text-end">
+                                        -{$month['payouts_total']|number:2,',','&nbsp;'|noescape} Kč
+                                    </td>
+                                    <td class="text-end text-danger">
+                                        {if $month['refunds_total'] > 0}
+                                            -{$month['refunds_total']|number:2,',','&nbsp;'|noescape} Kč
+                                        {else}—{/if}
+                                    </td>
+                                    <td class="text-end">
+                                        <strong>
+                                            {$month['fees_total']|number:2,',','&nbsp;'|noescape} Kč
+                                        </strong>
+                                    </td>
+                                    <td class="text-end">
+                                        {$month['payouts_count']}
+                                    </td>
+                                </tr>
+                            {/foreach}
+                        </tbody>
+                        <tfoot>
+                            <tr class="table-primary">
+                                <th>Celkem {$year}</th>
+                                <th class="text-end">
+                                    {$yearly['year_totals']['incoming']|number:2,',','&nbsp;'|noescape} Kč
+                                </th>
+                                <th class="text-end">
+                                    -{$yearly['year_totals']['payouts']|number:2,',','&nbsp;'|noescape} Kč
+                                </th>
+                                <th class="text-end">
+                                    -{$yearly['year_totals']['refunds']|number:2,',','&nbsp;'|noescape} Kč
+                                </th>
+                                <th class="text-end">
+                                    {$yearly['year_totals']['fees_revenue']|number:2,',','&nbsp;'|noescape} Kč
+                                </th>
+                                <th class="text-end">{$yearly['year_totals']['orders_done']}</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+
+            {* ========= Podle azylů ========= *}
+            <div class="tab-pane fade" id="tab-azyls">
+                {if count($azylSummary) > 0}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Azyl</th>
+                                    <th class="text-end">Objednávek</th>
+                                    <th class="text-end">Hrubý obrat</th>
+                                    <th class="text-end">Provize spolku</th>
+                                    <th class="text-end">Náleží azylu</th>
+                                    <th class="text-end">Vyplaceno</th>
+                                    <th class="text-end">Čeká na výplatu</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {foreach $azylSummary as $s}
+                                    <tr>
+                                        <td><strong>{$s['azyl_name']}</strong></td>
+                                        <td class="text-end">{$s['orders_count']}</td>
+                                        <td class="text-end">
+                                            {$s['gross_revenue']|number:2,',','&nbsp;'|noescape} Kč
+                                        </td>
+                                        <td class="text-end text-muted">
+                                            {$s['fees_deducted']|number:2,',','&nbsp;'|noescape} Kč
+                                        </td>
+                                        <td class="text-end">
+                                            {$s['payout_earned']|number:2,',','&nbsp;'|noescape} Kč
+                                        </td>
+                                        <td class="text-end text-success">
+                                            {$s['paid_out']|number:2,',','&nbsp;'|noescape} Kč
+                                        </td>
+                                        <td class="text-end {if $s['pending'] > 0}text-warning fw-bold{/if}">
+                                            {$s['pending']|number:2,',','&nbsp;'|noescape} Kč
+                                        </td>
+                                    </tr>
+                                {/foreach}
+                            </tbody>
+                        </table>
+                    </div>
+                {else}
+                    <div class="alert alert-info">Žádná data za období.</div>
+                {/if}
+            </div>
+
+            {* ========= Deník ========= *}
+            <div class="tab-pane fade" id="tab-journal">
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Deník je primárně určen k exportu. Zde se zobrazuje posledních 50 záznamů
+                    pro kontrolu. Pro kompletní účetní evidenci použijte CSV export.
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover font-monospace" style="font-size:12px;">
+                        <thead>
+                            <tr>
+                                <th>Datum</th>
+                                <th>Typ</th>
+                                <th>Doklad</th>
+                                <th>Protistrana</th>
+                                <th class="text-end">Částka</th>
+                                <th>Poznámka</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {foreach $recentJournal as $r}
+                                <tr>
+                                    <td>{$r['datum']|date:'d.m.Y H:i'}</td>
+                                    <td>
+                                        <span class="badge
+                                            {if $r['typ'] === 'INCOMING_PAYMENT'}bg-success
+                                            {elseif $r['typ'] === 'PAYOUT_TO_AZYL'}bg-warning text-dark
+                                            {elseif $r['typ'] === 'REFUND_TO_CUSTOMER'}bg-danger
+                                            {elseif $r['typ'] === 'FEE_REVENUE'}bg-info
+                                            {/if}">
+                                            {$r['typ_cz']}
+                                        </span>
+                                    </td>
+                                    <td>{$r['doklad']}</td>
+                                    <td>{$r['protistrana']}</td>
+                                    <td class="text-end">
+                                        <strong class="{if $r['castka'] > 0}text-success{else}text-danger{/if}">
+                                            {$r['castka']|number:2,',','&nbsp;'|noescape}
+                                        </strong>
+                                    </td>
+                                    <td class="small text-muted">{$r['poznamka']}</td>
+                                </tr>
+                            {/foreach}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{/block}
+
+{block scripts}{/block}

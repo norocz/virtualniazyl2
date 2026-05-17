@@ -1,0 +1,149 @@
+# =============================================================
+# config/vaz-extensions.neon
+# =============================================================
+# Toto je rozšíření do existujícího services.neon projektu Virtuální azyl.
+# Soubor patří do /config/ (root projektu, ne app/config/) - tam,
+# kde už máš common.neon, services.neon, local.neon.
+#
+# Includuje se v Bootstrap.php nebo přidáním řádku do common.neon:
+#
+#     # V config/common.neon přidat:
+#     includes:
+#         - vaz-extensions.neon
+#
+# Po include budou všechny nové služby zaregistrované.
+# =============================================================
+
+parameters:
+    # ----- AI překlady -----
+    translation:
+        cacheDir: '%appDir%/../data/translations-cache'
+        cacheTtl: 2592000           # 30 dnů
+        enabled: false              # zapnout v secrets.local.neon
+        provider: 'openai'
+        apiKey: 'sk-78628967098023IUZE287'
+        model: %openai.model%
+
+    # ----- I18n -----
+    i18n:
+        defaultLanguage: 'cs'
+        supportedLanguages: ['cs', 'en', 'sk', 'de', 'pl', 'uk']
+
+    # ----- Nominatim (geokódování) -----
+    nominatim:
+        userAgent: 'VirtualniAzyl/1.0 (kontakt@virtualniazyl.cz)'
+        cacheDir: '%appDir%/../data/nominatim-cache'
+
+    # ----- Z&N -----
+    zn:
+        fromEmail: 'registration@virtualniazyl.cz'
+        siteUrl: 'https://virtualniazyl.cz'
+
+    # ----- OpenSearch -----
+    # POZN: Default port je 9300 (ne 9200) abychom nekolidovali
+    # s případně existující OpenSearch instancí na serveru.
+    opensearch:
+        enabled: false              # zapnout v local.neon
+        hosts:
+            - 'http://127.0.0.1:9300'
+        username: ''
+        password: ''
+        indexPrefix: 'vaz_'
+        verifySsl: false
+
+
+services:
+    # ============== Bezpečnost & vyhledávání ==============
+    - App\Services\TranslationService(cacheDir: %translation.cacheDir%)
+    - App\Services\I18nService(%i18n%)
+    - App\Services\NominatimService(%nominatim%, %nominatim.cacheDir%)
+    - App\Services\OpenSearchService(%opensearch%)
+    - App\Services\SearchIndexerService
+    - App\Services\SearchService
+    - App\Services\GeocodingService
+    - App\Console\GeocodeCitiesCommand
+    - App\Console\ReindexOpenSearchCommand
+
+    # ============== Sledování azylů ==============
+    - App\Model\Orm\Repository\UserAzylFollowRepository
+    - App\Services\AzylActivityFeedService
+
+    # ============== Události ==============
+    - App\Model\Orm\Repository\AzylEventRepository
+    - App\Model\Orm\Repository\AzylEventReservationRepository
+    - App\Forms\AzylEventFormFactory
+    EventRegistrationMailService:
+        factory: App\Services\EventRegistrationMailService(
+            fromEmail: %zn.fromEmail%,
+            siteUrl: %zn.siteUrl%
+        )
+
+    # ============== Bankovní výpisy ==============
+    - App\Model\Orm\Repository\PaymentsInRepository
+    - App\Components\Datagrids\BankImportsDatagridFactory
+
+    # ============== Z&N (Ztracená & Nalezená) ==============
+    - App\Model\Orm\Repository\LostAnimalRepository
+    - App\Model\Orm\Repository\FoundAnimalRepository
+    - App\Model\Orm\Repository\AnimalSightingRepository
+    ZNMailService:
+        factory: App\Services\ZNMailService(
+            fromEmail: %zn.fromEmail%,
+            siteUrl: %zn.siteUrl%
+        )
+
+    # ==============  Eshop ==============
+    - App\Services\SystemSettingsReader
+    - App\Services\WishlistService
+    - App\Services\CartService
+    - App\Services\ShopQrService
+    - App\Services\ShopService
+    - App\Services\PayoutBatchService
+    - App\Model\Orm\Repository\ShopProductRepository
+    - App\Model\Orm\Repository\ShopOrderRepository
+    - App\Forms\ShopProductFormFactory
+    - App\Forms\ShopCheckoutFormFactory
+    - App\Console\ShopExpireOrdersCommand
+    - App\Presenters\ShopApiPresenter(%shopApi.key%)
+    - App\Presenters\ShopPresenter
+
+    # ============== Účetnictví ==============
+    - App\Services\AccountingReportService
+    - App\Services\BankExportService
+    - App\Services\EmailTemplateService(
+        %appDir%/Presenters/templates/Email/Shop,
+        @App\Services\EmailService,
+        @App\Services\TranslationService,
+        @App\Services\SystemSettingsReader,
+        @App\Services\DocumentService
+    )
+
+    # ==============  PDF doklady ==============
+    - App\Services\DocumentService
+    - App\Services\PdfGeneratorService(
+        %appDir%/Presenters/templates/Pdf,
+        %appDir%/../data/invoices,
+        @App\Services\SystemSettingsReader
+    )
+    - App\Model\Orm\Repository\ShopDocumentRepository
+
+    # ============== Admin & Feed ==============
+    - App\Services\DashboardStatsService
+    - App\Services\AdminMessagesService
+    AdminPresenter:
+        factory: App\Presenters\AdminPresenter
+        arguments:
+            smtpParams: %smtp%
+    - App\Services\AdoptionsFeedService
+    - App\Presenters\FeedPresenter
+
+    # ============== Counter zpráv ==============
+    - App\Presenters\ApiPresenter
+
+    # ========= Konfigy =========
+
+    OpenAiConfig:
+        factory: App\Config\OpenAiConfig(%openai.apiKey%, %openai.model%, 'https://api.openai.com/v1', %openai.enabled%, 30, 'cs')
+
+    I18nConfig:
+        factory: App\Config\I18nConfig('cs', {cs: 'Czech', en: 'English', de: 'German'})

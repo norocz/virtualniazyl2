@@ -1,0 +1,68 @@
+{templateType App\Presenters\Templates\Admin\Layout}
+{block adminContent}
+<div class="container-fluid pt-4 px-4">
+    <div class="bg-light rounded p-4">
+        <h4 class="mb-4"><i class="bi bi-broadcast me-2"></i>Feed API – dokumentace</h4>
+
+        <div class="bg-white rounded p-4 mb-4">
+            <h5>Endpointy</h5>
+
+            <h6 class="mt-4">Nejnovější adopce</h6>
+            <pre class="bg-light p-3 rounded"><code>GET {$baseUrl}feed/adopce[.format]</code></pre>
+            <p>Vrací poslední X zvířátek k adopci, seřazené od nejnovějších.</p>
+
+            <h6 class="mt-4">Náhodný výběr</h6>
+            <pre class="bg-light p-3 rounded"><code>GET {$baseUrl}feed/adopce/random[.format]</code></pre>
+            <p>Vrací náhodný výběr. Seed se mění každou hodinu.</p>
+
+            <h6 class="mt-4">Geolokalizace</h6>
+            <pre class="bg-light p-3 rounded"><code>GET {$baseUrl}feed/adopce/near/&lt;lat&gt;,&lt;lon&gt;[.format]</code></pre>
+            <p>Příklad (Praha): <code>{$baseUrl}feed/adopce/near/50.0755,14.4378.rss?radius_km=50</code></p>
+        </div>
+
+        <div class="bg-white rounded p-4 mb-4">
+            <h5>Formáty</h5>
+            <table class="table table-sm">
+                <thead><tr><th>Přípona</th><th>Formát</th><th>Použití</th></tr></thead>
+                <tbody>
+                    <tr><td><code>.rss</code></td><td>RSS 2.0 + GeoRSS</td><td>RSS čtečky</td></tr>
+                    <tr><td><code>.atom</code></td><td>Atom 1.0</td><td>Moderní alternativa RSS</td></tr>
+                    <tr><td><code>.json</code></td><td>JSON Feed 1.1</td><td>JavaScript aplikace</td></tr>
+                    <tr><td><code>.xml</code></td><td>Vlastní XML</td><td>Integrace</td></tr>
+                    <tr><td><code>.geojson</code></td><td>GeoJSON</td><td>Mapové aplikace</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="bg-white rounded p-4 mb-4">
+            <h5>Query parametry</h5>
+            <table class="table table-sm">
+                <thead><tr><th>Parametr</th><th>Hodnota</th><th>Popis</th></tr></thead>
+                <tbody>
+                    <tr><td><code>limit</code></td><td>int (1–200)</td><td>Max počet položek (default 50)</td></tr>
+                    <tr><td><code>species</code></td><td>string</td><td>Filtr podle druhu</td></tr>
+                    <tr><td><code>adoption_type</code></td><td>string</td><td>Filtr podle typu adopce</td></tr>
+                    <tr><td><code>radius_km</code></td><td>int</td><td>Pouze pro /near, radius v km</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="bg-white rounded p-4 mb-4">
+            <h5>Příklady</h5>
+            <h6>Psi v okolí Brna (RSS):</h6>
+            <pre class="bg-light p-3 rounded"><code>{$baseUrl}feed/adopce/near/49.1951,16.6068.rss?species=Pes&radius_km=30</code></pre>
+            <h6>Virtuální adopce jako GeoJSON:</h6>
+            <pre class="bg-light p-3 rounded"><code>{$baseUrl}feed/adopce.geojson?adoption_type=Virtuální%20adopce</code></pre>
+            <h6>Náhodných 10 koček (JSON):</h6>
+            <pre class="bg-light p-3 rounded"><code>{$baseUrl}feed/adopce/random.json?species=Kočka&limit=10</code></pre>
+        </div>
+
+        <div class="alert alert-info">
+            <strong>CORS:</strong> povoleno · <strong>Cache:</strong> 10 min (latest), 60 min (random), 5 min (geo) ·
+            <strong>Licence:</strong> CC BY 4.0 · <strong>Rate limit:</strong> 1000 req/den/IP
+        </div>
+    </div>
+</div>
+{/block}
+
+{block scripts}{/block}

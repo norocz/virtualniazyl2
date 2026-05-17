@@ -1,0 +1,44 @@
+{*
+    Drop-in replacement for: vaz/app/Presenters/templates/User/default.latte
+    User dashboard — aktuality + adopce (uses presenter snippets)
+*}
+{block content}
+<link href="{$basePath}/assets/css/vaz-redesign.css" rel="stylesheet">
+<main class="vaz-redesign">
+
+<section class="vaz-section-hero">
+    <div class="container">
+        <nav class="vaz-crumbs">
+            <a n:href="Home:default">Úvod</a>
+            <span class="sep">›</span>
+            <span class="current">Nástěnka</span>
+        </nav>
+        <h1 class="vaz-page-title">Vaše nástěnka</h1>
+        <p class="vaz-page-sub">Aktuality a adopce, které vás zajímají.</p>
+    </div>
+</section>
+
+<section class="py-4">
+    <div class="container">
+        <div class="vaz-dash">
+            <div class="vaz-dash__col">
+                <h3><i class="bi bi-megaphone-fill"></i> Aktuality</h3>
+                <div class="vaz-card vaz-card--flush" id="news">
+                    {snippet news}
+                    {/snippet}
+                </div>
+            </div>
+            <div class="vaz-dash__col">
+                <h3><i class="bi bi-heart-fill" style="color: var(--vaz-rose) !important;"></i> Adopce</h3>
+                <div class="vaz-card vaz-card--flush" id="adoptions">
+                    {snippet adoptions}
+                    {/snippet}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+</main>
+{/block}
+{block scripts-user}{/block}

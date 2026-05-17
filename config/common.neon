@@ -1,0 +1,42 @@
+includes:
+    - vaz-extensions.neon
+    - secrets.local.neon
+
+parameters:
+    payments:
+        account: '123456789/0100'
+
+application:
+	errorPresenter: Error
+	catchExceptions: true
+	mapping:
+		*: App\*Module\Presenters\*Presenter
+
+latte:
+	strictTypes: yes
+
+session:
+	expiration: 14 days
+	autoStart: true
+	cookieSecure: true
+	cookieSamesite: 'Lax'
+	cookieHttponly: true
+
+di:
+	export:
+		parameters: no
+		tags: no
+
+selectt:
+  single:
+    class: select2-ajax
+    jsAttributes:
+      allowClear: true
+      placeholder: Vyberte možnost
+      width: 100%
+  multi:
+    class: select2-ajax-multi
+    jsAttributes:
+      allowClear: true
+      placeholder: Vyberte
+      width: 100%

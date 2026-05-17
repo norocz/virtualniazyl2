@@ -1,0 +1,28 @@
+{* templates/components/lineChart.latte *}
+{block charCanvas}
+<div class="chart-container">
+    <canvas id="barChart-{$uniqueId}" width="1200" height="200"></canvas>
+</div>
+{/block}
+
+{block $charScript}
+<script>
+    const ctx = document.getElementById('barChart-' + {$uniqueId}).getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: {json_encode($labels)},
+            datasets: [{
+                label: {$label},
+                data: {json_encode($data)},
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: { y: { beginAtZero: true } }
+        }
+    });
+</script>
+{/block}

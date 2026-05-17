@@ -1,0 +1,134 @@
+{block title}Dokončení objednávky - Virtuální azyl{/block}
+
+{block content}
+<link href="{$basePath}/assets/css/vaz-redesign.css" rel="stylesheet">
+<main class="vaz-redesign">
+
+<section class="vaz-section-hero" style="padding-bottom:12px;">
+    <div class="container">
+        <nav class="vaz-crumbs">
+            <a href="{link Shop:default}">Eshop</a>
+            <span class="sep">›</span>
+            <a href="{link Shop:cart}">Košík</a>
+            <span class="sep">›</span>
+            <span class="current">Dokončení objednávky</span>
+        </nav>
+        <h1 class="vaz-page-title">Dokončení objednávky</h1>
+    </div>
+</section>
+
+<section class="py-4">
+    <div class="container">
+        <div class="row g-4">
+
+            {* Formulář *}
+            <div class="col-lg-7">
+                <div class="vaz-card">
+                    <form n:name="checkoutForm" class="vaz-form">
+
+                        <h5 class="fw-bold mb-3" style="color:var(--vaz-ink);">Kontaktní údaje</h5>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="vaz-form-label" n:name="buyerName">Jméno a příjmení *</label>
+                                <input class="form-control" n:name="buyerName">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="vaz-form-label" n:name="buyerEmail">E-mail *</label>
+                                <input type="email" class="form-control" n:name="buyerEmail">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="vaz-form-label" n:name="buyerPhone">Telefon</label>
+                                <input type="tel" class="form-control" n:name="buyerPhone">
+                            </div>
+                        </div>
+
+                        <h5 class="fw-bold mb-3" style="color:var(--vaz-ink);">Dodací adresa</h5>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-8">
+                                <label class="vaz-form-label" n:name="deliveryStreet">Ulice *</label>
+                                <input class="form-control" n:name="deliveryStreet">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="vaz-form-label" n:name="deliveryHouseNumber">Č.p. *</label>
+                                <input class="form-control" n:name="deliveryHouseNumber">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="vaz-form-label" n:name="deliveryPsc">PSČ *</label>
+                                <input class="form-control" n:name="deliveryPsc">
+                            </div>
+                            <div class="col-md-8">
+                                <label class="vaz-form-label" n:name="deliveryCity">Město *</label>
+                                <input class="form-control" n:name="deliveryCity">
+                            </div>
+                            <div class="col-12">
+                                <label class="vaz-form-label" n:name="deliveryNote">Poznámka pro azyl</label>
+                                <textarea class="form-control" rows="2" n:name="deliveryNote"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="form-check mb-4">
+                            <input class="form-check-input" type="checkbox" n:name="agreeTerms">
+                            <label class="form-check-label small" n:name="agreeTerms">
+                                Souhlasím s <a href="{link Page:polici}" target="_blank">podmínkami</a>
+                                a <a href="{link Page:cookies}" target="_blank">zpracováním osobních údajů</a>.
+                            </label>
+                        </div>
+
+                        <button class="vaz-btn vaz-btn--primary" n:name="submit">
+                            Závazně objednat <i class="bi bi-arrow-right"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            {* Shrnutí objednávky *}
+            <div class="col-lg-5">
+                <div class="vaz-card" style="position:sticky; top:16px;">
+                    <h5 class="fw-bold mb-3" style="color:var(--vaz-ink);">Vaše objednávka</h5>
+                    {foreach $cart->getHydratedItems() as $item}
+                        <div class="d-flex justify-content-between py-2"
+                             style="{if !$iterator->last}border-bottom:1px solid var(--vaz-border);{/if}">
+                            <div>
+                                <div class="fw-semibold" style="font-size:14px; color:var(--vaz-ink);">
+                                    {$item['product']->getName()}
+                                </div>
+                                <div class="small" style="color:var(--vaz-text-muted);">
+                                    {$item['quantity']}&times;
+                                </div>
+                            </div>
+                            <div class="fw-semibold" style="color:var(--vaz-ink);">
+                                {$item['subtotal']|number:0,',','&nbsp;'|noescape} Kč
+                            </div>
+                        </div>
+                    {/foreach}
+
+                    <div class="d-flex justify-content-between mt-3">
+                        <span style="color:var(--vaz-text-muted);">Mezisoučet</span>
+                        <span>{$cart->getSubtotal()|number:0,',','&nbsp;'|noescape} Kč</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3 pb-3"
+                         style="border-bottom:1px solid var(--vaz-border);">
+                        <span style="color:var(--vaz-text-muted);">Poštovné</span>
+                        <span>{$shippingCost|number:0,',','&nbsp;'|noescape} Kč</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span class="fw-bold" style="color:var(--vaz-ink);">Celkem</span>
+                        <span class="fw-bold" style="color:var(--vaz-green); font-size:20px;">
+                            {($cart->getSubtotal() + $shippingCost)|number:0,',','&nbsp;'|noescape} Kč
+                        </span>
+                    </div>
+
+                    <div class="pt-3" style="border-top:1px dashed var(--vaz-border); font-size:12px; color:var(--vaz-text-muted);">
+                        <i class="bi bi-shield-check me-1"></i>
+                        Po odeslání dostanete QR platbu e-mailem. Objednávka platí 72 hodin.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+</main>
+{/block}
+{block scripts}{/block}
+{block scripts-user}{/block}

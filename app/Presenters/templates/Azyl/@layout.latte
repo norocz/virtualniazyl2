@@ -1,0 +1,249 @@
+{templateType App\Presenters\Templates\Azyl\Layout}
+<!DOCTYPE html>
+<html lang="cz" xmlns="http://www.w3.org/1999/html">
+
+<head>
+    <meta charset="utf-8">
+    <title>Virtuální azyl administrace</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta content="" name="keywords">
+    <meta content="" name="description">
+
+    <!-- Favicon -->
+    <link rel="apple-touch-icon" sizes="180x180" href="{$basePath}/assets/img/logos/dino180.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="{$basePath}/assets/img/logos/dino32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="{$basePath}/assets/img/logos/dino16.png">
+    <link rel="shortcut icon" type="image/x-icon" href="{$basePath}/assets/img/logos/dino.ico">
+
+    <!-- Google Web Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Icon Font Stylesheet -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Libraries Stylesheet -->
+    <link href="{$basePath}/dashmin/lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">
+    <link href="{$basePath}/dashmin/lib/tempusdominus/css/tempusdominus-bootstrap-4.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+    <!-- Customized Bootstrap Stylesheet -->
+    <link href="{$basePath}/dashmin/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Template Stylesheet -->
+    <link href="{$basePath}/dashmin/css/style.css" rel="stylesheet">
+</head>
+<style>
+    .azylContent {
+        min-height: 80vh;
+        padding: 5px;
+    }
+</style>
+
+<body>
+<div class="toast-container position-fixed bottom-0 start-50 p-3" style="z-index:9999;">
+    {snippet flash}
+    <div
+            n:foreach="$flashes as $flash"
+            id="flash-toast-{$iterator->counter}"
+            class="toast"
+            role="alert"
+            aria-live="assertive"
+            aria-atomic="true"
+            data-bs-autohide="true"
+            data-bs-delay="5000">
+        <div class="toast-header {if $flash->type === 'alert-success'}bg-success text-white{elseif $flash->type === 'alert-warning'}bg-danger text-white{else}bg-info text-white{/if}">
+            <span class="me-auto">Informace
+                {if $flash->type === 'alert-success'}
+                    <i class="bi bi-check-circle-fill text-success"></i>
+                {elseif $flash->type === 'alert-warning'}
+                    <i class="bi bi-exclamation-triangle-fill text-danger"></i>
+                {else}
+                    <i class="bi bi-info-circle-fill text-info"></i>
+                {/if}
+
+            </span>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body">
+            {$flash->message}
+        </div>
+    </div>
+</div>
+{/snippet}
+<div class="container-fluid position-relative bg-white d-flex p-0">
+
+    <!-- Sidebar Start -->
+    <div class="sidebar pe-4 pb-3">
+        <nav class="navbar bg-light navbar-light">
+            <a href="{link azyl:default}" class="navbar-brand mx-4 mb-3">
+                <h3 class="text-primary"><i class="fa me-2"></i>Azyl Admin</h3>
+            </a>
+            <div class="d-flex align-items-center ms-4 mb-4">
+                <div class="position-relative">
+                    {ifset $personalPhoto}
+                        {var $pphoto = true}
+                    {else}
+                        {var $pphoto = false}
+                    {/ifset}
+                    <img class="rounded-circle" src="{$basePath}{if $pphoto}{$personalPhoto->getPath()}{$personalPhoto->getName()}{else}/dashmin/img/user.jpg{/if}" alt="" style="width: 40px; height: 40px;">
+                    <div class="bg-success rounded-circle border border-2 border-white position-absolute end-0 bottom-0 p-1"></div>
+                </div>
+                <div class="ms-3">
+                    <h6 class="mb-0">{$user->getIdentity()->data['User']->userName}</h6>
+                    <span>{if $user->getIdentity()->getRoles()[0] === 'superadmin'}The GOD{/if}</span>
+                </div>
+            </div>
+            <div class="navbar-nav w-100">
+                <a href="{link Azyl:default}" class="nav-item nav-link {if isLinkCurrent('Azyl:default')}active{/if}"><i class="fa fa-tachometer-alt me-2"></i>Přehled</a>
+                <div class="nav-item dropdown">
+                    <a href="{link Azyl:animals}" class="nav-link dropdown-toggle {if isLinkCurrent('Azyl:animals')}active{/if}" data-bs-toggle="dropdown"><i class="fa fa-laptop me-2"></i>Zvířata</a>
+                    <div class="dropdown-menu bg-transparent border-0">
+                        <a href="{link Azyl:animal}" class="dropdown-item {if isLinkCurrent('Azyl:animal')}active{/if}">Přidat zvíře</a>
+                        <a href="{link Azyl:animals}" class="dropdown-item {if isLinkCurrent('Azyl:animals')}active{/if}">Vaše zvířata</a>
+                    </div>
+                </div>
+                <a href="{link Azyl:adoptions}" class="nav-item nav-link {if isLinkCurrent('Azyl:adoptions')}active{/if}">
+                    <i class="fa fa-th me-2"></i>Adopce
+                </a>
+                <a href="{link Azyl:collections}" class="nav-item nav-link {if isLinkCurrent('Azyl:collections')}active{/if}">
+                    <i class="fa fa-piggy-bank me-2"></i>Sbírky
+                </a>
+                <a href="{link Azyl:messages}" class="nav-item nav-link {if isLinkCurrent('Azyl:messages')}active{/if}">
+                    <i class="fa fa-keyboard me-2"></i>Vzkazy
+                </a>
+                <a href="{link Azyl:news}" class="nav-item nav-link {if isLinkCurrent('Azyl:news')}active{/if}">
+                    <i class="bi bi-newspaper me-2"></i>Aktuality
+                </a>
+                <a href="{link Azyl:events}" class="nav-item nav-link {if isLinkCurrent('Azyl:events') || isLinkCurrent('Azyl:event')}active{/if}">
+                    <i class="bi bi-calendar-event me-2"></i>Události
+                </a>
+                <a href="{link Azyl:photos}" class="nav-item nav-link {if isLinkCurrent('Azyl:photos')}active{/if}">
+                    <i class="fa fa-chart-bar me-2"></i>Fotky
+                </a>
+                <div class="nav-item dropdown">
+                    <a href="{link Azyl:shop}" class="nav-link dropdown-toggle {if isLinkCurrent('Azyl:shop') || isLinkCurrent('Azyl:shopOrders') || isLinkCurrent('Azyl:shopOrder') || isLinkCurrent('Azyl:shopProduct')}active{/if}" data-bs-toggle="dropdown">
+                        <i class="bi bi-shop me-2"></i>Eshop
+                    </a>
+                    <div class="dropdown-menu bg-transparent border-0">
+                        <a href="{link Azyl:shop}" class="dropdown-item {if isLinkCurrent('Azyl:shop')}active{/if}">Produkty</a>
+                        <a href="{link Azyl:shopProduct}" class="dropdown-item">Přidat produkt</a>
+                        <a href="{link Azyl:shopOrders}" class="dropdown-item {if isLinkCurrent('Azyl:shopOrders') || isLinkCurrent('Azyl:shopOrder')}active{/if}">Objednávky</a>
+                    </div>
+                </div>
+                <a href="{link Azyl:finance}" class="nav-item nav-link {if isLinkCurrent('Azyl:finance')}active{/if}">
+                    <i class="bi bi-bar-chart-line me-2"></i>Finanční přehled
+                </a>
+                {if !empty($random)}
+                <hr class = "m-2">
+                <span class="m-3 text-black small">  Animal liberation front 4ever - Keep the fight my frend!</span>
+                {/if}
+
+            </div>
+
+
+        </nav>
+    </div>
+    </div>
+
+    <!-- Sidebar End -->
+
+
+    <!-- Content Start -->
+    <div class="content">
+        <!-- Navbar Start -->
+        <nav class="navbar navbar-expand bg-light navbar-light sticky-top px-4 py-0">
+            <a href="{link Azyl:default}" class="navbar-brand d-flex d-lg-none me-4">
+                <h2 class="text-primary mb-0"><i class="fa fa-hashtag"></i></h2>
+            </a>
+            <a href="#" class="sidebar-toggler flex-shrink-0">
+                <i class="fa fa-bars"></i>
+            </a>
+            <div class="navbar-nav align-items-center ms-auto">
+                <div class="nav-item">
+                    <a href="{link Azyl:messages}" class="nav-link">
+                        <i class="fa fa-envelope me-lg-2"></i>
+                        <span class="d-none d-lg-inline-flex">Vzkazy</span>
+                    </a>
+
+                </div>
+                {*/
+                <div class="nav-item">
+                    <a href="{link Azyl:events}" class="nav-link">
+                        <i class="fa fa-bell me-lg-2"></i>
+                        <span class="d-none d-lg-inline-flex">Události</span>
+                    </a>
+
+                </div>/*}
+                <div class="nav-item dropdown">
+                    <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
+                        <img class="rounded-circle" src="{$basePath}{if $pphoto}{$personalPhoto->getPath()}{$personalPhoto->getName()}{else}/dashmin/img/user.jpg{/if}" alt="" style="width: 40px; height: 40px;">
+                        <span class="d-none d-lg-inline-flex">{$user->getIdentity()->data['User']->userName}</span>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-end bg-light border-0 rounded-0 rounded-bottom m-0">
+                        <a href="{link Azyl:profil}" class="dropdown-item">Profil uživatele</a>
+                        <a href="{link Azyl:settings}" class="dropdown-item">Nastavení azylu</a>
+                        <a href="{link Home:default}" class="dropdown-item">Zpět na web</a>
+                        <a href="{link Home:logOut}" class="dropdown-item">Odhlásit</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Navbar End -->
+        <div class="azylContent">
+            {include azylContent}
+        </div>
+        <!-- Footer Start -->
+        <div class="container-fluid pt-4 px-4">
+            <div class="bg-light rounded-top p-4">
+                <div class="row">
+                    <div class="col-12 col-sm-6 text-center text-sm-start">
+                        &copy; <a href="{link Home:default}">Virtuální azyl</a>, All Right Reserved.
+                    </div>
+                    <div class="col-12 col-sm-6 text-center text-sm-end">
+                        <!--/*** This template is free as long as you keep the footer author’s credit link/attribution link/backlink. If you'd like to use the template without the footer author’s credit link/attribution link/backlink, you can purchase the Credit Removal License from "https://htmlcodex.com/credit-removal". Thank you for your support. ***/-->
+                        Developed by <a href="https://josefnemec.cz">Josef 'Noro' Němec</a>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Footer End -->
+    </div>
+    <!-- Content End -->
+
+
+<!-- JavaScript Libraries -->
+<script src="{$basePath}/vendors/jquery/jquery.min.js"></script>
+<script src="{$basePath}/assets/js/Naja.min.js"></script>
+<script src="{$basePath}/assets/js/netteForms.js"></script>
+<script>document.addEventListener("DOMContentLoaded", () => naja.initialize());</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{$basePath}/dashmin/lib/chart/chart.min.js"></script>
+<script src="{$basePath}/dashmin/lib/easing/easing.min.js"></script>
+<script src="{$basePath}/dashmin/lib/waypoints/waypoints.min.js"></script>
+<script src="{$basePath}/dashmin/lib/owlcarousel/owl.carousel.min.js"></script>
+<script src="{$basePath}/dashmin/lib/tempusdominus/js/moment.min.js"></script>
+<script src="{$basePath}/dashmin/lib/tempusdominus/js/moment-timezone.min.js"></script>
+<script src="{$basePath}/dashmin/lib/tempusdominus/js/tempusdominus-bootstrap-4.min.js"></script>
+{include scripts}
+<!-- Template Javascript -->
+<script src="{$basePath}/dashmin/js/main.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        // Najdi všechny toast prvky
+        const toastElements = document.querySelectorAll('.toast');
+
+        // Pro každý toast vytvoř instance Bootstrap Toast
+        toastElements.forEach(toastElement => {
+            const toast = new bootstrap.Toast(toastElement);
+            toast.show(); // Zobraz toast
+        });
+    });
+</script>
+</body>
+
+</html>

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: DejaVu Sans, sans-serif; font-size:9pt; color:#1a1a1a; }
+
+/* ── Header ── */
+.header { text-align:center; border-bottom:3px solid #dc2626; padding-bottom:3mm; margin-bottom:3mm; }
+.badge  { display:inline-block; background:#dc2626; color:#fff; padding:2px 12px;
+          border-radius:20px; font-size:9pt; font-weight:bold; margin-bottom:2mm; }
+.header h1 { font-size:20pt; font-weight:bold; color:#dc2626; line-height:1.1; margin-bottom:1mm; }
+
+/* ── Photo strip ── */
+.photos { display:table; width:100%; margin-bottom:3mm; table-layout: fixed;}
+.photo-cell { display:table-cell; text-align:center; padding:0 1mm; }
+.photo-cell img { max-height:48mm; max-width:100%; border-radius:4px; }
+
+/* ── Key info bar ── */
+.keyinfo { text-align:center; margin-bottom:3mm; font-size:10.5pt; }
+.keyinfo .name { font-size:14pt; font-weight:bold; color:#111; }
+.keyinfo .meta { color:#555; font-size:9pt; margin-top:1mm; }
+
+/* ── Two-column body - OPRAVENO PRO TISK ── */
+
+/* Vyčistěte předchozí pokusy s .body a sloupci a dejte tam toto: */
+
+.body {
+    width: 100%;
+    display: block; /* Žádná tabulka */
+    clear: both;
+}
+
+.col-l {
+    float: left;     /* Klíčová vlastnost pro staré enginy */
+    width: 60%;      /* Ubereme raději trochu na šířce pro jistotu */
+    margin-right: 0;
+    padding-right: 4mm;
+    box-sizing: border-box;
+}
+
+.col-r {
+    float: left;     /* Oba plavou doleva, tak se naskládají za sebe */
+    width: 35%;
+    box-sizing: border-box;
+}
+
+/* Fix pro ukončení plovoucích prvků (aby footer neskočil mezi ně) */
+.body:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+
+/* ── Left column ── */
+.sec-title { font-size:7.5pt; font-weight:bold; color:#dc2626; text-transform:uppercase;
+             letter-spacing:.5px; border-bottom:1px solid #fca5a5; padding-bottom:1mm; margin-bottom:2mm; }
+.desc { font-size:8.5pt; line-height:1.45; color:#333; margin-bottom:3mm; }
+.tbl  { width:100%; border-collapse:collapse; font-size:8pt; margin-bottom:3mm; }
+.tbl td { padding:1px 0; vertical-align:top; }
+.tbl .lbl { color:#666; width:38%; padding-right:2mm; white-space:nowrap; }
+.tbl .val { font-weight:bold; }
+.chip { font-size:8pt; background:#eff6ff; border:1px solid #bfdbfe;
+        border-radius:4px; padding:2mm 3mm; margin-bottom:3mm; }
+.map img { width:100%; max-height:32mm; border-radius:4px; margin-top:1mm; }
+
+/* ── Right column ── */
+.qr-box { text-align:center; border:2px solid #dc2626; border-radius:6px;
+          background:#fef2f2; padding:3mm; }
+.qr-box img { width:36mm; height:36mm; }
+.qr-lbl { font-size:8pt; font-weight:bold; color:#dc2626; margin-top:2mm; }
+.qr-sub { font-size:7pt; color:#666; margin-top:1mm; }
+.url    { font-size:7pt; color:#555; text-align:center; word-break:break-all; margin-top:2mm; }
+.contact { margin-top:4mm; }
+.contact .sec-title { margin-bottom:1.5mm; }
+.contact .email { font-size:8.5pt; font-weight:bold; text-align:center; }
+
+/* ── Footer ── */
+.footer { border-top:1px solid #e5e7eb; margin-top:4mm; padding-top:2mm;
+          text-align:center; font-size:7pt; color:#999; }
+</style>
+</head>
+<body>
+
+<div class="header">
+    <div class="badge">HLEDÁME!</div>
+    <h1>{$animal->getName() ?? $animal->getSpecies()->getName()}</h1>
+</div>
+
+{if count($photoVarNames) > 0}
+<div class="photos">
+    {foreach $photoVarNames as $varName}
+    <div class="photo-cell" style="width:{(int)(100/count($photoVarNames))}%">
+        <img src="var:{$varName}" alt="">
+    </div>
+    {/foreach}
+</div>
+{/if}
+
+<div class="keyinfo">
+    <div class="name">{$animal->getSpecies()->getName()}{if $animal->getName()} — {$animal->getName()}{/if}</div>
+    <div class="meta">Ztraceno: {$animal->getLostAt()|date:'d.m.Y'} · {$animal->getLocation()}</div>
+</div>
+
+<div class="body">
+
+    <div class="col-l">
+
+        <div class="sec-title">Popis</div>
+        <div class="desc">{$animal->getDescription()|striptags}</div>
+
+        {if $animal->getBreed() || $animal->getColor() || $animal->getSpecialMarks() || $animal->getAliases()}
+        <table class="tbl">
+            {if $animal->getBreed()}<tr><td class="lbl">Rasa/plemeno:</td><td class="val">{$animal->getBreed()}</td></tr>{/if}
+            {if $animal->getColor()}<tr><td class="lbl">Barva:</td><td class="val">{$animal->getColor()}</td></tr>{/if}
+            {if $animal->getSpecialMarks()}<tr><td class="lbl">Zvláštní znamení:</td><td class="val">{$animal->getSpecialMarks()}</td></tr>{/if}
+            {if $animal->getAliases()}<tr><td class="lbl">Reaguje na:</td><td class="val">{$animal->getAliases()}</td></tr>{/if}
+        </table>
+        {/if}
+
+        {if $animal->isHasChip() || $animal->isHasTattoo()}
+        <div class="chip">
+            {if $animal->isHasChip()}&#x25CF;&nbsp;<strong>Čip</strong>{if $animal->getChipNumber()}: {$animal->getChipNumber()}{/if}{/if}
+            {if $animal->isHasTattoo()}{if $animal->isHasChip()} &nbsp;|&nbsp; {/if}&#x25CF;&nbsp;<strong>Tetování</strong>{if $animal->getTattooValue()}: {$animal->getTattooValue()}{/if}{/if}
+        </div>
+        {/if}
+
+        {if $animal->getEventDescription()}
+        <div class="sec-title">Jak se ztratilo</div>
+        <div class="desc">{$animal->getEventDescription()|striptags}</div>
+        {/if}
+
+        {if $mapBase64}
+        <div class="sec-title">Mapa místa ztráty</div>
+        <div class="map"><img src="data:image/png;base64,{$mapBase64}" alt="Mapa"></div>
+        {/if}
+
+    </div>
+
+    <div class="col-r">
+        <div class="qr-box">
+            <img src="data:image/png;base64,{$qrBase64}" alt="QR kód">
+            <div class="qr-lbl">Viděli jste toto zvíře?</div>
+            <div class="qr-sub">Naskenujte a zanechte vzkaz majiteli</div>
+        </div>
+        <div class="url">{$sightingUrl}</div>
+
+        <div class="contact">
+            <div class="sec-title">Kontakt</div>
+            <div class="email">{$animal->getUser()->getEmail()}</div>
+        </div>
+    </div>
+
+</div>
+
+<div class="footer">
+    Virtualní azyl · virtualniazyl.cz &nbsp;|&nbsp; Přidáno: {$animal->getCreatedAt()|date:'d.m.Y'}
+</div>
+
+</body>
+</html>

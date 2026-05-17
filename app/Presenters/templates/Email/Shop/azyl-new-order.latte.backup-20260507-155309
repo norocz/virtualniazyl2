@@ -1,0 +1,98 @@
+{layout @layout.latte}
+
+{block title}Nová objednávka {$order->getOrderNumber()} pro {$order->getAzyl()->getAzylName()}{/block}
+
+{block content}
+<h2 style="color:#198754;margin:0 0 16px 0;font-size:20px;">
+    🎉 Máte novou zaplacenou objednávku!
+</h2>
+
+<p style="margin:0 0 16px 0;">Dobrý den,</p>
+
+<p style="margin:0 0 16px 0;">
+    do vašeho eshopu právě přišla nová zaplacená objednávka
+    <strong>{$order->getOrderNumber()}</strong>. Peníze už dorazily na účet spolku
+    a jsou zařazené do fronty k vaší výplatě.
+</p>
+
+<h3 style="margin:24px 0 12px 0;font-size:16px;">Co zákazník objednal</h3>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-size:14px;">
+    {foreach $order->getItems() as $item}
+        <tr>
+            <td style="padding:8px 0;border-bottom:1px solid #eee;">
+                <strong>{$item->getProductName()}</strong>
+            </td>
+            <td style="text-align:center;padding:8px 0;border-bottom:1px solid #eee;">
+                {$item->getQuantity()}&times;
+            </td>
+            <td style="text-align:right;padding:8px 0;border-bottom:1px solid #eee;">
+                {$item->getSubtotal()|number:0,',','&nbsp;'|noescape} Kč
+            </td>
+        </tr>
+    {/foreach}
+</table>
+
+<h3 style="margin:24px 0 12px 0;font-size:16px;">Kam zaslat</h3>
+
+<div style="background:#f8f9fa;border-radius:6px;padding:16px 20px;">
+    <p style="margin:0 0 8px 0;">
+        <strong>{$order->getBuyerName()}</strong>
+    </p>
+    <p style="margin:0 0 8px 0;font-size:14px;">
+        {$order->getFullDeliveryAddress()}
+    </p>
+    <p style="margin:8px 0 0 0;font-size:13px;color:#666;">
+        📧 {$order->getBuyerEmail()}
+        {if $order->getBuyerPhone()} &nbsp;•&nbsp; 📞 {$order->getBuyerPhone()}{/if}
+    </p>
+
+    {if $order->getDeliveryNote()}
+        <div style="margin-top:12px;padding-top:12px;border-top:1px solid #dee2e6;font-size:13px;">
+            <strong>Poznámka zákazníka:</strong><br>
+            {$order->getDeliveryNote()}
+        </div>
+    {/if}
+</div>
+
+<div style="background:#e7f3ff;border-radius:6px;padding:16px 20px;margin:20px 0;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="font-size:14px;">
+        <tr>
+            <td style="padding:4px 0;color:#666;">Zákazník zaplatil:</td>
+            <td style="padding:4px 0;text-align:right;font-weight:bold;">
+                {$order->getTotalAmount()|number:0,',','&nbsp;'|noescape} Kč
+            </td>
+        </tr>
+        <tr>
+            <td style="padding:4px 0;color:#666;">Provize spolku ({$order->getFeePercent()}&nbsp;%):</td>
+            <td style="padding:4px 0;text-align:right;color:#666;">
+                -{$order->getFeeAmount()|number:0,',','&nbsp;'|noescape} Kč
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" style="padding:8px 0 0 0;border-top:1px solid #dee2e6;">
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                    <tr>
+                        <td style="padding:4px 0;font-weight:bold;">Vám připadne:</td>
+                        <td style="padding:4px 0;text-align:right;font-weight:bold;color:#198754;font-size:16px;">
+                            {$order->getPayoutAmount()|number:0,',','&nbsp;'|noescape} Kč
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</div>
+
+<p style="margin:20px 0;">
+    <a href="{$baseUrl}/azyl/shopOrder/{$order->getId()}"
+       style="display:inline-block;background:#198754;color:white;padding:12px 24px;text-decoration:none;border-radius:6px;font-weight:bold;">
+        Otevřít objednávku v administraci
+    </a>
+</p>
+
+<p style="margin:20px 0 0 0;font-size:13px;color:#666;padding-top:16px;border-top:1px solid #eee;">
+    💡 <strong>Co teď:</strong> připravte zboží a po odeslání klikněte v administraci
+    na "Označit jako odesláno" - zákazník dostane potvrzovací e-mail.
+</p>
+{/block}

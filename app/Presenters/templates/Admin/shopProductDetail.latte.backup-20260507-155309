@@ -1,0 +1,175 @@
+{templateType App\Presenters\Templates\Admin\Layout}
+{block adminContent}
+<div class="container-fluid pt-4 px-4">
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="bg-light rounded p-4">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                        <h4 class="mb-1">{$product->getName()}</h4>
+                        <p class="text-muted mb-0">
+                            <i class="bi bi-house-heart"></i>
+                            {$product->getAzyl()->getAzylName()}
+                        </p>
+                    </div>
+                    {if $product->isApproved()}
+                        <span class="badge bg-success fs-6">
+                            <i class="bi bi-check-circle"></i> Schváleno
+                        </span>
+                    {else}
+                        <span class="badge bg-warning text-dark fs-6">
+                            <i class="bi bi-hourglass"></i> Čeká na schválení
+                        </span>
+                    {/if}
+                </div>
+
+                {* Fotky *}
+                {if count($product->getPhotos()) > 0}
+                    <div class="row g-2 mb-4">
+                        {foreach $product->getPhotos() as $photo}
+                            <div class="col-md-3 col-6">
+                                <img src="{$basePath}{$photo->getFullPath()}"
+                                     class="img-fluid rounded"
+                                     style="height:150px;width:100%;object-fit:cover;"
+                                     alt="">
+                            </div>
+                        {/foreach}
+                    </div>
+                {else}
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        Produkt nemá žádnou fotku. Doporučte azylu aspoň jednu přidat.
+                    </div>
+                {/if}
+
+                {* Údaje *}
+                <dl class="row">
+                    <dt class="col-sm-3">Cena:</dt>
+                    <dd class="col-sm-9">
+                        <strong class="text-primary fs-5">
+                            {$product->getPrice()|number:2,',','&nbsp;'|noescape} {$product->getCurrency()}
+                        </strong>
+                    </dd>
+                    <dt class="col-sm-3">Kategorie:</dt>
+                    <dd class="col-sm-9">{$product->getCategory() ?? '—'}</dd>
+                    <dt class="col-sm-3">SKU:</dt>
+                    <dd class="col-sm-9">{$product->getSku() ?? '—'}</dd>
+                    <dt class="col-sm-3">Skladem:</dt>
+                    <dd class="col-sm-9">
+                        {if $product->isUnlimitedStock()}
+                            Neomezeno (na objednávku)
+                        {else}
+                            {$product->getStock()} ks
+                        {/if}
+                    </dd>
+                    <dt class="col-sm-3">Váha:</dt>
+                    <dd class="col-sm-9">
+                        {if $product->getWeightGrams()}{$product->getWeightGrams()} g{else}—{/if}
+                    </dd>
+                </dl>
+
+                <h5 class="mt-4">Krátký popis</h5>
+                <p>{$product->getShortDescription() ?? '(bez krátkého popisu)'}</p>
+
+                <h5 class="mt-4">Podrobný popis</h5>
+                <div style="white-space:pre-wrap;">
+                    {$product->getDescription() ?? '(bez podrobného popisu)'|safeHtml|noescape}
+                </div>
+            </div>
+        </div>
+
+        {* Akce *}
+        <div class="col-lg-4">
+            {if !$product->isApproved()}
+                <div class="bg-light rounded p-4 mb-3">
+                    <h5 class="mb-3"><i class="bi bi-check2-square me-2"></i>Rozhodnutí</h5>
+
+                    <div class="d-grid gap-2 mb-3">
+                        <a href="{link Admin:shopProductApprove!, $product->getId()}"
+                           class="btn btn-success">
+                            <i class="bi bi-check-lg me-1"></i>Schválit produkt
+                        </a>
+
+                        {* Reject s důvodem *}
+                        <form n:name="rejectForm">
+                            <textarea class="form-control mb-2" n:name="reason" rows="2"
+                                      placeholder="Důvod zamítnutí (azyl ho uvidí)"></textarea>
+                            <button class="btn btn-danger w-100" n:name="reject">
+                                <i class="bi bi-x-lg me-1"></i>Zamítnout
+                            </button>
+                        </form>
+                    </div>
+
+                    <hr>
+
+                    <h6>Checklist před schválením</h6>
+                    <ul class="small mb-0">
+                        <li>Popis dává smysl, není prázdný nebo nonsense</li>
+                        <li>Fotky jsou kvalitní a odpovídají produktu</li>
+                        <li>Cena je přiměřená</li>
+                        <li>Produkt souvisí s azylem / pomoc zvířatům</li>
+                        <li>Žádný zakázaný obsah (alkohol, zbraně, atd.)</li>
+                    </ul>
+                </div>
+            {else}
+                <div class="bg-light rounded p-4 mb-3">
+                    <h6 class="mb-3">Stav schválení</h6>
+                    <p class="small">
+                        <strong>Schváleno:</strong>
+                        {$product->getApprovedAt()|date:'d.m.Y H:i'}<br>
+                        {if $approver = ($product->getApprovedByUser() ?? null)}
+                            <strong>Schválil:</strong> {$approver->getUserName()}
+                        {/if}
+                    </p>
+
+                    <a href="{link Admin:shopProductUnapprove!, $product->getId()}"
+                       class="btn btn-outline-warning w-100"
+                       onclick="return confirm('Odschválit produkt? Zmizí z eshopu, ale data zůstanou.')">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i>Odschválit
+                    </a>
+                </div>
+            {/if}
+
+            <div class="bg-light rounded p-4">
+                <h6><i class="bi bi-house-heart me-1"></i>O azylu</h6>
+                <p class="small mb-2"><strong>{$product->getAzyl()->getAzylName()}</strong></p>
+                {if $product->getAzyl()->getEmail()}
+                    <p class="small mb-1">
+                        <i class="bi bi-envelope"></i>
+                        <a href="mailto:{$product->getAzyl()->getEmail()}">
+                            {$product->getAzyl()->getEmail()}
+                        </a>
+                    </p>
+                {/if}
+                {if $product->getAzyl()->getIco()}
+                    <p class="small mb-1">IČO: {$product->getAzyl()->getIco()}</p>
+                {/if}
+                <a href="{link Home:azyl, $product->getAzyl()->getId()}"
+                   class="btn btn-outline-secondary btn-sm">
+                    Zobrazit profil azylu
+                </a>
+            </div>
+
+            <div class="bg-light rounded p-4 mt-3">
+                <h6>Ostatní produkty azylu</h6>
+                {if count($azylProducts) > 0}
+                    <ul class="list-unstyled small mb-0">
+                        {foreach $azylProducts as $ap}
+                            <li class="border-bottom py-1">
+                                <a href="{link Admin:shopProductDetail, $ap->getId()}">
+                                    {$ap->getName()}
+                                </a>
+                                {if !$ap->isApproved()}
+                                    <span class="badge bg-warning text-dark">čeká</span>
+                                {/if}
+                            </li>
+                        {/foreach}
+                    </ul>
+                {else}
+                    <p class="small text-muted mb-0">Zatím žádné další produkty.</p>
+                {/if}
+            </div>
+        </div>
+    </div>
+</div>
+{/block}

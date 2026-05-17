@@ -1,0 +1,121 @@
+{templateType App\Presenters\Templates\Admin\Layout}
+{block adminContent}
+    <div class="container-fluid pt-4 px-4">
+        <div class="bg-light rounded p-4">
+            <div class="d-flex align-items-center justify-content-between mb-4">
+                <h4 class="mb-0"><i class="bi bi-gift me-2"></i>Správa sponzorů</h4>
+                <a href="{link Admin:sponsor}" class="btn btn-primary">
+                    <i class="bi bi-plus-lg me-1"></i>Přidat sponzora
+                </a>
+            </div>
+
+            {ifset $sponsors}
+                {if count($sponsors) > 0}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Logo</th>
+                                    <th>Jméno / název</th>
+                                    <th>Web</th>
+                                    <th>Částka</th>
+                                    <th>Datum</th>
+                                    <th>Zobrazen</th>
+                                    <th class="text-end">Akce</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {foreach $sponsors as $sponsor}
+                                    <tr>
+                                        <td>
+                                            {if $sponsor->getLogo()}
+                                                <img src="{$basePath}{$sponsor->getLogo()}" alt="" style="height:40px;">
+                                            {else}
+                                                <span class="text-muted">—</span>
+                                            {/if}
+                                        </td>
+                                        <td><strong>{$sponsor->getName()}</strong></td>
+                                        <td>
+                                            {if $sponsor->getWeb()}
+                                                <a href="{$sponsor->getWeb()}" target="_blank" rel="noopener">
+                                                    {$sponsor->getWeb()}
+                                                </a>
+                                            {else}<span class="text-muted">—</span>{/if}
+                                        </td>
+                                        <td>
+                                            {if $sponsor->getAmount()}
+                                                {$sponsor->getAmount()|number:0,',','&nbsp;'|noescape} Kč
+                                            {else}<span class="text-muted">—</span>{/if}
+                                        </td>
+                                        <td>{$sponsor->getCreatedAt()|date:'d.m.Y'}</td>
+                                        <td>
+                                            {if $sponsor->isVisible()}
+                                                <span class="badge bg-success">Ano</span>
+                                            {else}
+                                                <span class="badge bg-secondary">Ne</span>
+                                            {/if}
+                                        </td>
+                                        <td class="text-end">
+                                            <a href="{link Admin:sponsor, $sponsor->getId()}"
+                                               class="btn btn-sm btn-outline-primary" title="Upravit">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <a href="{link Admin:sponsorToggle!, $sponsor->getId()}"
+                                               class="btn btn-sm btn-outline-warning ajax" title="Zobrazit / skrýt">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                            <a href="{link Admin:sponsorDelete!, $sponsor->getId()}"
+                                               class="btn btn-sm btn-outline-danger"
+                                               title="Smazat"
+                                               onclick="return confirm('Opravdu smazat sponzora?')">
+                                                <i class="bi bi-trash"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {/foreach}
+                            </tbody>
+                        </table>
+                    </div>
+                {else}
+                    <div class="alert alert-info mb-0">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Zatím nemáte žádné sponzory. Přidejte prvního kliknutím na tlačítko výše.
+                    </div>
+                {/if}
+            {else}
+                <div class="alert alert-warning mb-0">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    Data sponzorů se nepodařilo načíst. Zkontrolujte prosím Admin:sponsors action v presenteru.
+                </div>
+            {/ifset}
+        </div>
+    </div>
+
+    {* Statistiky sponzorství - zobrazit pouze pokud jsou data *}
+    {ifset $sponsorStats}
+        <div class="container-fluid pt-4 px-4">
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="bg-light rounded p-4">
+                        <h6 class="text-muted">Celkem sponzorů</h6>
+                        <h3 class="mb-0">{$sponsorStats['count']}</h3>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="bg-light rounded p-4">
+                        <h6 class="text-muted">Celková částka</h6>
+                        <h3 class="mb-0">{$sponsorStats['total']|number:0,',','&nbsp;'|noescape} Kč</h3>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="bg-light rounded p-4">
+                        <h6 class="text-muted">Průměrný příspěvek</h6>
+                        <h3 class="mb-0">{$sponsorStats['avg']|number:0,',','&nbsp;'|noescape} Kč</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {/ifset}
+{/block}
+
+{block scripts}{/block}

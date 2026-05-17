@@ -1,0 +1,155 @@
+{templateType App\Presenters\Templates\SuperAdmin\Layout}
+{block superAdminContent}
+<div class="container-fluid pt-4 px-4">
+
+    {* Souhrnné karty *}
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 bg-warning">
+                <div class="card-body">
+                    <h6 class="card-title">K vyplacení azylům (eshop)</h6>
+                    <h3 class="mb-0">{$pendingPayoutTotal|number:0,',','&nbsp;'|noescape} Kč</h3>
+                    <small>{count($pendingPayouts)} položek ve frontě</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 bg-danger text-white">
+                <div class="card-body">
+                    <h6 class="card-title">Vratky zákazníkům</h6>
+                    <h3 class="mb-0">{$pendingRefundTotal|number:0,',','&nbsp;'|noescape} Kč</h3>
+                    <small>{count($pendingRefunds)} položek</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 bg-info text-white">
+                <div class="card-body">
+                    <h6 class="card-title">Provize spolku (tento měsíc)</h6>
+                    <h3 class="mb-0">{$feesThisMonth|number:0,',','&nbsp;'|noescape} Kč</h3>
+                    <small>z eshopu</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 bg-primary text-white">
+                <div class="card-body">
+                    <h6 class="card-title">Rychlé akce</h6>
+                    <div class="d-flex flex-column gap-1 mt-1">
+                        <a href="{link SuperAdmin:shoppayouts}" class="btn btn-sm btn-light">
+                            <i class="bi bi-cash-stack me-1"></i>Správa výplat
+                        </a>
+                        <a href="{link SuperAdmin:shopreports}" class="btn btn-sm btn-light">
+                            <i class="bi bi-calculator me-1"></i>Účetní reporty
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {* Per-azyl přehled — všechny zdroje *}
+    <div class="bg-light rounded p-4 mb-4">
+        <h4 class="mb-3"><i class="bi bi-building me-2"></i>Přehled azylů — celkové finanční toky</h4>
+
+        {if count($azylFinance) > 0}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Azyl</th>
+                            <th class="text-end">Eshop (vyplaceno)</th>
+                            <th class="text-end">Eshop (čeká)</th>
+                            <th class="text-end">Sbírky</th>
+                            <th class="text-end">Adopce</th>
+                            <th class="text-end fw-bold">Celkem výnos</th>
+                            <th class="text-end text-muted">Provize VAZ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {foreach $azylFinance as $row}
+                            <tr>
+                                <td>
+                                    <strong>{$row['azyl']->getAzylName()}</strong>
+                                </td>
+                                <td class="text-end text-success">
+                                    {$row['shopPayout']|number:0,',','&nbsp;'|noescape} Kč
+                                </td>
+                                <td class="text-end {if $row['shopPending'] > 0}text-warning fw-bold{else}text-muted{/if}">
+                                    {if $row['shopPending'] > 0}
+                                        {$row['shopPending']|number:0,',','&nbsp;'|noescape} Kč
+                                    {else}—{/if}
+                                </td>
+                                <td class="text-end">
+                                    {if $row['collPayout'] > 0}
+                                        {$row['collPayout']|number:0,',','&nbsp;'|noescape} Kč
+                                    {else}—{/if}
+                                </td>
+                                <td class="text-end">
+                                    {if $row['adoptPayout'] > 0}
+                                        {$row['adoptPayout']|number:0,',','&nbsp;'|noescape} Kč
+                                    {else}—{/if}
+                                </td>
+                                <td class="text-end fw-bold">
+                                    {$row['totalPayout']|number:0,',','&nbsp;'|noescape} Kč
+                                </td>
+                                <td class="text-end text-muted small">
+                                    {$row['totalFee']|number:0,',','&nbsp;'|noescape} Kč
+                                </td>
+                            </tr>
+                        {/foreach}
+                    </tbody>
+                </table>
+            </div>
+        {else}
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle me-1"></i>Žádná finanční data k zobrazení.
+            </div>
+        {/if}
+    </div>
+
+    {* Poslední dávky *}
+    {if count($recentBatches) > 0}
+        <div class="bg-light rounded p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0"><i class="bi bi-archive me-2"></i>Poslední platební dávky</h5>
+                <a href="{link SuperAdmin:shopbatches}" class="btn btn-sm btn-outline-secondary">Všechny dávky</a>
+            </div>
+            <table class="table table-sm mb-0">
+                <thead>
+                    <tr>
+                        <th>Dávka</th>
+                        <th class="text-end">Položek</th>
+                        <th class="text-end">Celkem</th>
+                        <th class="text-center">Stav</th>
+                        <th>Vytvořeno</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {foreach $recentBatches as $batch}
+                        <tr>
+                            <td class="font-monospace">{$batch->getBatchNumber()}</td>
+                            <td class="text-end">{$batch->getItemCount()}</td>
+                            <td class="text-end">{$batch->getTotalAmount()|number:0,',','&nbsp;'|noescape} Kč</td>
+                            <td class="text-center">
+                                <span class="badge {$batch->getBatchStatus()->badgeClass()}">
+                                    {$batch->getBatchStatus()->label()}
+                                </span>
+                            </td>
+                            <td class="small">{$batch->getCreatedAt()|date:'d.m. H:i'}</td>
+                            <td>
+                                <a href="{link SuperAdmin:shopbatch, $batch->getId()}"
+                                   class="btn btn-sm btn-outline-primary">Detail</a>
+                            </td>
+                        </tr>
+                    {/foreach}
+                </tbody>
+            </table>
+        </div>
+    {/if}
+
+</div>
+{/block}
+
+{block scripts}{/block}

@@ -1,0 +1,375 @@
+{templateType App\Presenters\Templates\Azyl\Layout}
+{block azylContent}
+<div class="container-fluid pt-3 pb-5">
+
+    <h4 class="mb-4"><i class="bi bi-sliders me-2"></i>Nastavení azylu</h4>
+
+    <form n:name="azylSettingsForm" novalidate>
+
+    {* ══════════════════════════════════════════════════════════════════
+       1. ZÁKLADNÍ INFORMACE
+    ══════════════════════════════════════════════════════════════════ *}
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header text-white fw-semibold" style="background:#2e7d32;">
+            <i class="bi bi-building me-2"></i>Základní informace o azylu
+        </div>
+        <div class="card-body">
+            <div class="mb-3">
+                <label class="form-label fw-semibold" n:name="azylName">Název azylu <span class="text-danger">*</span></label>
+                <input class="form-control" n:name="azylName" placeholder="Název vašeho útulku">
+                <div n:ifcontent class="invalid-feedback d-block">{$form['azylName']->getError()}</div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-semibold" n:name="shortDescription">Krátký popisek</label>
+                <textarea class="form-control" n:name="shortDescription" id="azylshortDescription" rows="3"
+                          placeholder="Pár vět o azylu — zobrazí se v přehledech a vyhledávání"></textarea>
+                <div class="form-text">Max 512 znaků. Zobrazuje se v přehledech a kartičkách.</div>
+            </div>
+            <div class="mb-0">
+                <label class="form-label fw-semibold" n:name="description">Podrobný popis</label>
+                <textarea class="form-control" n:name="description" id="azylDescription" rows="12"
+                          placeholder="Detailní popis azylu, vaše mise, podmínky adopce…"></textarea>
+            </div>
+        </div>
+    </div>
+
+    {* ══════════════════════════════════════════════════════════════════
+       2. KONTAKTNÍ ÚDAJE
+    ══════════════════════════════════════════════════════════════════ *}
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header text-white fw-semibold" style="background:#1565c0;">
+            <i class="bi bi-person-lines-fill me-2"></i>Kontaktní údaje
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold" n:name="phoneNumber">Telefon <span class="text-danger">*</span></label>
+                    <input class="form-control" n:name="phoneNumber">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold" n:name="email">E-mail</label>
+                    <input class="form-control" n:name="email" placeholder="azyl@example.cz">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold" n:name="web">Web</label>
+                    <input class="form-control" n:name="web" placeholder="https://vas-azyl.cz">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {* ══════════════════════════════════════════════════════════════════
+       3. ADRESA A POLOHA NA MAPĚ
+    ══════════════════════════════════════════════════════════════════ *}
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header text-white fw-semibold" style="background:#e65100;">
+            <i class="bi bi-geo-alt-fill me-2"></i>Adresa a poloha
+            {if $azylHasCoords}
+                <span class="badge bg-light text-success ms-2 fw-normal">
+                    <i class="bi bi-check-circle-fill me-1"></i>Geocodováno
+                </span>
+            {else}
+                <span class="badge bg-warning text-dark ms-2 fw-normal">
+                    <i class="bi bi-exclamation-circle me-1"></i>Poloha není nastavena
+                </span>
+            {/if}
+        </div>
+        <div class="card-body">
+            <div class="alert alert-info small mb-3 py-2">
+                <i class="bi bi-info-circle me-1"></i>
+                Přesná adresa se používá pro vyhledávání podle vzdálenosti a zobrazení na mapě.
+                Přetáhněte kolíček nebo klikněte na mapu — pole se vyplní automaticky.
+            </div>
+            <div class="row g-3 mb-3">
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold" n:name="city">Město</label>
+                    <select n:name="city" class="form-control select2" id="citySelect"
+                            data-url="{link Json:select2}"></select>
+                </div>
+                <div class="col-md-5">
+                    <label class="form-label fw-semibold" n:name="street">Ulice</label>
+                    <input class="form-control" n:name="street" placeholder="např. Psí 1">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold" n:name="houseNumber">Číslo</label>
+                    <input class="form-control" n:name="houseNumber" placeholder="42">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold" n:name="zipCode">PSČ</label>
+                    <input class="form-control" n:name="zipCode" placeholder="60200">
+                </div>
+            </div>
+            <div class="row g-3 mb-3">
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold" n:name="countryCode">Stát</label>
+                    <select n:name="countryCode" class="form-control"></select>
+                </div>
+            </div>
+
+            {* Mapa *}
+            <div class="input-group mb-2">
+                <input type="text" id="map-search-input" class="form-control"
+                       placeholder="Hledat adresu… např. Útulok Brno nebo Psí 42, 60200 Brno">
+                <button type="button" id="btn-map-search" class="btn btn-outline-secondary">
+                    <i class="bi bi-search me-1"></i>Najít
+                </button>
+                <button type="button" id="btn-geocode-address" class="btn btn-outline-warning">
+                    <i class="bi bi-geo me-1"></i>Použít adresu z polí
+                </button>
+            </div>
+            <div id="azyl-map" class="mb-2"></div>
+            <div class="text-muted small">
+                <i class="bi bi-pin-map me-1"></i>Souřadnice: <span id="coords-display">
+                    {if $azylHasCoords}{$azylLat|number:5}°N, {$azylLon|number:5}°E{else}nenastaveno{/if}
+                </span>
+            </div>
+            <input n:name="latitude" id="inputLatitude">
+            <input n:name="longitude" id="inputLongitude">
+        </div>
+    </div>
+
+    {* ══════════════════════════════════════════════════════════════════
+       4. FAKTURAČNÍ A BANKOVNÍ ÚDAJE
+    ══════════════════════════════════════════════════════════════════ *}
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header text-white fw-semibold" style="background:#6a1b9a;">
+            <i class="bi bi-bank me-2"></i>Fakturační a bankovní údaje
+        </div>
+        <div class="card-body">
+            <div class="alert alert-warning small py-2 mb-3">
+                <i class="bi bi-exclamation-triangle me-1"></i>
+                <strong>Potřebné pro výplaty z e-shopu.</strong>
+                Bez bankovního účtu a IČO nelze vyplácet tržby.
+            </div>
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold" n:name="ico">IČO <span class="text-danger">*</span></label>
+                    <input class="form-control font-monospace" n:name="ico" placeholder="12345678">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold" n:name="bankAccount">Číslo účtu</label>
+                    <input class="form-control font-monospace" n:name="bankAccount" placeholder="123456789">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold" n:name="bankCode">Kód banky</label>
+                    <input class="form-control font-monospace" n:name="bankCode" placeholder="0800">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold" n:name="bankSpecificCode">Variabilní symbol</label>
+                    <input class="form-control font-monospace" n:name="bankSpecificCode">
+                </div>
+            </div>
+            {if $form['ico']->getValue() && $form['bankAccount']->getValue()}
+                <div class="alert alert-success small py-2 mt-3 mb-0">
+                    <i class="bi bi-check-circle me-1"></i>Fakturační údaje jsou vyplněny — výplaty jsou možné.
+                </div>
+            {else}
+                <div class="alert alert-secondary small py-2 mt-3 mb-0">
+                    <i class="bi bi-info-circle me-1"></i>Vyplňte IČO a číslo účtu pro aktivaci výplat.
+                </div>
+            {/if}
+        </div>
+    </div>
+
+    {* ══════════════════════════════════════════════════════════════════
+       5. NASTAVENÍ E-SHOPU
+    ══════════════════════════════════════════════════════════════════ *}
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header text-white fw-semibold" style="background:#00838f;">
+            <i class="bi bi-shop me-2"></i>Nastavení e-shopu
+        </div>
+        <div class="card-body">
+            {if !$form['ico']->getValue() || !$form['bankAccount']->getValue()}
+                <div class="alert alert-warning small py-2 mb-3">
+                    <i class="bi bi-lock me-1"></i>
+                    <strong>E-shop vyžaduje vyplněné fakturační údaje</strong> (IČO + bankovní účet).
+                    Nastavení zde uložíte, ale výplaty nebudou možné dokud nevyplníte fakturační sekci.
+                </div>
+            {/if}
+            <div class="row g-3 mb-3">
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold" n:name="shippingFee">
+                        Poštovné <span class="text-muted fw-normal">(Kč)</span>
+                    </label>
+                    <div class="input-group">
+                        <input class="form-control" n:name="shippingFee" placeholder="např. 99">
+                        <span class="input-group-text">Kč</span>
+                    </div>
+                    <div class="form-text">Pevná cena za dopravu na objednávku.</div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold" n:name="packagingFee">
+                        Balné <span class="text-muted fw-normal">(Kč)</span>
+                    </label>
+                    <div class="input-group">
+                        <input class="form-control" n:name="packagingFee" placeholder="např. 25">
+                        <span class="input-group-text">Kč</span>
+                    </div>
+                    <div class="form-text">Jednorázový poplatek za balení.</div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold" n:name="shopFeePercent">
+                        Příspěvek VAZ <span class="text-muted fw-normal">(%)</span>
+                    </label>
+                    <div class="input-group">
+                        <input class="form-control" n:name="shopFeePercent" placeholder="prázdné = 5 %">
+                        <span class="input-group-text">%</span>
+                    </div>
+                    <div class="form-text">Prázdné = systémový výchozí (5 %). Dobrovolný příspěvek spolku VAZ.</div>
+                </div>
+            </div>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold" n:name="shopThemeColor">Barevné téma e-shopu</label>
+                    <select n:name="shopThemeColor" class="form-control"></select>
+                </div>
+                <div class="col-md-8 d-flex align-items-end">
+                    <div class="d-flex gap-2">
+                        <span class="badge rounded-pill px-3 py-2" style="background:#2e7d32;font-size:13px;">Zelená</span>
+                        <span class="badge rounded-pill px-3 py-2" style="background:#1565c0;font-size:13px;">Modrá</span>
+                        <span class="badge rounded-pill px-3 py-2" style="background:#e65100;font-size:13px;">Oranžová</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {* ── Uložit ─────────────────────────────────────────────────────── *}
+    <div class="d-flex gap-2">
+        <button class="btn btn-primary btn-lg px-5" n:name="sendAzylSettings">
+            <i class="bi bi-floppy me-2"></i>Uložit nastavení
+        </button>
+    </div>
+
+    </form>
+</div>
+{/block}
+
+{block scripts}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/i18n/cs.js"></script>
+<script src="{$basePath}/vendors/tinymce/tinymce.js"></script>
+
+<style>
+#azyl-map { height: 360px; border-radius: 8px; border: 1px solid #dee2e6; }
+input[name="latitude"], input[name="longitude"] { display: none; }
+</style>
+
+{syntax off}
+<script>
+// TinyMCE
+tinymce.init({
+    selector: '#azylDescription',
+    plugins: 'link code lists image',
+    toolbar: 'undo redo | blocks | bold italic | alignleft aligncenter alignright | bullist numlist | link code',
+    height: 350,
+    skin: 'oxide',
+    content_css: 'default',
+});
+
+$(document).ready(function () {
+
+    // ── Select2 ──────────────────────────────────────────────────────
+    var baseUrl = window.location.origin;
+    var url = baseUrl + $('#citySelect').data('url');
+    $('#citySelect').select2({
+        placeholder: 'Vyberte město',
+        allowClear: true,
+        language: {
+            noResults:    function () { return 'Žádné výsledky'; },
+            inputTooShort:function () { return 'Zadejte více znaků'; },
+            searching:    function () { return 'Hledám...'; },
+        },
+        ajax: {
+            delay: 250, url: url,
+            data: function (p) { return { search: p.term }; }
+        }
+    });
+
+    // ── Leaflet mapa ──────────────────────────────────────────────────
+    var latInput = document.getElementById('inputLatitude');
+    var lonInput = document.getElementById('inputLongitude');
+
+    var initLat  = latInput && latInput.value ? parseFloat(latInput.value) : 49.8175;
+    var initLon  = lonInput && lonInput.value ? parseFloat(lonInput.value) : 15.4730;
+    var initZoom = (latInput && latInput.value) ? 15 : 7;
+
+    var map = L.map('azyl-map').setView([initLat, initLon], initZoom);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        maxZoom: 19,
+    }).addTo(map);
+
+    var marker = L.marker([initLat, initLon], { draggable: true }).addTo(map);
+
+    function updateCoords(lat, lon) {
+        if (latInput) latInput.value = lat.toFixed(7);
+        if (lonInput) lonInput.value = lon.toFixed(7);
+        var el = document.getElementById('coords-display');
+        if (el) el.textContent = lat.toFixed(5) + '°N, ' + lon.toFixed(5) + '°E';
+    }
+    if (latInput && latInput.value) updateCoords(initLat, initLon);
+
+    function reverseGeocode(lat, lon) {
+        updateCoords(lat, lon);
+        fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lon + '&accept-language=cs')
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (!data || !data.address) return;
+                var a = data.address;
+                var road = a.road || a.pedestrian || a.footway || a.path || '';
+                var streetEl = document.querySelector('[name="street"]');
+                var numEl    = document.querySelector('[name="houseNumber"]');
+                var zipEl    = document.querySelector('[name="zipCode"]');
+                if (streetEl && road)       streetEl.value = road;
+                if (numEl && a.house_number) numEl.value   = a.house_number;
+                if (zipEl && a.postcode)     zipEl.value   = a.postcode;
+            })
+            .catch(function () {});
+    }
+
+    marker.on('dragend', function (e) {
+        var p = e.target.getLatLng();
+        reverseGeocode(p.lat, p.lng);
+    });
+    map.on('click', function (e) {
+        marker.setLatLng(e.latlng);
+        reverseGeocode(e.latlng.lat, e.latlng.lng);
+    });
+
+    function forwardGeocode(q) {
+        if (!q) return;
+        fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(q) + '&countrycodes=cz,sk,de,at,pl&limit=1&accept-language=cs')
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (!data || !data[0]) { alert('Adresa nenalezena.'); return; }
+                var lat = parseFloat(data[0].lat);
+                var lon = parseFloat(data[0].lon);
+                map.setView([lat, lon], 16);
+                marker.setLatLng([lat, lon]);
+                updateCoords(lat, lon);
+            })
+            .catch(function () { alert('Chyba při hledání.'); });
+    }
+
+    document.getElementById('btn-map-search').addEventListener('click', function () {
+        forwardGeocode(document.getElementById('map-search-input').value.trim());
+    });
+    document.getElementById('map-search-input').addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); document.getElementById('btn-map-search').click(); }
+    });
+    document.getElementById('btn-geocode-address').addEventListener('click', function () {
+        var st = (document.querySelector('[name="street"]')?.value || '').trim();
+        var no = (document.querySelector('[name="houseNumber"]')?.value || '').trim();
+        var zp = (document.querySelector('[name="zipCode"]')?.value || '').trim();
+        var q  = [st + (no ? ' ' + no : ''), zp].filter(Boolean).join(', ');
+        if (!q) { alert('Vyplňte ulici nebo PSČ.'); return; }
+        document.getElementById('map-search-input').value = q;
+        forwardGeocode(q);
+    });
+});
+</script>
+{/syntax}
+{/block}

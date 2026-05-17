@@ -1,0 +1,229 @@
+{templateType App\Presenters\Templates\Admin\Layout}
+{block adminContent}
+<div class="container-fluid pt-4 px-4">
+    <div class="bg-light rounded p-4">
+        <h4 class="mb-4"><i class="bi bi-sliders me-2"></i>Nastavení systému</h4>
+
+        <ul class="nav nav-tabs mb-4" id="settingsTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#general" type="button">
+                    <i class="bi bi-gear me-1"></i>Obecné
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#email" type="button">
+                    <i class="bi bi-envelope me-1"></i>E-mail
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#ai" type="button">
+                    <i class="bi bi-robot me-1"></i>AI překlady
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#search" type="button">
+                    <i class="bi bi-search me-1"></i>Vyhledávání
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#maintenance" type="button">
+                    <i class="bi bi-tools me-1"></i>Údržba
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content">
+            {* =============== OBECNÉ =============== *}
+            <div class="tab-pane fade show active" id="general">
+                {ifset $settingsForm}
+                    <form n:name="settingsForm">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label" n:name="siteName">Název webu</label>
+                                <input class="form-control" n:name="siteName">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" n:name="contactEmail">Kontaktní e-mail</label>
+                                <input class="form-control" n:name="contactEmail">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" n:name="defaultLanguage">Výchozí jazyk</label>
+                                <select class="form-select" n:name="defaultLanguage"></select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" n:name="timezone">Časová zóna</label>
+                                <input class="form-control" n:name="timezone">
+                            </div>
+                            <div class="col-12 mt-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" n:name="registrationEnabled">
+                                    <label class="form-check-label" n:name="registrationEnabled">
+                                        Povolit nové registrace
+                                    </label>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" n:name="maintenanceMode">
+                                    <label class="form-check-label" n:name="maintenanceMode">
+                                        Režim údržby (web nedostupný pro neadminy)
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-12 mt-4">
+                                <button class="btn btn-primary" n:name="save">Uložit obecná nastavení</button>
+                            </div>
+                        </div>
+                    </form>
+                {else}
+                    <div class="alert alert-warning">
+                        Formulář obecných nastavení zatím není napojený.
+                    </div>
+                {/ifset}
+            </div>
+
+            {* =============== EMAIL =============== *}
+            <div class="tab-pane fade" id="email">
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i>
+                    SMTP nastavení se z bezpečnostních důvodů konfiguruje v souboru
+                    <code>app/config/secrets.neon</code>, ne ve webovém rozhraní.
+                </div>
+
+                <h6>Aktuálně nastavené parametry:</h6>
+                <dl class="row">
+                    <dt class="col-sm-3">SMTP host:</dt>
+                    <dd class="col-sm-9">{$smtpInfo['host'] ?? '—'}</dd>
+                    <dt class="col-sm-3">SMTP port:</dt>
+                    <dd class="col-sm-9">{$smtpInfo['port'] ?? '—'}</dd>
+                    <dt class="col-sm-3">Šifrování:</dt>
+                    <dd class="col-sm-9">{$smtpInfo['secure'] ?? '—'}</dd>
+                    <dt class="col-sm-3">Odesílatel:</dt>
+                    <dd class="col-sm-9">{$smtpInfo['fromEmail'] ?? '—'}</dd>
+                </dl>
+
+                <a href="{link Admin:testEmail!}" class="btn btn-outline-primary">
+                    <i class="bi bi-send me-1"></i>Odeslat testovací e-mail
+                </a>
+            </div>
+
+            {* =============== AI PŘEKLADY =============== *}
+            <div class="tab-pane fade" id="ai">
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i>
+                    API klíč pro OpenAI je v <code>app/config/secrets.neon</code>.
+                    Zde vidíte jen stav a můžete vyčistit cache překladů.
+                </div>
+
+                <dl class="row">
+                    <dt class="col-sm-3">Stav služby:</dt>
+                    <dd class="col-sm-9">
+                        {if $aiInfo['enabled']}
+                            <span class="badge bg-success">Aktivní</span>
+                        {else}
+                            <span class="badge bg-secondary">Vypnuto</span>
+                        {/if}
+                    </dd>
+                    <dt class="col-sm-3">Model:</dt>
+                    <dd class="col-sm-9"><code>{$aiInfo['model'] ?? '—'}</code></dd>
+                    <dt class="col-sm-3">Podporované jazyky:</dt>
+                    <dd class="col-sm-9">
+                        {foreach $aiInfo['languages'] ?? [] as $code => $name}
+                            <span class="badge bg-light text-dark me-1">{$code}: {$name}</span>
+                        {/foreach}
+                    </dd>
+                </dl>
+
+                <a href="{link Admin:clearTranslationCache!}" class="btn btn-outline-warning"
+                   onclick="return confirm('Opravdu vymazat celou cache překladů? Další překlady budou znovu stáhnuty z OpenAI.')">
+                    <i class="bi bi-trash me-1"></i>Vymazat cache překladů
+                </a>
+            </div>
+
+            {* =============== VYHLEDÁVÁNÍ =============== *}
+            <div class="tab-pane fade" id="search">
+                <dl class="row">
+                    <dt class="col-sm-3">OpenSearch:</dt>
+                    <dd class="col-sm-9">
+                        {if $searchInfo['opensearchEnabled']}
+                            <span class="badge bg-success">Povoleno</span>
+                            <span class="text-muted ms-2">— používá se pro vyhledávání</span>
+                        {else}
+                            <span class="badge bg-secondary">Vypnuto</span>
+                            <span class="text-muted ms-2">— používá se MySQL fallback</span>
+                        {/if}
+                    </dd>
+                    <dt class="col-sm-3">Indexovaných zvířátek:</dt>
+                    <dd class="col-sm-9">{$searchInfo['animalsCount'] ?? '—'}</dd>
+                    <dt class="col-sm-3">Indexovaných měst:</dt>
+                    <dd class="col-sm-9">{$searchInfo['citiesCount'] ?? '—'}</dd>
+                </dl>
+
+                <div class="d-flex gap-2">
+                    <a href="{link Admin:reindexOpenSearch!}" class="btn btn-primary"
+                       onclick="return confirm('Spustit kompletní reindex? Může to trvat několik minut.')">
+                        <i class="bi bi-arrow-repeat me-1"></i>Reindex OpenSearch
+                    </a>
+                    <a href="{link Admin:geocodeCities!}" class="btn btn-outline-primary"
+                       onclick="return confirm('Spustit doplnění souřadnic městům z OpenStreetMap? Bude to trvat dlouho (1 req/sec).')">
+                        <i class="bi bi-geo-alt me-1"></i>Doplnit souřadnice měst
+                    </a>
+                </div>
+            </div>
+
+            {* =============== ÚDRŽBA =============== *}
+            <div class="tab-pane fade" id="maintenance">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <h6 class="card-title"><i class="bi bi-trash me-1"></i>Cache aplikace</h6>
+                                <p class="small text-muted">
+                                    Vymaže temp/cache - Nette DI, šablony, routes.
+                                </p>
+                                <a href="{link Admin:clearCache!}" class="btn btn-outline-warning btn-sm"
+                                   onclick="return confirm('Opravdu vymazat cache?')">
+                                    Vymazat cache
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <h6 class="card-title"><i class="bi bi-file-earmark-text me-1"></i>Logy</h6>
+                                <p class="small text-muted">Zobrazení Tracy logů a exceptions.</p>
+                                <a href="{link Admin:logs}" class="btn btn-outline-primary btn-sm">
+                                    Zobrazit logy
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <h6 class="card-title"><i class="bi bi-database me-1"></i>Zálohování DB</h6>
+                                <p class="small text-muted">Stažení SQL dumpu databáze.</p>
+                                <a href="{link Admin:backupDatabase!}" class="btn btn-outline-success btn-sm">
+                                    Stáhnout zálohu
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <h6 class="card-title"><i class="bi bi-sitemap me-1"></i>Sitemap</h6>
+                                <p class="small text-muted">Regenerace sitemap.xml.</p>
+                                <a href="{link Admin:regenerateSitemap!}" class="btn btn-outline-primary btn-sm">
+                                    Regenerovat
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{/block}
+
+{block scripts}{/block}

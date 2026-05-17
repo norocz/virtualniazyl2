@@ -1,0 +1,34 @@
+{layout @layout.latte}
+
+{block title}Objednávka {$order->getOrderNumber()} stornována{/block}
+
+{block content}
+<h2 style="color:#6c757d;margin:0 0 16px 0;font-size:20px;">
+    Objednávka stornována
+</h2>
+
+<p style="margin:0 0 16px 0;">Dobrý den {$order->getBuyerName()},</p>
+
+<p style="margin:0 0 16px 0;">
+    vaše objednávka <strong>{$order->getOrderNumber()}</strong> byla stornována.
+</p>
+
+<div style="background:#f8f9fa;border-left:4px solid #6c757d;padding:16px 20px;margin:20px 0;border-radius:4px;">
+    <p style="margin:0 0 6px 0;font-size:13px;color:#666;">Důvod:</p>
+    <p style="margin:0;">{$reason}</p>
+</div>
+
+{if $order->isPaid()}
+    <div style="background:#fff3cd;border-left:4px solid #ffc107;padding:16px 20px;margin:20px 0;border-radius:4px;">
+        <p style="margin:0;font-size:14px;">
+            💰 <strong>Peníze vám budou vráceny</strong> v nejbližší platební dávce
+            (obvykle do 7 dnů) na účet, ze kterého jste platili.
+        </p>
+    </div>
+{/if}
+
+<p style="margin:20px 0 0 0;font-size:13px;color:#666;">
+    Pokud máte dotazy, odpovězte prosím na tento e-mail nebo kontaktujte nás
+    na <a href="mailto:shop@virtualniazyl.cz" style="color:#0d6efd;">shop@virtualniazyl.cz</a>.
+</p>
+{/block}

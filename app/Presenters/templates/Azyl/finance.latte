@@ -1,0 +1,199 @@
+{templateType App\Presenters\Templates\Azyl\Layout}
+{block azylContent}
+<div class="container-fluid pt-4 px-4">
+    <div class="bg-light rounded p-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="mb-0"><i class="bi bi-bar-chart-line me-2"></i>Finanční přehled</h4>
+        </div>
+
+        {* Souhrnné statistiky *}
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <div class="card border-0 bg-success text-white">
+                    <div class="card-body">
+                        <h6 class="card-title"><i class="bi bi-cash-stack me-1"></i>Celkový výnos pro azyl</h6>
+                        <h3 class="mb-0">{($totalPayout)|number:0,',','&nbsp;'|noescape} Kč</h3>
+                        <small class="opacity-75">ze všech zdrojů celkem</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 bg-primary text-white">
+                    <div class="card-body">
+                        <h6 class="card-title"><i class="bi bi-percent me-1"></i>Příspěvek VAZ celkem</h6>
+                        <h3 class="mb-0">{($totalFee)|number:0,',','&nbsp;'|noescape} Kč</h3>
+                        <small class="opacity-75">dobrovolný příspěvek na provoz platformy</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 bg-info text-white">
+                    <div class="card-body">
+                        <h6 class="card-title"><i class="bi bi-arrow-left-right me-1"></i>Nevyřízené objednávky</h6>
+                        <h3 class="mb-0">{$shopStats['pendingPayout']|number:0,',','&nbsp;'|noescape} Kč</h3>
+                        <small class="opacity-75">zaplaceno, čeká na odeslání/doručení</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-4">
+
+            {* Eshop *}
+            <div class="col-lg-4">
+                <div class="card h-100">
+                    <div class="card-header bg-white fw-semibold">
+                        <i class="bi bi-shop me-2 text-primary"></i>Eshop
+                    </div>
+                    <div class="card-body">
+                        <dl class="row mb-0">
+                            <dt class="col-8 fw-normal text-muted">Objednávky celkem</dt>
+                            <dd class="col-4 text-end">{$shopStats['totalOrders']}</dd>
+
+                            <dt class="col-8 fw-normal text-muted">Aktivní (zaplacené+)</dt>
+                            <dd class="col-4 text-end">{$shopStats['activeOrders']}</dd>
+
+                            <dt class="col-8 fw-normal text-muted">Tržby (zaplacené+)</dt>
+                            <dd class="col-4 text-end">{$shopStats['totalRevenue']|number:0,',','&nbsp;'|noescape} Kč</dd>
+
+                            <dt class="col-8 fw-normal text-muted">Příspěvek VAZ</dt>
+                            <dd class="col-4 text-end text-danger">−{$shopStats['totalFee']|number:0,',','&nbsp;'|noescape} Kč</dd>
+
+                            <dt class="col-8 fw-normal text-muted">Výnos (doručené)</dt>
+                            <dd class="col-4 text-end fw-semibold text-success">{$shopStats['deliveredPayout']|number:0,',','&nbsp;'|noescape} Kč</dd>
+
+                            <dt class="col-8 fw-normal text-muted">K vyplacení (čeká)</dt>
+                            <dd class="col-4 text-end fw-semibold text-warning">{$shopStats['pendingPayout']|number:0,',','&nbsp;'|noescape} Kč</dd>
+                        </dl>
+                    </div>
+                    <div class="card-footer bg-white">
+                        <a href="{link Azyl:shopOrders}" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-list-ul me-1"></i>Objednávky
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            {* Sbírky *}
+            <div class="col-lg-4">
+                <div class="card h-100">
+                    <div class="card-header bg-white fw-semibold">
+                        <i class="bi bi-piggy-bank me-2 text-success"></i>Sbírky
+                    </div>
+                    <div class="card-body">
+                        <dl class="row mb-0">
+                            <dt class="col-8 fw-normal text-muted">Přijatých plateb</dt>
+                            <dd class="col-4 text-end">{$collectionStats['totalPayments']}</dd>
+
+                            <dt class="col-8 fw-normal text-muted">Přijato celkem</dt>
+                            <dd class="col-4 text-end">{$collectionStats['totalAmount']|number:0,',','&nbsp;'|noescape} Kč</dd>
+
+                            <dt class="col-8 fw-normal text-muted">Příspěvek VAZ</dt>
+                            <dd class="col-4 text-end text-danger">−{$collectionStats['totalFee']|number:0,',','&nbsp;'|noescape} Kč</dd>
+
+                            <dt class="col-8 fw-normal text-muted">Výnos pro azyl</dt>
+                            <dd class="col-4 text-end fw-semibold text-success">{$collectionStats['totalPayout']|number:0,',','&nbsp;'|noescape} Kč</dd>
+                        </dl>
+                    </div>
+                    <div class="card-footer bg-white">
+                        <a href="{link Azyl:collections}" class="btn btn-sm btn-outline-success">
+                            <i class="bi bi-list-ul me-1"></i>Sbírky
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            {* Virtuální adopce *}
+            <div class="col-lg-4">
+                <div class="card h-100">
+                    <div class="card-header bg-white fw-semibold">
+                        <i class="bi bi-heart me-2 text-danger"></i>Virtuální adopce
+                    </div>
+                    <div class="card-body">
+                        <dl class="row mb-0">
+                            <dt class="col-8 fw-normal text-muted">Přijatých plateb</dt>
+                            <dd class="col-4 text-end">{$adoptionStats['totalPayments']}</dd>
+
+                            <dt class="col-8 fw-normal text-muted">Přijato celkem</dt>
+                            <dd class="col-4 text-end">{$adoptionStats['totalAmount']|number:0,',','&nbsp;'|noescape} Kč</dd>
+
+                            <dt class="col-8 fw-normal text-muted">Příspěvek VAZ</dt>
+                            <dd class="col-4 text-end text-danger">−{$adoptionStats['totalFee']|number:0,',','&nbsp;'|noescape} Kč</dd>
+
+                            <dt class="col-8 fw-normal text-muted">Výnos pro azyl</dt>
+                            <dd class="col-4 text-end fw-semibold text-success">{$adoptionStats['totalPayout']|number:0,',','&nbsp;'|noescape} Kč</dd>
+                        </dl>
+                    </div>
+                    <div class="card-footer bg-white">
+                        <a href="{link Azyl:adoptions}" class="btn btn-sm btn-outline-danger">
+                            <i class="bi bi-list-ul me-1"></i>Adopce
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        {* Poslední objednávky z eshopu *}
+        {if count($recentOrders) > 0}
+            <div class="card">
+                <div class="card-header bg-white fw-semibold">
+                    <i class="bi bi-clock-history me-2"></i>Poslední objednávky z eshopu
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Číslo</th>
+                                <th>Zákazník</th>
+                                <th class="text-end">Celkem</th>
+                                <th class="text-end">Příspěvek VAZ</th>
+                                <th class="text-end">Výnos</th>
+                                <th class="text-center">Stav</th>
+                                <th class="text-center">Datum</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {foreach $recentOrders as $order}
+                                <tr>
+                                    <td>
+                                        <a href="{link Azyl:shopOrder, $order->getId()}" class="text-decoration-none fw-semibold">
+                                            #{$order->getOrderNumber()}
+                                        </a>
+                                    </td>
+                                    <td>{$order->getBuyerName()}</td>
+                                    <td class="text-end">{$order->getTotalAmount()|number:0,',','&nbsp;'|noescape} Kč</td>
+                                    <td class="text-end text-muted">{$order->getFeeAmount()|number:0,',','&nbsp;'|noescape} Kč</td>
+                                    <td class="text-end fw-semibold">{$order->getPayoutAmount()|number:0,',','&nbsp;'|noescape} Kč</td>
+                                    <td class="text-center">
+                                        {var $status = $order->getOrderStatus()->value}
+                                        {if $status === 'new'}
+                                            <span class="badge bg-secondary">Nová</span>
+                                        {elseif $status === 'paid'}
+                                            <span class="badge bg-primary">Zaplacena</span>
+                                        {elseif $status === 'shipped'}
+                                            <span class="badge bg-info">Odeslaná</span>
+                                        {elseif $status === 'delivered'}
+                                            <span class="badge bg-success">Doručena</span>
+                                        {elseif $status === 'cancelled'}
+                                            <span class="badge bg-danger">Zrušena</span>
+                                        {else}
+                                            <span class="badge bg-secondary">{$status}</span>
+                                        {/if}
+                                    </td>
+                                    <td class="text-center text-muted">{$order->getCreatedAt()|date:'d.m.Y'}</td>
+                                </tr>
+                            {/foreach}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="card-footer bg-white">
+                    <a href="{link Azyl:shopOrders}" class="btn btn-sm btn-outline-secondary">Všechny objednávky</a>
+                </div>
+            </div>
+        {/if}
+
+    </div>
+</div>
+{/block}
+{block scripts}{/block}

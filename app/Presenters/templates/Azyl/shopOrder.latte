@@ -1,0 +1,147 @@
+{templateType App\Presenters\Templates\Azyl\Layout}
+{block azylContent}
+<div class="container-fluid pt-4 px-4">
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="bg-light rounded p-4">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <h4 class="mb-0">
+                        <i class="bi bi-bag me-2"></i>Objednávka {$order->getOrderNumber()}
+                    </h4>
+                    <span class="badge {$order->getOrderStatus()->badgeClass()} fs-6">
+                        {$order->getOrderStatus()->label()}
+                    </span>
+                </div>
+
+                <dl class="row small">
+                    <dt class="col-4">Datum objednávky:</dt>
+                    <dd class="col-8">{$order->getCreatedAt()|date:'d.m.Y H:i'}</dd>
+                    {if $order->getPaymentReceivedAt()}
+                        <dt class="col-4">Platba přijata:</dt>
+                        <dd class="col-8">{$order->getPaymentReceivedAt()|date:'d.m.Y H:i'}</dd>
+                    {/if}
+                    {if $order->getShippedAt()}
+                        <dt class="col-4">Odesláno:</dt>
+                        <dd class="col-8">{$order->getShippedAt()|date:'d.m.Y H:i'}</dd>
+                    {/if}
+                </dl>
+
+                <h6 class="mt-4">Položky</h6>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Produkt</th>
+                            <th class="text-center">Množství</th>
+                            <th class="text-end">Za kus</th>
+                            <th class="text-end">Celkem</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {foreach $order->getItems() as $item}
+                            <tr>
+                                <td>{$item->getProductName()}</td>
+                                <td class="text-center">{$item->getQuantity()}</td>
+                                <td class="text-end">{$item->getUnitPrice()|number:0,',','&nbsp;'|noescape} Kč</td>
+                                <td class="text-end">{$item->getSubtotal()|number:0,',','&nbsp;'|noescape} Kč</td>
+                            </tr>
+                        {/foreach}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="3" class="text-end">Mezisoučet:</td>
+                            <td class="text-end">{$order->getItemsTotal()|number:0,',','&nbsp;'|noescape} Kč</td>
+                        </tr>
+                        <tr>
+                            <td colspan="3" class="text-end">Poštovné:</td>
+                            <td class="text-end">{$order->getShippingCost()|number:0,',','&nbsp;'|noescape} Kč</td>
+                        </tr>
+                        <tr class="table-primary">
+                            <td colspan="3" class="text-end fw-bold">Zákazník zaplatil:</td>
+                            <td class="text-end fw-bold">
+                                {$order->getTotalAmount()|number:0,',','&nbsp;'|noescape} Kč
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="3" class="text-end text-muted">
+                                Provize spolku ({$order->getFeePercent()}&nbsp;%):
+                            </td>
+                            <td class="text-end text-muted">
+                                -{$order->getFeeAmount()|number:0,',','&nbsp;'|noescape} Kč
+                            </td>
+                        </tr>
+                        <tr class="table-success">
+                            <td colspan="3" class="text-end fw-bold">Vám připadne:</td>
+                            <td class="text-end fw-bold">
+                                {$order->getPayoutAmount()|number:0,',','&nbsp;'|noescape} Kč
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            {* Akce azylu *}
+            {if $order->getOrderStatus()->value === 'paid'}
+                <div class="bg-light rounded p-4 mb-3">
+                    <h6><i class="bi bi-check2-square me-1"></i>Akce</h6>
+
+                    <form n:name="shipForm">
+                        <label class="form-label" n:name="tracking">Sledovací číslo (volitelné)</label>
+                        <input class="form-control mb-2" n:name="tracking">
+                        <button class="btn btn-primary w-100" n:name="ship">
+                            <i class="bi bi-truck me-1"></i>Označit jako odesláno
+                        </button>
+                    </form>
+
+                    <hr>
+
+                    <a href="{link shopOrderCancel!, $order->getId()}"
+                       class="btn btn-outline-danger w-100 btn-sm"
+                       onclick="return confirm('Stornovat? Bude potřeba vrátit peníze zákazníkovi.')">
+                        <i class="bi bi-x-circle me-1"></i>Stornovat objednávku
+                    </a>
+                </div>
+            {elseif $order->getOrderStatus()->value === 'shipped'}
+                <div class="bg-light rounded p-4 mb-3">
+                    <h6>Potvrzení doručení</h6>
+                    <p class="small text-muted">
+                        Pokud zákazník potvrdí převzetí, označte objednávku jako doručenou.
+                    </p>
+                    <a href="{link shopOrderDeliver!, $order->getId()}" class="btn btn-success w-100">
+                        <i class="bi bi-check2-all me-1"></i>Označit jako doručené
+                    </a>
+                </div>
+            {/if}
+
+            {* Dodací adresa *}
+            <div class="bg-light rounded p-4 mb-3">
+                <h6><i class="bi bi-geo-alt me-1"></i>Doručovací adresa</h6>
+                <address class="mb-0">
+                    <strong>{$order->getBuyerName()}</strong><br>
+                    {$order->getDeliveryStreet()} {$order->getDeliveryHouseNumber()}<br>
+                    {$order->getDeliveryPsc()} {$order->getDeliveryCity()}<br>
+                    {$order->getDeliveryCountry()}
+                </address>
+                <hr>
+                <p class="small mb-1">
+                    <i class="bi bi-envelope"></i>
+                    <a href="mailto:{$order->getBuyerEmail()}">{$order->getBuyerEmail()}</a>
+                </p>
+                {if $order->getBuyerPhone()}
+                    <p class="small mb-0">
+                        <i class="bi bi-telephone"></i>
+                        <a href="tel:{$order->getBuyerPhone()}">{$order->getBuyerPhone()}</a>
+                    </p>
+                {/if}
+                {if $order->getDeliveryNote()}
+                    <hr>
+                    <p class="small mb-0"><strong>Poznámka:</strong> {$order->getDeliveryNote()}</p>
+                {/if}
+            </div>
+        </div>
+    </div>
+</div>
+{/block}
+
+{block scripts}{/block}

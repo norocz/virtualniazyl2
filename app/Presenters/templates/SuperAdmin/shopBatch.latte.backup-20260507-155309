@@ -1,0 +1,134 @@
+{templateType App\Presenters\Templates\SuperAdmin\Layout}
+{block superAdminContent}
+<div class="container-fluid pt-4 px-4">
+    <div class="bg-light rounded p-4">
+        <div class="d-flex justify-content-between align-items-start mb-4">
+            <div>
+                <h4 class="mb-1">
+                    <i class="bi bi-cash-stack me-2"></i>
+                    Dávka {$batch->getBatchNumber()}
+                </h4>
+                <p class="text-muted mb-0">
+                    Vytvořeno {$batch->getCreatedAt()|date:'d.m.Y H:i'} uživatelem
+                    {$batch->getCreatedBy()->getUserName()}
+                </p>
+            </div>
+            <span class="badge {$batch->getBatchStatus()->badgeClass()} fs-6">
+                {$batch->getBatchStatus()->label()}
+            </span>
+        </div>
+
+        <dl class="row">
+            <dt class="col-sm-3">Položek:</dt>
+            <dd class="col-sm-9">{$batch->getItemCount()}</dd>
+            <dt class="col-sm-3">Celková částka:</dt>
+            <dd class="col-sm-9">
+                <strong>{$batch->getTotalAmount()|number:2,',','&nbsp;'|noescape} Kč</strong>
+            </dd>
+            {if $batch->getExportedAt()}
+                <dt class="col-sm-3">Exportováno:</dt>
+                <dd class="col-sm-9">
+                    {$batch->getExportedAt()|date:'d.m.Y H:i'}
+                    (formát: {$batch->getExportFormat()})
+                </dd>
+            {/if}
+            {if $batch->getSentAt()}
+                <dt class="col-sm-3">Odesláno:</dt>
+                <dd class="col-sm-9">{$batch->getSentAt()|date:'d.m.Y H:i'}</dd>
+            {/if}
+        </dl>
+
+        {* Akce podle stavu *}
+        {if $batch->getBatchStatus()->value === 'draft'}
+            <div class="alert alert-info">
+                <h6><i class="bi bi-info-circle me-1"></i>Dávka je připravena k exportu</h6>
+                <p class="small mb-2">
+                    Stáhněte si CSV/ABO soubor, nahrajte ho do bankovní aplikace
+                    a poté klikněte na "Označit jako odeslané".
+                </p>
+                <div class="d-flex gap-2">
+                    <a href="{link SuperAdmin:shopBatchExport!, $batch->getId(), 'format' => 'csv_fio'}"
+                       class="btn btn-primary">
+                        <i class="bi bi-file-earmark-spreadsheet me-1"></i>Export CSV (Fio)
+                    </a>
+                    <a href="{link SuperAdmin:shopBatchCancel!, $batch->getId()}"
+                       class="btn btn-outline-danger btn-sm"
+                       onclick="return confirm('Zrušit dávku? Položky se vrátí do fronty.')">
+                        <i class="bi bi-x-lg me-1"></i>Zrušit dávku
+                    </a>
+                </div>
+            </div>
+        {elseif $batch->getBatchStatus()->value === 'exported'}
+            <div class="alert alert-warning">
+                <h6><i class="bi bi-exclamation-triangle me-1"></i>Dávka je exportována</h6>
+                <p class="small mb-2">
+                    Zkontrolujte, že se platby opravdu odeslaly v bankovní aplikaci,
+                    a označte dávku jako odeslanou.
+                </p>
+                <a href="{link SuperAdmin:shopBatchMarkSent!, $batch->getId()}"
+                   class="btn btn-success"
+                   onclick="return confirm('Opravdu označit jako odeslané? Všechny položky přejdou do stavu SENT.')">
+                    <i class="bi bi-check2-all me-1"></i>Označit jako odeslané
+                </a>
+            </div>
+        {/if}
+
+        {* Položky dávky *}
+        <h5 class="mt-4">Položky</h5>
+
+        {if count($payouts) > 0}
+            <h6 class="text-success">Výplaty azylům</h6>
+            <table class="table table-sm mb-4">
+                <thead>
+                    <tr>
+                        <th>Objednávka</th>
+                        <th>Azyl</th>
+                        <th>Účet</th>
+                        <th class="text-end">Částka</th>
+                        <th>VS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {foreach $payouts as $p}
+                        <tr>
+                            <td class="font-monospace">{$p->getOrder()->getOrderNumber()}</td>
+                            <td>{$p->getAzyl()->getAzylName()}</td>
+                            <td class="font-monospace small">{$p->getFullAccount()}</td>
+                            <td class="text-end">{$p->getAmount()|number:2,',','&nbsp;'|noescape} Kč</td>
+                            <td class="font-monospace small">{$p->getOrder()->getOrderNumber()}</td>
+                        </tr>
+                    {/foreach}
+                </tbody>
+            </table>
+        {/if}
+
+        {if count($refunds) > 0}
+            <h6 class="text-danger">Vratky zákazníkům</h6>
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>Objednávka</th>
+                        <th>Příjemce</th>
+                        <th>Účet</th>
+                        <th class="text-end">Částka</th>
+                        <th>Důvod</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {foreach $refunds as $r}
+                        <tr>
+                            <td class="font-monospace">{$r->getOrder()->getOrderNumber()}</td>
+                            <td>{$r->getRefundReceiverName() ?? '—'}</td>
+                            <td class="font-monospace small">
+                                {$r->getRefundAccount()}/{$r->getRefundBankCode()}
+                            </td>
+                            <td class="text-end">{$r->getAmount()|number:2,',','&nbsp;'|noescape} Kč</td>
+                            <td class="small">{$r->getReason()}</td>
+                        </tr>
+                    {/foreach}
+                </tbody>
+            </table>
+        {/if}
+    </div>
+</div>
+{/block}

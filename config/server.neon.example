@@ -1,0 +1,14 @@
+# Zkopírujte jako server.neon a vyplňte SMTP a platební údaje.
+# NIKDY nekomitujte server.neon do repozitáře!
+
+parameters:
+    smtp:
+        host: "smtp.example.cz"
+        username: "noreply@example.cz"
+        password: "SMTP_PASSWORD"
+        port: 465
+        secure: "ssl"
+        timeout: 600
+
+    payments:
+        account: 'CISLO_UCTU/KOD_BANKY'

@@ -1,0 +1,63 @@
+{layout @layout.latte}
+
+{block title}Platba objednávky {$order->getOrderNumber()} přijata{/block}
+
+{block content}
+<h2 style="color:#198754;margin:0 0 16px 0;font-size:20px;">
+    ✅ Platba přijata - děkujeme!
+</h2>
+
+<p style="margin:0 0 16px 0;">Dobrý den {$order->getBuyerName()},</p>
+
+<p style="margin:0 0 16px 0;">
+    vaše platba za objednávku <strong>{$order->getOrderNumber()}</strong>
+    byla úspěšně přijata a spárována.
+</p>
+
+<div style="background:#d1e7dd;border-left:4px solid #198754;padding:16px 20px;margin:20px 0;border-radius:4px;">
+    <p style="margin:0;font-size:14px;">
+        <strong>{$order->getAzyl()->getAzylName()}</strong> se začne zabývat vaší objednávkou
+        a brzy vám zašle informace o odeslání zásilky.
+    </p>
+</div>
+
+<h3 style="margin:24px 0 12px 0;font-size:16px;">Shrnutí objednávky</h3>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-size:14px;">
+    {foreach $order->getItems() as $item}
+        <tr>
+            <td style="padding:6px 0;">
+                {$item->getQuantity()}&times; {$item->getProductName()}
+            </td>
+            <td style="text-align:right;padding:6px 0;">
+                {$item->getSubtotal()|number:0,',','&nbsp;'|noescape} Kč
+            </td>
+        </tr>
+    {/foreach}
+    <tr>
+        <td colspan="2" style="padding:12px 0 0 0;border-top:1px solid #dee2e6;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                    <td style="text-align:right;padding:4px 0;font-weight:bold;">Zaplaceno celkem:</td>
+                    <td style="text-align:right;padding:4px 0;font-weight:bold;color:#198754;">
+                        {$order->getTotalAmount()|number:0,',','&nbsp;'|noescape} Kč
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+
+<h3 style="margin:24px 0 12px 0;font-size:16px;">Doručovací adresa</h3>
+<p style="margin:0 0 16px 0;font-size:14px;">
+    {$order->getBuyerName()}<br>
+    {$order->getFullDeliveryAddress()}
+</p>
+
+<p style="margin:20px 0;">
+    <a href="{$baseUrl}/eshop/orderDetail/{$order->getOrderNumber()}"
+       style="display:inline-block;background:#0d6efd;color:white;padding:12px 24px;text-decoration:none;border-radius:6px;font-weight:bold;">
+        Sledovat objednávku
+    </a>
+</p>
+{/block}

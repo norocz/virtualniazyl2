@@ -1,0 +1,123 @@
+{*
+    Drop-in replacement for: vaz/app/Presenters/templates/Home/thanks.latte
+    Credits / poděkování — scrolling column on dark ink background.
+*}
+{block content}
+<link href="{$basePath}/assets/css/vaz-redesign.css" rel="stylesheet">
+<main class="vaz-redesign">
+
+<section class="py-4">
+    <div class="container" style="max-width: 960px;">
+        <nav class="vaz-crumbs">
+            <a n:href="Home:default">Úvod</a>
+            <span class="sep">›</span>
+            <span class="current">Poděkování</span>
+        </nav>
+
+        <div class="vaz-credits">
+            <div class="text-center mb-4" style="position:relative; z-index:1;">
+                <img src="{$basePath}/assets/vazdata/img/logos/header_logo_green.png" alt="Virtuální azyl" style="max-width: 280px; margin-bottom: 20px;">
+                <h2>Poděkování</h2>
+                <p style="color: #b7d3c4; font-size: 14px; margin: 0;">Lidem, technologiím a zvířatům, bez kterých by to nešlo.</p>
+            </div>
+
+            <div class="vaz-credits__scroll">
+                <div class="vaz-credits__inner">
+                    <div class="block">
+                        <div class="row align-items-center g-4">
+                            <div class="col-sm-4 text-center">
+                                <img class="portrait" src="{$basePath}/assets/vazdata/img/pic/error404-dino.jpeg" alt="NORO">
+                            </div>
+                            <div class="col-sm-8">
+                                <div class="role">Project Management · CTO · Techlead</div>
+                                <div class="role">Ideas · Analysis · Programming</div>
+                                <div class="role">Design · DevOps · a všechno ostatní</div>
+                                <div class="name">Josef „NORO" Němec</div>
+                            </div>
+                        </div>
+                        <div class="quote">V mládí jsem se zřekl jedení masa a přijde ještě den, že lidé mně podobní se budou na zabíjení zvířat dívat tak, jako se dnes dívají na zabíjení lidí. — <i>Leonardo da Vinci</i></div>
+                    </div>
+
+                    <div class="block">
+                        <div class="row align-items-center g-4">
+                            <div class="col-sm-8">
+                                <div class="role">Administration · Testing</div>
+                                <div class="role">Organization · Mental Health Care</div>
+                                <div class="name">Zdeněk „VS" Joukl</div>
+                            </div>
+                            <div class="col-sm-4 text-center">
+                                <img class="portrait" src="{$basePath}/assets/vazdata/img/pic/happy1.jpeg" alt="VS">
+                            </div>
+                        </div>
+                        <div class="quote">Stát a cítit se jako hrdina je velice snadné. Stačí bránit skutečně bezbranné proti skutečnému bezpráví. — <i>J. „N" N.</i></div>
+                    </div>
+
+                    <div class="block">
+                        <div class="row align-items-center g-4">
+                            <div class="col-sm-4 text-center">
+                                <img class="portrait" src="{$basePath}/assets/vazdata/img/pic/love1.jpeg" alt="Testing">
+                            </div>
+                            <div class="col-sm-8">
+                                <div class="role">Testing a nápady</div>
+                                <div class="name">Ma Lop</div>
+                                <div class="name">Peter Takáč</div>
+                                <div class="name">Lukáš K.</div>
+                                <div class="name">Adela22</div>
+                            </div>
+                        </div>
+                        <div class="quote">Otázka nezní: mohou rozumět? ani: mohou mluvit? ale: mohou trpět? — <i>Jeremy Bentham</i></div>
+                    </div>
+
+                    <div class="block">
+                        <div class="row align-items-center g-4">
+                            <div class="col-sm-4 text-center">
+                                <img class="portrait" src="{$basePath}/assets/vazdata/img/pic/love2.jpeg" alt="Tech">
+                            </div>
+                            <div class="col-sm-8">
+                                <div class="role">Poděkování</div>
+                                <div style="color:#dfeee5; font-size:14px; line-height:1.8;">
+                                    David Grudl — <a href="https://nette.org/cs/" style="color: var(--vaz-ochre);">Nette framework</a><br>
+                                    Autoři <a href="https://getbootstrap.com/" style="color: var(--vaz-ochre);">Bootstrap 5</a><br>
+                                    Autoři <a href="https://www.php.net/releases/8.3/en.php" style="color: var(--vaz-ochre);">PHP 8.3</a><br>
+                                    Autoři <a href="https://www.mysql.com/" style="color: var(--vaz-ochre);">MySQL</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="quote">Ve vztahu ke zvířatům jsou všichni lidé nacisté… Pro zvířata je Treblinka každodenností. — <i>Isaac Bashevis Singer</i></div>
+                    </div>
+
+                    <div class="block">
+                        <div class="row align-items-center g-4">
+                            <div class="col-sm-12">
+                                <div class="role">Zvláštní poděkování</div>
+                                <div style="color:#dfeee5; font-size:16px; line-height:1.8;">
+                                    Olda · Kačka · Silva · Ondřej · Magda · Jirka
+                                </div>
+                                <div style="font-size: 22px; color:#fff; margin-top: 14px; font-weight:700;">Honzo díky!</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="block text-center">
+                        <h2 style="color: var(--vaz-ochre); font-size: 40px;">ALF — Keep the fight!</h2>
+                        <p style="color:#dfeee5; font-size:16px; max-width: 560px; margin: 14px auto;">
+                            Je lepší porušit špatný zákon, než trpět bezpráví.
+                        </p>
+                    </div>
+
+                    <div class="block">
+                        <div class="quote" style="border-left-color: var(--vaz-ochre); color:#e8f1ec;">
+                            Při tvorbě nebyla zneužita nebo nijak jinak obtěžována jakákoliv zvířata.
+                            Bylo snědeno několik kilogramů Tofu, kofeinu a jedna divoká myš
+                            byla uplácena buráky a dalšími dobrotami.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+</main>
+{/block}
+{block scripts-user}{/block}

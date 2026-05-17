@@ -1,0 +1,37 @@
+{*
+    Drop-in replacement for: vaz/app/Presenters/templates/Home/signIn.latte
+*}
+{block content}
+<link href="{$basePath}/assets/css/vaz-redesign.css" rel="stylesheet">
+<main class="vaz-redesign">
+
+<section class="py-5">
+    <div class="container" style="max-width: 1000px;">
+        <nav class="vaz-crumbs">
+            <a n:href="Home:default">Úvod</a>
+            <span class="sep">›</span>
+            <span class="current">Přihlášení</span>
+        </nav>
+
+        {snippet signin}
+        <div class="vaz-auth" id="signIn">
+            <div class="vaz-auth__media">
+                <img src="{$basePath}/assets/vazdata/img/pic/happy1.jpeg" alt="Vítejte zpět">
+            </div>
+            <div class="vaz-auth__body">
+                <div class="vaz-auth__eyebrow">Vítejte zpět</div>
+                <h2 class="vaz-auth__title">Přihlášení</h2>
+                <p class="vaz-auth__lead">
+                    Zadejte email a heslo. Ještě nemáte účet?
+                    <a href="{link Home:registration}">Zaregistrujte se zde</a>.
+                </p>
+                {control signInForm}
+            </div>
+        </div>
+        {/snippet}
+    </div>
+</section>
+
+</main>
+{/block}
+{block scripts-user}{/block}

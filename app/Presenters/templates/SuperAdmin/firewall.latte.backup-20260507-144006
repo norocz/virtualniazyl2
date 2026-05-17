@@ -1,0 +1,65 @@
+{templateType App\Presenters\Templates\SuperAdmin\Layout}
+{block superAdminContent}
+<div class="container-fluid pt-4 px-4">
+    <div class="bg-light rounded p-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="mb-0"><i class="bi bi-shield-lock me-2"></i>Firewall</h4>
+            <div>
+                <a href="{link SuperAdmin:clearFirewall!}" class="btn btn-outline-warning"
+                   onclick="return confirm('Opravdu odblokovat VŠECHNY IP?')">
+                    <i class="bi bi-unlock me-1"></i>Odblokovat všechny
+                </a>
+            </div>
+        </div>
+
+        {ifset $firewallLogs}
+            {if count($firewallLogs) > 0}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>IP adresa</th>
+                                <th>Datum blokace</th>
+                                <th>Důvod</th>
+                                <th>Počet pokusů</th>
+                                <th>Info</th>
+                                <th class="text-end">Akce</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {foreach $firewallLogs as $log}
+                                <tr>
+                                    <td><code>{$log->getIp()}</code></td>
+                                    <td>{$log->getCreatedAt()|date:'d.m.Y H:i'}</td>
+                                    <td class="small">{$log->getDescription() ?? '—'}</td>
+                                    <td><span class="badge bg-secondary">{$log->getAttempts() ?? 1}</span></td>
+                                    <td>
+                                        <a href="{link SuperAdmin:ipInfo!, $log->getId()}"
+                                           class="btn btn-sm btn-outline-info ajax">
+                                            <i class="bi bi-info-circle"></i>
+                                        </a>
+                                    </td>
+                                    <td class="text-end">
+                                        <a href="{link SuperAdmin:unblockIp!, $log->getId()}"
+                                           class="btn btn-sm btn-outline-success"
+                                           onclick="return confirm('Odblokovat tuto IP?')">
+                                            <i class="bi bi-unlock me-1"></i>Odblokovat
+                                        </a>
+                                    </td>
+                                </tr>
+                            {/foreach}
+                        </tbody>
+                    </table>
+                </div>
+            {else}
+                <div class="alert alert-success mb-0">
+                    <i class="bi bi-check-circle me-2"></i>
+                    Žádné zablokované IP adresy. Firewall je čistý.
+                </div>
+            {/if}
+        {/ifset}
+    </div>
+</div>
+{/block}
+
+{block scripts}{/block}

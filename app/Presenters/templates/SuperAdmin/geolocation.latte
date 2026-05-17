@@ -1,0 +1,176 @@
+{templateType App\Presenters\Templates\SuperAdmin\Layout}
+{block superAdminContent}
+<div class="container-fluid pt-4 px-4">
+    <div class="bg-light rounded p-4">
+        <h4 class="mb-4"><i class="bi bi-geo-alt me-2"></i>Geolokace azylů a zvířat</h4>
+
+        {* Souhrn stavu *}
+        <div class="row g-3 mb-4">
+            <div class="col-md-3">
+                <div class="card border-0 bg-primary text-white">
+                    <div class="card-body">
+                        <h6 class="card-title">Celkem azylů</h6>
+                        <h3 class="mb-0">{$totalAzyls}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 {if $missingAzyls > 0}bg-warning{else}bg-success text-white{/if}">
+                    <div class="card-body">
+                        <h6 class="card-title">Bez souřadnic</h6>
+                        <h3 class="mb-0">{$missingAzyls}</h3>
+                        <small>{if $missingAzyls === 0}Vše OK ✓{else}azylů čeká na geocodování{/if}</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 {if $missingAnimals > 0}bg-warning{else}bg-success text-white{/if}">
+                    <div class="card-body">
+                        <h6 class="card-title">Zvířata bez souřadnic</h6>
+                        <h3 class="mb-0">{$missingAnimals}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 bg-info text-white">
+                    <div class="card-body">
+                        <h6 class="card-title">Geocodováno azylů</h6>
+                        <h3 class="mb-0">{$totalAzyls - $missingAzyls}</h3>
+                        <small>z {$totalAzyls} celkem</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {* Hromadné akce *}
+        <div class="card mb-4">
+            <div class="card-header"><i class="bi bi-lightning me-1"></i>Hromadné operace</div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <div class="border rounded p-3 h-100">
+                            <h6><i class="bi bi-geo-alt-fill text-success me-1"></i>Geocodovat chybějící azyly</h6>
+                            <p class="small text-muted mb-3">
+                                Spustí Nominatim pro azyly bez souřadnic (max 30 najednou kvůli rate limitu ~1 req/s).
+                                Opakujte dokud nejsou všechny geocodovány.
+                            </p>
+                            <a href="{link geocodeAllMissing!}"
+                               class="btn btn-success btn-sm"
+                               {if $missingAzyls === 0}disabled{/if}
+                               onclick="return confirm('Spustit geocodování {$missingAzyls} azylů (max 30)? Může trvat až 30 sekund.')">
+                                <i class="bi bi-geo-alt me-1"></i>Geocodovat chybějící ({$missingAzyls})
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="border rounded p-3 h-100">
+                            <h6><i class="bi bi-arrow-down-circle text-primary me-1"></i>Propagovat na zvířata</h6>
+                            <p class="small text-muted mb-3">
+                                Zkopíruje souřadnice azylů na všechna jejich zvířata.
+                                Zvířata jsou fyzicky na stejném místě jako azyl.
+                            </p>
+                            <a href="{link propagateToAnimals!}"
+                               class="btn btn-primary btn-sm"
+                               onclick="return confirm('Propagovat souřadnice na {$missingAnimals} zvířat bez souřadnic?')">
+                                <i class="bi bi-arrow-down-circle me-1"></i>Propagovat na zvířata
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="border rounded p-3 h-100">
+                            <h6><i class="bi bi-search text-warning me-1"></i>Reindexovat OpenSearch</h6>
+                            <p class="small text-muted mb-3">
+                                Přebuduje OpenSearch index pro všechna zvířata, azyly a města.
+                                Použijte po hromadném geocodování pro aktivaci geo-vyhledávání.
+                            </p>
+                            <a href="{link reindexOpenSearch!}"
+                               class="btn btn-warning btn-sm"
+                               onclick="return confirm('Přebudovat celý OpenSearch index? Může trvat déle.')">
+                                <i class="bi bi-arrow-clockwise me-1"></i>Reindexovat OpenSearch
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="alert alert-info mt-3 mb-0 small">
+                    <i class="bi bi-terminal me-1"></i>
+                    Pro hromadné geocodování všech azylů najednou (bez web-timeoutu) použijte konzoli:<br>
+                    <code>php console app:geocode-cities --force</code> (první geocodujte města),
+                    pak spusťte "Geocodovat chybějící" opakovaně nebo implement. nový příkaz.
+                </div>
+            </div>
+        </div>
+
+        {* Tabulka azylů se stavem geocodování *}
+        <h5 class="mb-3">Přehled azylů</h5>
+        <div class="table-responsive">
+            <table class="table table-sm table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Název</th>
+                        <th>Adresa</th>
+                        <th>Město (ID)</th>
+                        <th class="text-center">Souřadnice</th>
+                        <th class="text-end">Zvířat</th>
+                        <th>Akce</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {foreach $azyls as $azyl}
+                        <tr class="{if !$azyl->hasCoordinates()}table-warning{/if}">
+                            <td class="text-muted small">{$azyl->getId()}</td>
+                            <td>
+                                <strong>{$azyl->getAzylName()}</strong>
+                                {if $azyl->getIco()}
+                                    <br><small class="text-muted">IČO: {$azyl->getIco()}</small>
+                                {/if}
+                            </td>
+                            <td class="small">
+                                {if $azyl->getStreet()}
+                                    {$azyl->getStreet()} {$azyl->getHouseNumber()}<br>
+                                    {$azyl->getZipCode()}
+                                {else}
+                                    <span class="text-muted">—</span>
+                                {/if}
+                            </td>
+                            <td class="small text-muted">{$azyl->getCity() ?? '—'}</td>
+                            <td class="text-center">
+                                {if $azyl->hasCoordinates()}
+                                    <span class="badge bg-success" title="{$azyl->getLatitude()}, {$azyl->getLongitude()}">
+                                        <i class="bi bi-geo-alt-fill me-1"></i>{number_format($azyl->getLatitude(), 4)}°, {number_format($azyl->getLongitude(), 4)}°
+                                    </span>
+                                {else}
+                                    <span class="badge bg-warning text-dark">
+                                        <i class="bi bi-geo-alt me-1"></i>chybí
+                                    </span>
+                                {/if}
+                            </td>
+                            <td class="text-end">{$azyl->getAnimals()|length}</td>
+                            <td>
+                                <a href="{link geocodeAzyl!, id => $azyl->getId()}"
+                                   class="btn btn-outline-success btn-sm py-0"
+                                   title="{if $azyl->hasCoordinates()}Přegeocodovat{else}Geocodovat{/if}"
+                                   onclick="return confirm('Geocodovat azyl ' + {$azyl->getAzylName()|json} + '?')">
+                                    <i class="bi bi-geo-alt"></i>
+                                    {if $azyl->hasCoordinates()}↺{else}+{/if}
+                                </a>
+                            </td>
+                        </tr>
+                    {/foreach}
+                </tbody>
+            </table>
+        </div>
+
+        {* Info o nastavení adresy *}
+        <div class="alert alert-secondary small mt-3">
+            <i class="bi bi-info-circle me-1"></i>
+            Azyly s vyplněnou ulicí a PSČ budou geocodovány přesně (adresa organizace).
+            Azyly pouze s ID města dostanou souřadnice středu města.
+            Adresu azylu lze vyplnit v nastavení azylu.
+        </div>
+    </div>
+</div>
+{/block}
+
+{block scripts}{/block}

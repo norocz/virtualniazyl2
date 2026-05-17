@@ -1,0 +1,116 @@
+{templateType App\Presenters\Templates\Home\Layout}
+{block title}Košík - Virtuální azyl{/block}
+
+{block content}
+<main class="main" id="top">
+    <section class="bg-light py-5">
+        <div class="container">
+            <h1 class="mb-4">Košík</h1>
+
+            {if $cart->isEmpty()}
+                <div class="alert alert-info">
+                    <i class="bi bi-cart-x me-2"></i>
+                    Košík je prázdný. <a href="{link Shop:default}">Pokračovat v nákupu</a>
+                </div>
+            {else}
+                <div class="row g-4">
+                    {* Položky košíku *}
+                    <div class="col-lg-8">
+                        <div class="bg-white rounded p-4">
+                            <h5 class="mb-3">Zboží v košíku</h5>
+                            {foreach $cart->getHydratedItems() as $item}
+                                <div class="d-flex align-items-center border-bottom py-3">
+                                    {* Fotka *}
+                                    {var $photo = $item['product']->getPhotos()->first()}
+                                    {if $photo}
+                                        <img src="{$basePath}{$photo->getFullPath()}" alt=""
+                                             class="rounded me-3"
+                                             style="width:80px;height:80px;object-fit:cover;">
+                                    {else}
+                                        <div class="rounded bg-light me-3 d-flex align-items-center justify-content-center"
+                                             style="width:80px;height:80px;">
+                                            <i class="bi bi-image text-muted"></i>
+                                        </div>
+                                    {/if}
+
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-1">
+                                            <a href="{link Shop:product, $item['product']->getId()}" class="text-dark">
+                                                {$item['product']->getName()}
+                                            </a>
+                                        </h6>
+                                        <p class="text-muted small mb-1">
+                                            {$item['product']->getAzyl()->getAzylName()}
+                                        </p>
+                                        <p class="mb-0">
+                                            {$item['product']->getPrice()|number:0,',','&nbsp;'|noescape} Kč / ks
+                                        </p>
+                                    </div>
+
+                                    <div class="me-3" style="width:120px;">
+                                        <form n:name="updateForm-{$item['product']->getId()}"
+                                              class="d-flex gap-1">
+                                            <input type="number" class="form-control form-control-sm"
+                                                   name="quantity" value="{$item['quantity']}" min="0"
+                                                   max="{$item['product']->isUnlimitedStock() ? 999 : $item['product']->getStock()}">
+                                            <button class="btn btn-sm btn-outline-secondary">OK</button>
+                                        </form>
+                                    </div>
+
+                                    <div class="text-end me-3" style="min-width:100px;">
+                                        <strong>{$item['subtotal']|number:0,',','&nbsp;'|noescape} Kč</strong>
+                                    </div>
+
+                                    <a href="{link Shop:removeFromCart!, $item['product']->getId()}"
+                                       class="btn btn-sm btn-outline-danger"
+                                       onclick="return confirm('Odstranit položku?')">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </div>
+                            {/foreach}
+                        </div>
+                    </div>
+
+                    {* Shrnutí *}
+                    <div class="col-lg-4">
+                        <div class="bg-white rounded p-4">
+                            <h5 class="mb-3">Shrnutí</h5>
+                            <dl class="row mb-3">
+                                <dt class="col-7">Mezisoučet:</dt>
+                                <dd class="col-5 text-end">
+                                    {$cart->getSubtotal()|number:0,',','&nbsp;'|noescape} Kč
+                                </dd>
+                                <dt class="col-7">Poštovné:</dt>
+                                <dd class="col-5 text-end">
+                                    {$shippingCost|number:0,',','&nbsp;'|noescape} Kč
+                                </dd>
+                                <dt class="col-7 h5 mt-2">Celkem:</dt>
+                                <dd class="col-5 text-end h5 mt-2 text-primary">
+                                    {($cart->getSubtotal() + $shippingCost)|number:0,',','&nbsp;'|noescape} Kč
+                                </dd>
+                            </dl>
+
+                            <a href="{link Shop:checkout}" class="btn btn-primary w-100">
+                                Pokračovat k platbě <i class="bi bi-arrow-right"></i>
+                            </a>
+                            <a href="{link Shop:default}" class="btn btn-outline-secondary w-100 mt-2">
+                                Pokračovat v nákupu
+                            </a>
+
+                            <hr>
+                            <div class="small text-muted">
+                                <p class="mb-1"><i class="bi bi-info-circle me-1"></i>
+                                    Platíte kartou/převodem (QR kód) na účet spolku Virtuální Azyl.
+                                </p>
+                                <p class="mb-0">
+                                    Spolek strhne {$feePercent}&nbsp;% na provoz a zbytek přepošle azylu.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {/if}
+        </div>
+    </section>
+</main>
+{/block}

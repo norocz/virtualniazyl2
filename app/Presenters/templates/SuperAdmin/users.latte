@@ -1,0 +1,14 @@
+{templateType App\Presenters\Templates\SuperAdmin\Layout}
+{block superAdminContent}
+<div class="container-fluid pt-4 px-4">
+    <div class="bg-light rounded p-4">
+        <h4 class="mb-4"><i class="bi bi-people me-2"></i>Správa uživatelů</h4>
+        {snippet datagrid}
+            {control usersDatagrid}
+        {/snippet}
+    </div>
+</div>
+{/block}
+
+{block scripts}
+{/block}

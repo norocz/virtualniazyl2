@@ -1,0 +1,155 @@
+{*
+ * Azyl/messages.latte - aplikovaná verze
+ *
+ * Pokud máte stávající šablonu, vyhledejte snippet "chats" (nebo
+ * sekci kontaktů) a aplikujte tyto úpravy. Tato šablona je struktura
+ * pro nový soubor.
+ *}
+
+{block azylContent}
+<style>
+    .chat { position: relative; }
+
+    a.cont {
+        display: flex !important;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        background-color: #8ab6d6;
+        margin-bottom: 10px;
+        padding: 15px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        gap: 10px;
+        color: white;
+    }
+
+    a.cont:hover { background-color: #9aC6D6; }
+
+    .chat-label {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .unread-badge {
+        flex-shrink: 0;
+        font-size: 0.75rem;
+        min-width: 1.5em;
+        padding: 0.35em 0.6em;
+        box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.3);
+        animation: unread-pulse 2s infinite ease-in-out;
+    }
+
+    @keyframes unread-pulse {
+        0%, 100% { box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.3); }
+        50%      { box-shadow: 0 0 0 5px rgba(220, 53, 69, 0.15); }
+    }
+
+    a.cont.has-unread {
+        background-color: #c1574e;
+        font-weight: 600;
+    }
+
+    .msg.in {
+        background-color: #d1e7dd;
+        text-align: left;
+    }
+
+    .msg.out {
+        background-color: #cfe2ff;
+        text-align: left;
+        margin-left: auto;
+        max-width: 60%;
+    }
+</style>
+
+<div class="container-fluid pt-4 px-4">
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="bg-light rounded p-4">
+                <h4>
+                    Kontakty
+                    {if ($totalUnread ?? 0) > 0}
+                        <span class="badge bg-danger" title="celkem nepřečtených">
+                            {$totalUnread}
+                        </span>
+                    {/if}
+                </h4>
+
+                {ifset $chats}
+                    {snippet chats}
+                        <div class="messages bg-100" id="messages" style="overflow-y: auto;">
+                            {foreach $chats as $chat}
+                                {var $unreadCount = ($unreadByConversation[$chat->getId()] ?? 0)}
+                                {var $isActive = isset($conversation) && $conversation === $chat->getId()}
+
+                                <div class="chat">
+                                    <a class="cont btn-light{if $unreadCount > 0} has-unread{/if}"
+                                       href="{link chat!, $chat->getId()}"
+                                       data-conv-id="{$chat->getId()}">
+                                        <span class="chat-label">
+                                            {if $chat->getAdoption() != null}
+                                                <strong>Adopce:</strong>
+                                                {$chat->getAdoption()->getAnimal()->getName()}<br>
+                                            {/if}
+                                            {if $chat->getUser()}
+                                                {$chat->getUser()->getUserName()}
+                                            {else}
+                                                (systém)
+                                            {/if}
+                                        </span>
+                                        {if $unreadCount > 0}
+                                            <span class="unread-badge badge bg-danger rounded-pill"
+                                                  aria-label="{$unreadCount} nepřečtených zpráv">
+                                                {if $unreadCount > 99}99+{else}{$unreadCount}{/if}
+                                            </span>
+                                        {/if}
+                                    </a>
+                                </div>
+                            {/foreach}
+                        </div>
+                    {/snippet}
+                {/ifset}
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="bg-light rounded p-4">
+                <h6 class="mb-0">Vzkazy</h6>
+                {snippet messages}
+                    {ifset $messages}
+                        {foreach $messages as $message}
+                            <div class="d-flex align-items-center border-bottom py-3">
+                                <div class="w-100 ms-3">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <div class="me-4 ps-4 p-3 shadow rounded-2 msg {if $message->getAzyl() == null}in{else}out{/if}">
+                                            <span>{$message->getMessage()|safeHtml|noescape}</span><br>
+                                            <span class="small">{$message->getCreatedAt()|date:'H:i d.m.Y'}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {/foreach}
+
+                        <form n:name=messagesForm class="ajax form row col-auto m-2" data-reciver="{$conversation}">
+                            <div class="msg-text-array col-lg-9">
+                                <label n:name=message><textarea class="font-monospace form-control ajax chat-textarray" cols="55" rows="2" n:name=message autofocus></textarea></label>
+                            </div>
+                            <div class="msg-text-array col-lg-3">
+                                <input n:name=address value="{$conversation}" type="hidden">
+                                <input class="align-center ajax chat-send btn btn-secondary" n:name=send>
+                            </div>
+                        </form>
+                    {/ifset}
+                {/snippet messages}
+            </div>
+        </div>
+    </div>
+</div>
+{/block}
+
+{block scripts}{/block}

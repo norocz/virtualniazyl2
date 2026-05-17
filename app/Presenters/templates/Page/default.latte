@@ -1,0 +1,39 @@
+{*
+    Drop-in replacement for: vaz/app/Presenters/templates/Page/default.latte
+    Statická stránka (CMS content)
+*}
+{block content}
+<link href="{$basePath}/assets/css/vaz-redesign.css" rel="stylesheet">
+<main class="vaz-redesign">
+
+<section class="py-4">
+    <div class="container" style="max-width: 1100px;">
+        <nav class="vaz-crumbs">
+            <a n:href="Home:default">Úvod</a>
+            <span class="sep">›</span>
+            <span class="current">Stránka</span>
+        </nav>
+
+        <div class="row g-4">
+            <div class="col-lg-4 col-md-12">
+                {ifset $kytka}
+                    <div class="vaz-card vaz-card--flush" style="overflow:hidden;">
+                        <img class="img-fluid" src="{$basePath}/assets/vazdata/img/pic/{$kytka}" alt="Ilustrace" style="width:100%; height:auto; display:block;">
+                    </div>
+                {/ifset}
+            </div>
+
+            <div class="col-lg-8 col-md-12">
+                <article class="vaz-page-body" id="page">
+                    {ifset $content}
+                        <div n:if="$content">{$content|noescape}</div>
+                    {/ifset}
+                </article>
+            </div>
+        </div>
+    </div>
+</section>
+
+</main>
+{/block}
+{block scripts-user}{/block}

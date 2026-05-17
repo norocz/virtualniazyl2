@@ -1,0 +1,40 @@
+{block adminContent}
+<style>
+    .form {
+        margin: 1em auto;
+
+    }
+
+    .datagrid {
+        margin: 1em auto;
+
+    }
+</style>
+
+<div class="container">
+    <div class="row">
+        <div class="col-12 form">
+            {control newsForm}
+        </div>
+    </div>
+</div>
+    {snippet datagrid}
+        {control newsDatagrid}
+    {/snippet}
+
+
+{/block}
+{block scripts-user}
+{/block}
+{block scripts}
+    <script src="{$basePath}/vendors/tinymce/tinymce.js"></script>
+    <script>
+        tinymce.init({
+            selector: '#content',
+            plugins: 'preview link code table media image table',
+            width: '800px',
+            menubar: false,
+            toolbar: 'undo redo | bold italic | link code images table media',
+        });
+    </script>
+{/block}

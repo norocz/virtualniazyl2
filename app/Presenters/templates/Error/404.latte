@@ -1,0 +1,31 @@
+{block content}
+<link href="{$basePath}/assets/css/vaz-redesign.css" rel="stylesheet">
+<main class="vaz-redesign">
+<section class="vaz-section-hero">
+    <div class="container">
+        <div class="row align-items-center g-5">
+            <div class="col-md-6">
+                <img src="{$basePath}/assets/vazdata/img/pic/error404-dino.jpeg"
+                     alt="404" class="img-fluid rounded-3 shadow-sm">
+            </div>
+            <div class="col-md-6">
+                <span class="vaz-pill vaz-pill--rose mb-3 d-inline-block">Chyba 404</span>
+                <h1 class="vaz-page-title">Stránka nenalezena</h1>
+                <p class="vaz-page-sub">
+                    Hledali jsme vaší stránku. Fakt jakože hodně!
+                    Ale prostě tu není — buď máte špatnou adresu, nebo nám stránka chybí.
+                </p>
+                <div class="d-flex gap-2 flex-wrap mt-4">
+                    <a href="{link Home:default}" class="vaz-btn vaz-btn--primary">
+                        <i class="bi bi-house me-1"></i> Hlavní stránka
+                    </a>
+                    <a href="{link Home:adoptions}" class="vaz-btn vaz-btn--ghost">Adopce</a>
+                    <a href="{link Home:azyls}" class="vaz-btn vaz-btn--ghost">Azyly</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+</main>
+{/block}
+{block scripts-user}{/block}

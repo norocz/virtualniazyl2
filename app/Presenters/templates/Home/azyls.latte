@@ -1,0 +1,68 @@
+{*
+    Drop-in replacement for: vaz/app/Presenters/templates/Home/azyls.latte
+*}
+{block content}
+<link href="{$basePath}/assets/css/vaz-redesign.css" rel="stylesheet">
+<main class="vaz-redesign">
+
+<section class="vaz-section-hero">
+    <div class="container">
+        <nav class="vaz-crumbs">
+            <a n:href="Home:default">Úvod</a>
+            <span class="sep">›</span>
+            <span class="current">Azyly</span>
+        </nav>
+        <h1 class="vaz-page-title">Azyly</h1>
+        <p class="vaz-page-sub" style="max-width:640px;">
+            Místa, kde se o zvířata v nouzi starají lidé s velkým srdcem. Klikněte na azyl a podívejte se, koho právě hledá domov.
+        </p>
+        <div class="d-flex gap-4 mt-3">
+            <div class="vaz-stat">
+                <div class="n">{count($azyls)}</div>
+                <div class="l">Aktivních azylů</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-4">
+    <div class="container">
+        <div class="row g-3">
+            {foreach $azyls as $azyl}
+            {var $following = in_array($azyl->getId(), $followedAzylIds)}
+                <div class="col-xl-4 col-md-6 col-sm-12">
+                    <article class="vaz-card h-100 d-flex flex-column">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div class="d-flex gap-2 flex-wrap">
+                                <span class="vaz-pill"><i class="bi bi-patch-check-fill"></i> Ověřený azyl</span>
+                            </div>
+                            <a href="{link toggleFollow!, azylId => $azyl->getId()}"
+                               title="{if $following}Přestat sledovat{else}Sledovat azyl{/if}"
+                               class="text-decoration-none flex-shrink-0 ms-2"
+                               style="color:{if $following}#f59e0b{else}var(--vaz-text-muted){/if}; font-size:1.25rem; line-height:1;">
+                                <i class="bi {if $following}bi-star-fill{else}bi-star{/if}"></i>
+                            </a>
+                        </div>
+                        <h3 class="h5 fw-bold mb-2" style="color: var(--vaz-ink);">{$azyl->getAzylName()}</h3>
+                        <p class="small text-muted mb-3" style="flex:1; line-height:1.55;">
+                            {$azyl->getShortDescription()|truncate:160}
+                        </p>
+                        <div class="d-flex justify-content-between align-items-center pt-3"
+                             style="border-top:1px dashed var(--vaz-border);">
+                            <span class="small text-muted">
+                                <i class="bi bi-building"></i> Azyl
+                            </span>
+                            <a href="{link Home:azyl, $azyl->getId()}" class="vaz-btn vaz-btn--primary vaz-btn--sm">
+                                Otevřít <i class="bi bi-arrow-right"></i>
+                            </a>
+                        </div>
+                    </article>
+                </div>
+            {/foreach}
+        </div>
+    </div>
+</section>
+
+</main>
+{/block}
+{block scripts-user}{/block}

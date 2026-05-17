@@ -1,0 +1,85 @@
+{templateType App\Presenters\Templates\Admin\Layout}
+{block adminContent}
+<div class="container-fluid pt-4 px-4">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="bg-light rounded p-4">
+                <h4 class="mb-4">
+                    <i class="bi bi-gift me-2"></i>
+                    {if $sponsor ?? null}Úprava sponzora{else}Nový sponzor{/if}
+                </h4>
+
+                {ifset $sponsorForm}
+                    <form n:name="sponsorForm">
+                        <div class="row g-3">
+                            <div class="col-md-8">
+                                <label class="form-label" n:name="name">Jméno / název sponzora</label>
+                                <input class="form-control" n:name="name">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label" n:name="amount">Částka (Kč)</label>
+                                <input class="form-control" type="number" n:name="amount">
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label" n:name="web">Webová adresa</label>
+                                <input class="form-control" n:name="web" placeholder="https://">
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label" n:name="description">Popis / zpráva</label>
+                                <textarea class="form-control" rows="4" n:name="description"></textarea>
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label" n:name="logo">Logo</label>
+                                <input class="form-control" type="file" n:name="logo">
+                                {if ($sponsor ?? null) && $sponsor->getLogo()}
+                                    <div class="mt-2">
+                                        <img src="{$basePath}{$sponsor->getLogo()}" alt="" style="max-height:80px;">
+                                    </div>
+                                {/if}
+                            </div>
+
+                            <div class="col-12">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" n:name="visible">
+                                    <label class="form-check-label" n:name="visible">
+                                        Zobrazit na stránce sponzorů
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="col-12 mt-4">
+                                <button class="btn btn-primary" n:name="save">
+                                    <i class="bi bi-check-lg me-1"></i>Uložit
+                                </button>
+                                <a href="{link Admin:sponsors}" class="btn btn-outline-secondary">Zpět na seznam</a>
+                            </div>
+                        </div>
+                    </form>
+                {else}
+                    <div class="alert alert-warning">Formulář sponzora není napojený.</div>
+                {/ifset}
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="bg-light rounded p-4">
+                <h5><i class="bi bi-info-circle me-2"></i>Tip</h5>
+                <p class="small">
+                    Sponzoři se zobrazují na stránce <code>/sponsors</code>. Pokud přepnete vypínač
+                    „Zobrazit na stránce sponzorů" na <strong>ne</strong>, sponzor v DB zůstane, ale
+                    na webu se neukáže.
+                </p>
+                <p class="small mb-0">
+                    Logo ideálně nahrajte v rozměru přibližně <strong>400x200 px</strong>, formát PNG
+                    s průhledným pozadím.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{/block}
+
+{block scripts}{/block}

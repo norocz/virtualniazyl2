@@ -1,0 +1,41 @@
+{block content}
+<link href="{$basePath}/assets/css/vaz-redesign.css" rel="stylesheet">
+<main class="vaz-redesign">
+
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-6 text-center">
+                <div class="vaz-card py-5">
+                    <i class="bi bi-check-circle-fill text-success" style="font-size:4rem;"></i>
+                    <h2 class="mt-4 fw-bold">Vzkaz odeslán!</h2>
+                    <p class="text-muted mt-2">
+                        Majitel zvířete byl ihned informován emailem o vašem vzkazuu.
+                        Velmi mu tím pomáháte — děkujeme!
+                    </p>
+
+                    {if $animal}
+                    <div class="mt-4 p-3 rounded-3" style="background:#fef2f2;">
+                        <div class="fw-semibold">{$animal->getName() ?? $animal->getSpecies()->getName()}</div>
+                        <div class="small text-muted">{$animal->getSpecies()->getName()}</div>
+                    </div>
+                    {/if}
+
+                    <div class="d-flex gap-2 justify-content-center mt-4 flex-wrap">
+                        {if $animal}
+                        <a n:href="ZN:lost, $animal->getId()" class="vaz-btn vaz-btn--ghost">
+                            <i class="bi bi-arrow-left me-1"></i>Zpět na inzerát
+                        </a>
+                        {/if}
+                        <a n:href="ZN:default" class="vaz-btn vaz-btn--primary">
+                            <i class="bi bi-search-heart me-1"></i>Procházet Z&amp;N
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+</main>
+{/block}
+{block scripts-user}{/block}

@@ -1,0 +1,45 @@
+{*
+    Drop-in replacement for: vaz/app/Presenters/templates/Home/registered.latte
+*}
+{block content}
+<link href="{$basePath}/assets/css/vaz-redesign.css" rel="stylesheet">
+<main class="vaz-redesign">
+
+<section class="py-5">
+    <div class="container" style="max-width: 1000px;">
+        {snippet signin}
+        <div class="vaz-auth" id="signIn">
+            <div class="vaz-auth__media">
+                <img src="{$basePath}/assets/vazdata/img/pic/{$kytka}" alt="Registrováno">
+            </div>
+            <div class="vaz-auth__body">
+                <div class="vaz-auth__eyebrow" style="color: var(--vaz-green);">
+                    <i class="bi bi-check-circle-fill"></i> Hotovo
+                </div>
+                <h2 class="vaz-auth__title">Registrace proběhla úspěšně!</h2>
+                <p class="vaz-auth__lead">
+                    <b>Gratulujeme!</b> Podívejte se, prosím, do emailu —
+                    přišel vám odkaz pro ověření. Zkuste i složku <i>spam</i>.
+                </p>
+                <div class="vaz-card" style="background: var(--vaz-green-soft); border-color: #cfe3d7;">
+                    <div class="d-flex gap-3 align-items-start">
+                        <i class="bi bi-info-circle-fill" style="color: var(--vaz-green); font-size:20px;"></i>
+                        <div>
+                            <div style="font-weight:700; color: var(--vaz-ink); margin-bottom:4px;">Další krok</div>
+                            <div class="small" style="color: var(--vaz-text-muted); line-height:1.6;">
+                                Po ověření emailu si vyberete roli —
+                                <b>Azyl</b> nebo <b>zájemce o adopci</b>.
+                                Volba už nepůjde změnit, tak si dobře vyberte!
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {/snippet}
+    </div>
+</section>
+
+</main>
+{/block}
+{block scripts-user}{/block}

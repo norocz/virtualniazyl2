@@ -1,0 +1,210 @@
+{templateType App\Presenters\Templates\SuperAdmin\Layout}
+{block superAdminContent}
+<div class="container-fluid pt-4 px-4">
+    <div class="bg-light rounded p-4">
+        <h4 class="mb-4"><i class="bi bi-bar-chart-steps me-2"></i>Analytics &amp; Logy</h4>
+
+        {* Souhrnné karty *}
+        <div class="row g-3 mb-4">
+            <div class="col-md-3">
+                <div class="card border-0 bg-primary text-white">
+                    <div class="card-body">
+                        <h6 class="card-title">Celkem požadavků</h6>
+                        <h3 class="mb-0">{$totalVisits|number:0,',','&nbsp;'|noescape}</h3>
+                        <small>všechny záznamy</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 bg-success text-white">
+                    <div class="card-body">
+                        <h6 class="card-title">Unikátních návštěvníků</h6>
+                        <h3 class="mb-0">{$uniqueVisitors|number:0,',','&nbsp;'|noescape}</h3>
+                        <small>podle TempID</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h6 class="card-title">Nejčastější akce</h6>
+                        <div class="d-flex flex-wrap gap-2">
+                            {foreach $actionStats as $a}
+                                <span class="badge bg-secondary">{$a['action'] ?? '—'}: {$a['count']}</span>
+                            {/foreach}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {* Graf návštěvnosti — posledních 30 dní *}
+        <div class="card mb-4">
+            <div class="card-body">
+                <h6 class="card-title mb-3"><i class="bi bi-graph-up me-1"></i>Návštěvnost — posledních 30 dní</h6>
+                <canvas id="visitsChart" height="80"></canvas>
+            </div>
+        </div>
+
+        {* Tabulka logů *}
+        {snippetArea ipInfoTable}
+        <div class="table-responsive">
+            <table class="table table-striped table-hover table-sm font-monospace" style="font-size:12px;">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Uživatel / Azyl</th>
+                        <th>Datum</th>
+                        <th>IP / Host</th>
+                        <th>Akce</th>
+                        <th>Parametry</th>
+                        <th>Komentář</th>
+                        <th>Akce</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {ifset $analytics}
+                        {foreach $analytics as $log}
+                            <tr>
+                                <td class="text-muted">{$log->getId()}</td>
+                                <td>
+                                    {if $log->getUser() !== null}
+                                        <a href="{link SuperAdmin:users}" title="Detail uživatele" class="text-decoration-none">
+                                            <i class="bi bi-person-fill me-1 text-primary"></i>{$log->getUser()->getUserName()}
+                                        </a><br>
+                                    {elseif $log->getTempId() !== null}
+                                        <span class="text-muted"><i class="bi bi-person me-1"></i>host-{substr($log->getTempId(), -8)}</span><br>
+                                    {/if}
+                                    {if $log->getAzyl() !== null}
+                                        <small class="text-info">{$log->getAzyl()->getAzylName()}</small>
+                                    {/if}
+                                </td>
+                                <td class="text-nowrap">
+                                    {$log->getDate()->format('d.m.Y')}<br>
+                                    <span class="text-muted">{$log->getDate()->format('H:i:s')}</span>
+                                </td>
+                                <td>
+                                    <span class="{if isset($blockedIps[$log->getIpAdress()])}text-danger fw-bold{/if}">
+                                        {$log->getIpAdress()}
+                                    </span>
+                                    <a class="btn btn-outline-warning btn-sm py-0 ajax ms-1"
+                                       href="{link ipInfo! $log->getId()}" title="IP info">IP?</a>
+                                    {snippet ipInfoIp{$log->getIpAdress()}}
+                                        {ifset $ipInfo}
+                                            {ifset $ipInfo['country']}
+                                                <br><small class="text-muted">
+                                                    {$ipInfo['country']} / {$ipInfo['city']} — {$ipInfo['org']}
+                                                </small>
+                                            {/ifset}
+                                            {ifset $ipInfo['bogon']}
+                                                <br><small class="text-warning">bogon</small>
+                                            {/ifset}
+                                        {/ifset}
+                                    {/snippet}
+                                    <br><small class="text-muted">{$log->getHost()}</small>
+                                </td>
+                                <td>
+                                    <strong>{$log->getName()}</strong><br>
+                                    <span class="text-muted">{$log->getAction()}</span>
+                                </td>
+                                <td class="text-muted" style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="{$log->getParams()}">
+                                    {$log->getParams()}
+                                </td>
+                                <td class="text-muted">{$log->getComment()}</td>
+                                <td class="text-nowrap">
+                                    {if !isset($blockedIps[$log->getIpAdress()])}
+                                        <a href="{link blockIpAnalytics!, ip => $log->getIpAdress()}"
+                                           class="btn btn-outline-danger btn-sm py-0"
+                                           onclick="return confirm('Zablokovat IP ' + {$log->getIpAdress()|json} + '?')"
+                                           title="Zablokovat IP">
+                                            <i class="bi bi-shield-x"></i>
+                                        </a>
+                                    {else}
+                                        <span class="badge bg-danger" title="Již zablokováno">blok.</span>
+                                    {/if}
+                                </td>
+                            </tr>
+                        {/foreach}
+                    {/ifset}
+                </tbody>
+            </table>
+        </div>
+        {/snippetArea}
+
+        {* Stránkování *}
+        <div class="d-flex align-items-center gap-2 mt-2">
+            {if !$paginator->isFirst()}
+                <a class="btn btn-sm btn-outline-secondary" n:href="analytics, 1">«</a>
+                <a class="btn btn-sm btn-outline-secondary" n:href="analytics, $paginator->page-1">‹</a>
+            {else}
+                <a class="btn btn-sm btn-outline-secondary disabled">«</a>
+                <a class="btn btn-sm btn-outline-secondary disabled">‹</a>
+            {/if}
+            <span class="text-muted small">Stránka {$paginator->getPage()} / {$paginator->getPageCount()}</span>
+            {if !$paginator->isLast()}
+                <a class="btn btn-sm btn-outline-secondary" n:href="analytics, $paginator->getPage()+1">›</a>
+                <a class="btn btn-sm btn-outline-secondary" n:href="analytics, $paginator->getPageCount()">»</a>
+            {else}
+                <a class="btn btn-sm btn-outline-secondary disabled">›</a>
+                <a class="btn btn-sm btn-outline-secondary disabled">»</a>
+            {/if}
+        </div>
+    </div>
+</div>
+{/block}
+
+{block scripts}
+<script>
+(function () {
+    const labels = {$chartLabels|noescape};
+    const total  = {$chartTotal|noescape};
+    const unique = {$chartUnique|noescape};
+
+    const ctx = document.getElementById('visitsChart');
+    if (!ctx) return;
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Celkem požadavků',
+                    data: total,
+                    borderColor: 'rgba(13, 110, 253, 0.8)',
+                    backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                    fill: true,
+                    tension: 0.3,
+                    pointRadius: 3,
+                },
+                {
+                    label: 'Unikátní návštěvníci',
+                    data: unique,
+                    borderColor: 'rgba(25, 135, 84, 0.8)',
+                    backgroundColor: 'rgba(25, 135, 84, 0.1)',
+                    fill: true,
+                    tension: 0.3,
+                    pointRadius: 3,
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: { position: 'top' }
+            },
+            scales: {
+                x: {
+                    ticks: { maxRotation: 45, font: { size: 11 } }
+                },
+                y: {
+                    beginAtZero: true,
+                    ticks: { precision: 0 }
+                }
+            }
+        }
+    });
+})();
+</script>
+{/block}

@@ -1,0 +1,111 @@
+{templateType App\Presenters\Templates\SuperAdmin\Layout}
+{block superAdminContent}
+<div class="container-fluid pt-4 px-4">
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="bg-light rounded p-4 text-center">
+                <img src="{$basePath}{if $personalPhoto}{$personalPhoto->getPath()}{$personalPhoto->getName()}{else}/dashmin/img/user.jpg{/if}"
+                     alt="" class="rounded-circle mb-3" style="width:120px;height:120px;object-fit:cover;">
+
+                <h5 class="mb-0">{$user->getIdentity()->getData()['User']->getUserName()}</h5>
+                <p class="text-muted mb-2">{$user->getIdentity()->getData()['User']->getEmail()}</p>
+
+                <span class="badge bg-danger mb-3">
+                    <i class="bi bi-shield-fill me-1"></i>Super Admin
+                </span>
+
+                <div class="d-grid">
+                    <a href="{link SuperAdmin:changePassword}" class="btn btn-outline-primary">
+                        <i class="bi bi-key me-2"></i>Změnit heslo
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="bg-light rounded p-4">
+                <h5 class="mb-4"><i class="bi bi-gear me-2"></i>Osobní nastavení</h5>
+
+                {ifset $accountForm}
+                    <form n:name="accountForm">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label" n:name="userName">Uživatelské jméno</label>
+                                <input class="form-control" n:name="userName">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" n:name="email">E-mail</label>
+                                <input class="form-control" n:name="email">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" n:name="firstName">Jméno</label>
+                                <input class="form-control" n:name="firstName">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" n:name="lastName">Příjmení</label>
+                                <input class="form-control" n:name="lastName">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" n:name="phone">Telefon</label>
+                                <input class="form-control" n:name="phone">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" n:name="preferredLanguage">Preferovaný jazyk</label>
+                                <select class="form-select" n:name="preferredLanguage"></select>
+                            </div>
+                            <div class="col-12 mt-4">
+                                <button class="btn btn-primary" n:name="save">Uložit</button>
+                                <a href="{link SuperAdmin:default}" class="btn btn-outline-secondary">Zrušit</a>
+                            </div>
+                        </div>
+                    </form>
+                {else}
+                    <div class="alert alert-warning">Formulář účtu není napojený.</div>
+                {/ifset}
+            </div>
+
+            <div class="bg-light rounded p-4 mt-4">
+                <h5 class="mb-4"><i class="bi bi-clock-history me-2"></i>Historie přihlášení</h5>
+                {ifset $loginHistory}
+                    {if count($loginHistory) > 0}
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Datum</th>
+                                        <th>IP adresa</th>
+                                        <th>Host</th>
+                                        <th>Výsledek</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {foreach $loginHistory as $log}
+                                        <tr>
+                                            <td>{$log->getLastLogin()|date:'d.m.Y H:i:s'}</td>
+                                            <td><code>{$log->getIp()}</code></td>
+                                            <td class="small">{$log->getHostName()}</td>
+                                            <td>
+                                                {if $log->getDescription() === 'success'}
+                                                    <span class="badge bg-success">OK</span>
+                                                {else}
+                                                    <span class="badge bg-danger">{$log->getDescription()}</span>
+                                                {/if}
+                                            </td>
+                                        </tr>
+                                    {/foreach}
+                                </tbody>
+                            </table>
+                        </div>
+                    {else}
+                        <p class="text-muted mb-0">Žádné záznamy.</p>
+                    {/if}
+                {else}
+                    <p class="text-muted mb-0">Historie přihlášení není dostupná.</p>
+                {/ifset}
+            </div>
+        </div>
+    </div>
+</div>
+{/block}
+
+{block scripts}{/block}

@@ -1,0 +1,171 @@
+{templateType App\Presenters\Templates\Admin\Layout}
+{block adminContent}
+<div class="container-fluid pt-4 px-4">
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="bg-light rounded p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0">
+                        <i class="bi bi-chat-dots me-2"></i>Konverzace
+                    </h5>
+                    <a href="{link Admin:messages}" class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-1"></i>Zpět
+                    </a>
+                </div>
+
+                <dl class="row small mb-3">
+                    <dt class="col-sm-3">ID konverzace:</dt>
+                    <dd class="col-sm-9 font-monospace">{substr($conversation->getId(), 0, 16)}…</dd>
+
+                    <dt class="col-sm-3">Kontext:</dt>
+                    <dd class="col-sm-9">{$conversation->getComment() ?? '—'}</dd>
+
+                    {if $conversation->getUser()}
+                        <dt class="col-sm-3">Uživatel:</dt>
+                        <dd class="col-sm-9">
+                            <strong>{$conversation->getUser()->getUserName()}</strong>
+                            ({$conversation->getUser()->getEmail()})
+                            {if $conversation->getUser()->isBaned()}
+                                <span class="badge bg-danger">BANOVÁN</span>
+                            {/if}
+                        </dd>
+                    {/if}
+
+                    {if $conversation->getAzyl()}
+                        <dt class="col-sm-3">Azyl:</dt>
+                        <dd class="col-sm-9">{$conversation->getAzyl()->getAzylName()}</dd>
+                    {/if}
+
+                    {if $conversation->getAdoption()}
+                        <dt class="col-sm-3">Adopce:</dt>
+                        <dd class="col-sm-9">
+                            <a href="{link Admin:adoptionDetail, $conversation->getAdoption()->getId()}">
+                                #{$conversation->getAdoption()->getId()}
+                            </a>
+                        </dd>
+                    {/if}
+
+                    <dt class="col-sm-3">Stav:</dt>
+                    <dd class="col-sm-9">
+                        {if $conversation->isBlock()}
+                            <span class="badge bg-warning text-dark">Zablokováno</span>
+                        {else}
+                            <span class="badge bg-success">Aktivní</span>
+                        {/if}
+                    </dd>
+                </dl>
+
+                {* Tok zpráv *}
+                <div style="max-height:600px;overflow-y:auto;border:1px solid #dee2e6;border-radius:6px;padding:16px;background:#fff;">
+                    {if count($messages) === 0}
+                        <p class="text-muted text-center my-3">Konverzace je prázdná.</p>
+                    {else}
+                        {foreach $messages as $msg}
+                            {var $isFromUser = !is_null($msg->getUser()) && is_null($msg->getAzyl())}
+                            {var $isSystem = str_starts_with($msg->getMessage(), '[SYSTÉM]')}
+
+                            <div class="mb-3 {if $isFromUser}text-end{/if}">
+                                <div class="d-inline-block text-start"
+                                     style="max-width:75%;padding:10px 14px;border-radius:12px;
+                                            background:{if $isSystem}#fff3cd{elseif $isFromUser}#cfe2ff{else}#e9ecef{/if};">
+                                    <div class="small text-muted mb-1">
+                                        <strong>
+                                            {if $isSystem}
+                                                🤖 Systém
+                                            {elseif $isFromUser}
+                                                {$msg->getUser()->getUserName()}
+                                            {elseif $msg->getAzyl()}
+                                                🏠 {$msg->getAzyl()->getAzylName()}
+                                            {else}
+                                                ?
+                                            {/if}
+                                        </strong>
+                                        • {$msg->getCreatedAt()|date:'d.m.Y H:i'}
+                                        {if !$msg->getReaded() && !$isSystem}
+                                            <span class="badge bg-primary">nepřečteno</span>
+                                        {/if}
+                                    </div>
+                                    <div style="white-space:pre-wrap;">{$msg->getMessage()}</div>
+                                </div>
+                            </div>
+                        {/foreach}
+                    {/if}
+                </div>
+            </div>
+        </div>
+
+        {* Moderační panel *}
+        <div class="col-lg-4">
+            <div class="bg-light rounded p-4 mb-3">
+                <h6><i class="bi bi-shield-exclamation me-1"></i>Moderační akce</h6>
+
+                {if !$conversation->isBlock()}
+                    <form n:name="blockForm">
+                        <label class="form-label small" n:name="reason">Důvod blokace</label>
+                        <textarea class="form-control form-control-sm mb-2" rows="2" n:name="reason"
+                                  placeholder="např. porušení podmínek, spam..."></textarea>
+                        <button class="btn btn-warning w-100" n:name="block">
+                            <i class="bi bi-slash-circle me-1"></i>Zablokovat konverzaci
+                        </button>
+                    </form>
+                    <div class="small text-muted mt-2">
+                        Konverzace bude označena jako zablokovaná. Uživatel i azyl ji
+                        uvidí, ale nebudou moci psát další zprávy.
+                    </div>
+                {else}
+                    <a href="{link unblockConversation!, $conversation->getId()}"
+                       class="btn btn-success w-100">
+                        <i class="bi bi-unlock me-1"></i>Zrušit blokaci
+                    </a>
+                {/if}
+            </div>
+
+            {if $conversation->getUser()}
+                <div class="bg-light rounded p-4 mb-3">
+                    <h6><i class="bi bi-person-x me-1"></i>Akce vůči uživateli</h6>
+
+                    <div class="mb-3 small">
+                        <strong>{$conversation->getUser()->getUserName()}</strong><br>
+                        {$conversation->getUser()->getEmail()}<br>
+                        Registrován: {$conversation->getUser()->getCreatedAt()|date:'d.m.Y'}
+                    </div>
+
+                    {if !$conversation->getUser()->isBaned()}
+                        <form n:name="banForm">
+                            <label class="form-label small" n:name="reason">Důvod banování</label>
+                            <textarea class="form-control form-control-sm mb-2" rows="2" n:name="reason"
+                                      placeholder="např. opakované porušování, urážky..."></textarea>
+                            <button class="btn btn-danger w-100" n:name="ban">
+                                <i class="bi bi-person-x me-1"></i>BANOVAT uživatele
+                            </button>
+                        </form>
+                        <div class="small text-muted mt-2">
+                            ⚠️ Uživatel <strong>nebude</strong> moci psát zprávy. Má přísnější dopad
+                            než blokace jedné konverzace.
+                        </div>
+                    {else}
+                        <div class="alert alert-danger small mb-2">
+                            Tento uživatel je <strong>banovaný</strong>.
+                        </div>
+                        <a href="{link unbanUser!, $conversation->getUser()->getId()}"
+                           class="btn btn-success w-100">
+                            <i class="bi bi-person-check me-1"></i>Zrušit ban
+                        </a>
+                    {/if}
+                </div>
+            {/if}
+
+            <div class="bg-light rounded p-4">
+                <h6><i class="bi bi-info-circle me-1"></i>Poznámky</h6>
+                <ul class="small mb-0">
+                    <li>Blokace <strong>konverzace</strong> = jen tento chat je mrtvý, user může psát jinde.</li>
+                    <li>Ban <strong>uživatele</strong> = globální, nemůže psát vůbec (zablokují se i všechny jeho konverzace).</li>
+                    <li>Obě akce jsou vratné. Systémová zpráva se zapíše do konverzace pro auditní stopu.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{/block}
+
+{block scripts}{/block}
