@@ -14,6 +14,7 @@ use Doctrine\ORM\NoResultException;
 
 class MessagesRepository extends EntityRepository
 {
+    use UnreadMessagesQueryTrait;
     public function __construct(EntityManagerInterface $em, string $entityClass = Messages::class)
     {
         parent::__construct($em, $em->getClassMetadata($entityClass));
@@ -30,9 +31,11 @@ class MessagesRepository extends EntityRepository
             ->select('COUNT(m)')
             ->andWhere('m.readed = :readed')
             ->andWhere('m.user = :User')
+            ->andWhere('m.type != :sentType')
             ->andWhere('m.deletedAt IS NULL OR m.deletedAt > :now')
             ->setParameter('readed', false)
             ->setParameter('User', $user)
+            ->setParameter('sentType', \App\Model\Orm\Enums\MessageTypeEnum::FROMUSER_TYPE)
             ->setParameter('now', new \DateTimeImmutable())
             ->getQuery()
             ->getSingleScalarResult();

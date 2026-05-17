@@ -121,6 +121,9 @@ class Azyl
     #[ORM\Column(type: 'string', length: 5, nullable: true, name: 'country_code', options: ['default' => 'CZ'])]
     private ?string $countryCode = 'CZ';
 
+    #[ORM\Column(type: 'string', length: 255, nullable: true, unique: true)]
+    private ?string $slug = null;
+
     public function __toString(): string
     {
         return (string)$this->id;  // nebo jiný identifikátor entity Azyl
@@ -498,6 +501,17 @@ class Azyl
     public function setCountryCode(string $countryCode): self
     {
         $this->countryCode = $countryCode;
+        return $this;
+    }
+
+    public function getSlug(): ?string
+    {
+        return $this->slug;
+    }
+
+    public function setSlug(?string $slug): self
+    {
+        $this->slug = $slug;
         return $this;
     }
 

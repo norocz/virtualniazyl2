@@ -115,7 +115,7 @@
                                     {if !isset($blockedIps[$log->getIpAdress()])}
                                         <a href="{link blockIpAnalytics!, ip => $log->getIpAdress()}"
                                            class="btn btn-outline-danger btn-sm py-0"
-                                           onclick="return confirm('Zablokovat IP ' + {$log->getIpAdress()|json} + '?')"
+                                           onclick="return confirm('Zablokovat IP ' + {$log->getIpAdress()|json|noescape} + '?')"
                                            title="Zablokovat IP">
                                             <i class="bi bi-shield-x"></i>
                                         </a>

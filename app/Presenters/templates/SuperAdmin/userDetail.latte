@@ -14,7 +14,7 @@
                 </a>
                 <a href="{link deleteUser!, id => $editedUser->getId()}"
                    class="btn btn-outline-danger btn-sm"
-                   onclick="return confirm('Označit uživatele ' + {$editedUser->getUserName()|json} + ' jako smazaný?')">
+                   onclick="return confirm('Označit uživatele ' + {$editedUser->getUserName()|json|noescape} + ' jako smazaný?')">
                     <i class="bi bi-trash me-1"></i>Smazat účet
                 </a>
             </div>

@@ -113,6 +113,9 @@
                 </a>
                 <a href="{link Azyl:messages}" class="nav-item nav-link {if isLinkCurrent('Azyl:messages')}active{/if}">
                     <i class="fa fa-keyboard me-2"></i>Vzkazy
+                    {if ($totalUnread ?? 0) > 0}
+                        <span class="badge bg-danger ms-1" style="font-size:10px;">{$totalUnread}</span>
+                    {/if}
                 </a>
                 <a href="{link Azyl:news}" class="nav-item nav-link {if isLinkCurrent('Azyl:news')}active{/if}">
                     <i class="bi bi-newspaper me-2"></i>Aktuality
@@ -166,6 +169,9 @@
                     <a href="{link Azyl:messages}" class="nav-link">
                         <i class="fa fa-envelope me-lg-2"></i>
                         <span class="d-none d-lg-inline-flex">Vzkazy</span>
+                        {if ($totalUnread ?? 0) > 0}
+                            <span class="badge bg-danger ms-1" style="font-size:10px;">{$totalUnread}</span>
+                        {/if}
                     </a>
 
                 </div>

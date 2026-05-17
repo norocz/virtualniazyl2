@@ -52,7 +52,8 @@
                             <span class="small text-muted">
                                 <i class="bi bi-building"></i> Azyl
                             </span>
-                            <a href="{link Home:azyl, $azyl->getId()}" class="vaz-btn vaz-btn--primary vaz-btn--sm">
+                            <a href="{if $azyl->getSlug()}{link Home:azyl, slug => $azyl->getSlug()}{else}{link Home:azyl, $azyl->getId()}{/if}"
+                               class="vaz-btn vaz-btn--primary vaz-btn--sm">
                                 Otevřít <i class="bi bi-arrow-right"></i>
                             </a>
                         </div>

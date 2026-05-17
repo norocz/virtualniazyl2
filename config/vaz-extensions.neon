@@ -68,6 +68,9 @@ services:
     - App\Model\Orm\Repository\UserAzylFollowRepository
     - App\Services\AzylActivityFeedService
 
+    # ============== Slug ==============
+    - App\Services\SlugService
+
     # ============== Události ==============
     - App\Model\Orm\Repository\AzylEventRepository
     - App\Model\Orm\Repository\AzylEventReservationRepository

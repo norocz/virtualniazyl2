@@ -151,7 +151,7 @@
                                 <a href="{link geocodeAzyl!, id => $azyl->getId()}"
                                    class="btn btn-outline-success btn-sm py-0"
                                    title="{if $azyl->hasCoordinates()}Přegeocodovat{else}Geocodovat{/if}"
-                                   onclick="return confirm('Geocodovat azyl ' + {$azyl->getAzylName()|json} + '?')">
+                                   onclick="return confirm('Geocodovat azyl ' + {$azyl->getAzylName()|json|noescape} + '?')">
                                     <i class="bi bi-geo-alt"></i>
                                     {if $azyl->hasCoordinates()}↺{else}+{/if}
                                 </a>

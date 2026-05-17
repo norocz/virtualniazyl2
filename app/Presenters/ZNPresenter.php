@@ -94,7 +94,7 @@ class ZNPresenter extends BasePresenter
     {
         $animal = $this->lostAnimalRepository->find($id);
         if (!$animal || $animal->isDeleted()) {
-            $this->error('Inzerát nenalezen', 404);
+            $this->error('Ztracenec nenalezen', 404);
         }
 
         $nearbyFound = [];
@@ -119,10 +119,10 @@ class ZNPresenter extends BasePresenter
     {
         $animal = $this->foundAnimalRepository->find($id);
         if (!$animal || $animal->isDeleted()) {
-            $this->error('Inzerát nenalezen', 404);
+            $this->error('Nalezenec nenalezen', 404);
         }
         if (!$animal->isContactVisible()) {
-            $this->flashMessage('Tento inzerát čeká na potvrzení emailu.', 'alert-warning');
+            $this->flashMessage('Tento nalezenec čeká na potvrzení emailu.', 'alert-warning');
         }
 
         $nearbyLost = [];
@@ -153,7 +153,7 @@ class ZNPresenter extends BasePresenter
         if ($id !== null) {
             $animal = $this->lostAnimalRepository->find($id);
             if (!$animal || $animal->getUser()->getId() !== $this->getUser()->getId()) {
-                $this->error('Inzerát nenalezen', 404);
+                $this->error('Informace nenalezena :-(', 404);
             }
         }
         $this->getTemplate()->animal = $animal;

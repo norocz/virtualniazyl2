@@ -77,6 +77,11 @@ class AzylRepository extends EntityRepository
         return $this->findOneBy(['id' => $id]);
     }
 
+    public function findBySlug(string $slug): ?Azyl
+    {
+        return $this->findOneBy(['slug' => $slug]);
+    }
+
     /**
      * @return Azyl[]
      */

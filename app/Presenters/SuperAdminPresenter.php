@@ -34,6 +34,7 @@ use App\Model\Orm\Repository\UsersRepository;
 use App\Services\GeocodingService;
 use App\Services\IpInfoService;
 use App\Services\SearchIndexerService;
+use App\Services\SlugService;
 use Doctrine\ORM\EntityManagerInterface;
 use Contributte\Application\UI\BasePresenter;
 use DateTimeImmutable;
@@ -51,6 +52,8 @@ use Ublaboo\DataGrid\Exception\DataGridException;
 
 class SuperAdminPresenter extends BasePresenter
 {
+    #[\Nette\DI\Attributes\Inject]
+    public SlugService $slugService;
 
     private setAzylFormFactory $setAzylFormFactory;
     private AzylRepository $azylRepository;
@@ -145,6 +148,7 @@ class SuperAdminPresenter extends BasePresenter
 
     protected function beforeRender(): void
     {
+        $this->template->addFilter('json', fn($v) => json_encode($v, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT));
         $this->template->addFilter('safeHtml', function (string $html): string {
             $allowedTags = ['b', 'i', 'a'];
             $html = strip_tags($html, '<' . implode('><', $allowedTags) . '>');
@@ -259,6 +263,49 @@ class SuperAdminPresenter extends BasePresenter
     public function renderAzyls(): void
     {
         $this->template->title = 'Azyls';
+    }
+
+    public function renderAzylslugs(): void
+    {
+        $this->template->title = 'Správa slugů azylů';
+        $this->template->azyls = $this->azylRepository->fetchAll();
+    }
+
+    public function handleSetAzylSlug(int $id, string $slug): void
+    {
+        $azyl = $this->azylRepository->findById($id);
+        if (!$azyl) {
+            $this->flashMessage('Azyl nenalezen.', 'alert-danger');
+            $this->redirect('this');
+        }
+        $newSlug = $this->slugService->slugify($slug);
+        if ($newSlug === '') {
+            $this->flashMessage('Slug nesmí být prázdný.', 'alert-danger');
+            $this->redirect('this');
+        }
+        $existing = $this->azylRepository->findBySlug($newSlug);
+        if ($existing !== null && $existing->getId() !== $azyl->getId()) {
+            $this->flashMessage('Slug "' . $newSlug . '" je obsazen azylem #' . $existing->getId() . ' (' . $existing->getAzylName() . ').', 'alert-danger');
+            $this->redirect('this');
+        }
+        $azyl->setSlug($newSlug);
+        $this->azylRepository->saveAzyl($azyl);
+        $this->flashMessage('Slug azylu "' . $azyl->getAzylName() . '" nastaven na: ' . $newSlug, 'alert-success');
+        $this->redirect('this');
+    }
+
+    public function handleGenerateAllSlugs(): void
+    {
+        $count = 0;
+        foreach ($this->azylRepository->fetchAll() as $azyl) {
+            if ($azyl->getSlug() === null && $azyl->getAzylName() !== null) {
+                $azyl->setSlug($this->slugService->generateUniqueSlug($azyl->getAzylName(), $azyl->getId()));
+                $this->azylRepository->saveAzyl($azyl);
+                $count++;
+            }
+        }
+        $this->flashMessage('Vygenerováno ' . $count . ' nových slugů.', 'alert-success');
+        $this->redirect('this');
     }
 
     public function renderNews(): void

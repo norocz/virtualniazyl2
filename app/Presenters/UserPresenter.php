@@ -119,7 +119,7 @@ class UserPresenter extends BasePresenter
 
         
         $menu = new Menu();
-        $this->getTemplate()->messagesCount = $this->messagesRepository->countUnreadMessages($this->getUser()->getIdentity()->getData()['User']);
+        $this->getTemplate()->messagesCount = $this->messagesRepository->countUnreadMessagesForUser($this->getUser()->getIdentity()->getData()['User']);
         $this->getTemplate()->mainMenuItems = $menu->getMenu();
         $this->getTemplate()->cartItemCount = $this->cartService->getItemCount();
 
@@ -411,19 +411,27 @@ class UserPresenter extends BasePresenter
 
         if (!is_null($user))
             {
-                $phoneNumber = \Brick\PhoneNumber\PhoneNumber::parse($post['phone']);
-
-                $phone = $phoneNumber->format(PhoneNumberFormat::INTERNATIONAL);
-                $user->setFirstName($post['firstName']);
-                $user->setLastName($post['lastName']);
+                $rawPhone = $post['phone'] ?? '';
+                $phone = null;
+                if (!empty($rawPhone)) {
+                    try {
+                        $parsed = \Brick\PhoneNumber\PhoneNumber::parse($rawPhone);
+                        $phone = $parsed->format(PhoneNumberFormat::INTERNATIONAL);
+                    } catch (\Brick\PhoneNumber\PhoneNumberParseException) {
+                        $phone = $rawPhone;
+                    }
+                }
+                $user->setFirstName($post['firstName'] ?? '');
+                $user->setLastName($post['lastName'] ?? '');
                 $user->setUpdatedAt(new DateTimeImmutable());
                 $user->setUpdatedBy($this->usersRepository->getUserById($this->getPresenter()->getUser()->getId()));
-                $user->setPhone(phone: empty($post['phone']) ? null : $phone);
-                $user->setOrientationNumber($post['orientation']);
+                $user->setPhone(phone: $phone);
+                $user->setOrientationNumber($post['orientation'] ?? null);
                 $user->setStreet($values->street);
                 $user->setDescription($values->description);
-                $user->setHouseNumber($post['house']);
-                $user->setCity(intval($post['city']));
+                $user->setHouseNumber($post['house'] ?? null);
+                $rawCity = $post['city'] ?? '';
+                $user->setCity($rawCity !== '' ? intval($rawCity) : null);
                // $user->setCity($this->cityRepository->findCityById(intval($post['city'])));
                 $this->usersRepository->save($user);
                 $this->flashMessage('Uživatelské informace aktualizovány.', 'alert-success');

@@ -125,8 +125,12 @@ final class HomePresenter extends Nette\Application\UI\Presenter
 
         if ($this->getPresenter()->getUser()->isLoggedIn())
         {
-            $this->getTemplate()->messagesCount = $this->messagesRepository->countUnreadMessages($this->getUser()->getIdentity()->getData()['User']);
+            $this->getTemplate()->messagesCount = $this->messagesRepository->countUnreadMessagesForUser($this->getUser()->getIdentity()->getData()['User']);
 
+            $identity = $this->getUser()->getIdentity()->getData();
+            if (!empty($identity['Azyl']) && ($this->getUser()->isInRole('azyl') || $this->getUser()->isInRole('superadmin'))) {
+                $this->getTemplate()->azylUnreadCount = $this->messagesRepository->countUnreadMessagesForAzyl($identity['Azyl']);
+            }
         }
         $this->getTemplate()->mainMenuItems = $menu->getMenu();
         $this->getTemplate()->cartItemCount = $this->cartService->getItemCount();
@@ -291,9 +295,15 @@ public function renderAdoptions($offset = 0): void
            // $this->redirect('Home:SignIn');
         }
     }
-    public function renderAzyl(int $id): void
+    public function renderAzyl(int $id = 0, string $slug = ''): void
     {
-        $azylProfil = $this->azylRepository->findById(intval($id));
+        if ($slug !== '') {
+            $azylProfil = $this->azylRepository->findBySlug($slug);
+        } elseif ($id > 0) {
+            $azylProfil = $this->azylRepository->findById($id);
+        } else {
+            $azylProfil = null;
+        }
         if (!$azylProfil) {
             throw new Nette\Application\BadRequestException("Tak tenhle azyl tu není, možná je smazaný a možná tady nikdy nebyl", 404);
         }
@@ -364,7 +374,7 @@ public function renderAdoptions($offset = 0): void
             $this->conversationsRepository->save($conversation);
             $this->getTemplate()->conversation = $conversation->getId();
         }
-        $azylUser = $this->usersRepository->getUserByAzylId($id);
+        $azylUser = $this->usersRepository->getUserByAzylId($azylProfil->getId());
 
         // Předáme data do šablony
         $this->getTemplate()->azylProfil = $azylProfil;
@@ -988,16 +998,8 @@ public function renderAdoptions($offset = 0): void
         $message->setReaded(FALSE);
         $this->messagesRepository->save($message);
 
-        if($this->isAjax())
-        {
-            $this->getTemplate()->messageReturn = 'Zpráva odeslána &nbsp;'.$azyl->getAzylName();
-            $this->flashMessage('Zpráva odeslána', 'alert-success');
-        }
-        else
-        {
-            $this->flashMessage('Zpráva odeslána '.$azyl->getAzylName(), 'alert-success');
-            $this->getPresenter()->redirect('this');
-        }
+        $this->flashMessage('Zpráva odeslána do azylu ' . $azyl->getAzylName(), 'alert-success');
+        $this->redirect('Home:azyl', $azyl->getId());
     }
 
     public function createComponentContractSignForm(): Form

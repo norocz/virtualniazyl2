@@ -121,7 +121,12 @@
 								<ul n:ifset="$mainMenuItems" class="navbar-nav mt-2 mt-lg-1 ms-lg-4 ms-xl-8 ms-2xl-9 gap-lg-x1" data-navbar-nav="data-navbar-nav">
 									<li n:foreach="$mainMenuItems as $item" n:if="$item['alwaysAvailable'] || ($item['logged'] && $user->isLoggedIn() && (!$item['role'] || $user->isInRole($item['role'])))" class="nav-item">
 
-										<a n:href="$item['link']" n:class="nav-link, nav-bar-item, nav-small, px-0,fs-6, isLinkCurrent($item['link']) ? active"> {$item['name']} </a>
+										<a n:href="$item['link']" n:class="nav-link, nav-bar-item, nav-small, px-0,fs-6, isLinkCurrent($item['link']) ? active">
+											{$item['name']}
+											{if $item['link'] === 'Azyl:default' && ($azylUnreadCount ?? 0) > 0}
+												<span class="badge bg-danger ms-1" style="font-size:10px;">{$azylUnreadCount}</span>
+											{/if}
+										</a>
 									</li>
 								</ul>
 							</div>

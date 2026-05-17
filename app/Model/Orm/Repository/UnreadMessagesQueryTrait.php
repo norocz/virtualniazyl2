@@ -83,4 +83,18 @@ trait UnreadMessagesQueryTrait
             ->getQuery()
             ->getSingleScalarResult();
     }
+
+    public function countUnreadMessagesForUser(Users $user): int
+    {
+        return (int)$this->createQueryBuilder('m')
+            ->select('COUNT(m.id)')
+            ->innerJoin('m.conversation', 'c')
+            ->where('c.user = :user')
+            ->andWhere('m.readed = false')
+            ->andWhere('m.deletedAt IS NULL')
+            ->andWhere('m.user IS NULL OR m.user != :user')
+            ->setParameter('user', $user)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
 }

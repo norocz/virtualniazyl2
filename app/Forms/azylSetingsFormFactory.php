@@ -105,6 +105,12 @@ class AzylSetingsFormFactory extends Form
             'orange' => 'Oranžová',
         ])->setHtmlAttribute('class', 'form-control')
           ->setRequired(false);
+        $form->addText('slug', 'URL slug (část adresy)')
+            ->setHtmlAttribute('class', 'form-control')
+            ->setHtmlAttribute('placeholder', 'napr. utulekpejsku — nechat prázdné = vygenerovat automaticky')
+            ->addRule(Form::Pattern, 'Slug smí obsahovat jen malá písmena, číslice a pomlčky', '[a-z0-9-]*')
+            ->addRule(Form::MaxLength, 'Slug může mít maximálně %d znaků', 255)
+            ->setRequired(false);
         $form->addSubmit('sendAzylSettings', 'Uložit')
             ->setHtmlAttribute('class', 'btn btn-primary');
 

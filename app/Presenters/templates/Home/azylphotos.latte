@@ -26,7 +26,7 @@
             <span class="sep">›</span>
             <a n:href="Home:azyls">Azyly</a>
             <span class="sep">›</span>
-            <a n:href="Home:azyl $presenter->getParameter('id')">{$azylProfil->getAzylName()}</a>
+            <a n:href="Home:azyl $azylProfil->getId()">{$azylProfil->getAzylName()}</a>
             <span class="sep">›</span>
             <span class="current">Fotky</span>
         </nav>
@@ -42,16 +42,16 @@
             <aside>
                 <div class="vaz-card vaz-card--flush" style="padding:14px;">
                     <nav class="vaz-sidenav">
-                        <a n:class="$presenter->isLinkCurrent('Home:azyl') ? 'active'" n:href="Home:azyl $presenter->getParameter('id')">
+                        <a n:class="$presenter->isLinkCurrent('Home:azyl') ? 'active'" n:href="Home:azyl $azylProfil->getId()">
                             <i class="bi bi-postcard-heart"></i> <span>Profil azylu</span>
                         </a>
-                        <a n:class="$presenter->isLinkCurrent('Home:azyladoptions') ? 'active'" n:href="Home:azyladoptions $presenter->getParameter('id')">
+                        <a n:class="$presenter->isLinkCurrent('Home:azyladoptions') ? 'active'" n:href="Home:azyladoptions $azylProfil->getId()">
                             <i class="bi bi-house-heart"></i> <span>Všechny adopce</span>
                         </a>
-                        <a n:class="$presenter->isLinkCurrent('Home:azylnews') ? 'active'" n:href="Home:azylnews $presenter->getParameter('id')">
+                        <a n:class="$presenter->isLinkCurrent('Home:azylnews') ? 'active'" n:href="Home:azylnews $azylProfil->getId()">
                             <i class="bi bi-calendar2"></i> <span>Aktuality azylu</span>
                         </a>
-                        <a n:class="$presenter->isLinkCurrent('Home:azylphotos') ? 'active'" n:href="Home:azylphotos $presenter->getParameter('id')">
+                        <a n:class="$presenter->isLinkCurrent('Home:azylphotos') ? 'active'" n:href="Home:azylphotos $azylProfil->getId()">
                             <i class="bi bi-camera"></i> <span>Fotky azylu</span>
                         </a>
                     </nav>

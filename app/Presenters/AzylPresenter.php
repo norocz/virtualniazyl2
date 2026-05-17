@@ -80,11 +80,15 @@ use App\Model\Orm\Repository\AzylEventRepository;
 use App\Model\Orm\Repository\AzylEventReservationRepository;
 use App\Forms\AzylEventFormFactory;
 use App\Services\EventRegistrationMailService;
+use App\Services\SlugService;
 
 class AzylPresenter extends BasePresenter
 {
     #[\Nette\DI\Attributes\Inject]
     public EventRegistrationMailService $eventRegistrationMailService;
+
+    #[\Nette\DI\Attributes\Inject]
+    public SlugService $slugService;
 
     #[Parameter]
     public ?int $id;
@@ -200,7 +204,8 @@ class AzylPresenter extends BasePresenter
         $this->getTemplate()->personalPhoto = $this->photosRepository->findById($this->user->getIdentity()->getData()['User']->getPersonalPhoto());
         $this->getTemplate()->random = $this->getUser()->getIdentity()->getData()['Azyl']->getRandom();
 
-
+        $azyl = $this->getUser()->getIdentity()->getData()['Azyl'];
+        $this->getTemplate()->totalUnread = $this->messagesRepository->countUnreadMessagesForAzyl($azyl);
     }
 
 
@@ -871,6 +876,7 @@ class AzylPresenter extends BasePresenter
             'countryCode' => $formDef->getCountryCode(),
             'latitude' => $formDef->getLatitude(),
             'longitude' => $formDef->getLongitude(),
+            'slug' => $formDef->getSlug() ?? '',
         ]);
 
         $form->onSuccess[] = [$this, 'azylSettingsFormSucceeded'];
@@ -907,6 +913,22 @@ class AzylPresenter extends BasePresenter
         if (is_null($azyl->getMessageAddress())) {
             $azyl->setMessageAddress($this->azylAddressService->generateCommunicationAddress($azyl->getId(), $azyl->getEmail(), $azyl->getAzylName()));
             $this->flashMessage('POZOR! Nastavena komunikační adresa interního systému.', 'alert-warning');
+        }
+
+        $rawSlug = trim($values->slug ?? '');
+        if ($rawSlug === '') {
+            // Auto-generate from name only when no slug is set yet
+            if ($azyl->getSlug() === null) {
+                $azyl->setSlug($this->slugService->generateUniqueSlug($values->azylName, $azyl->getId()));
+            }
+        } else {
+            $newSlug = $this->slugService->slugify($rawSlug);
+            $existing = $this->azylRepository->findBySlug($newSlug);
+            if ($existing !== null && $existing->getId() !== $azyl->getId()) {
+                $this->flashMessage('Slug "' . $newSlug . '" je již obsazen jiným azylem. Slug nebyl změněn.', 'alert-warning');
+            } else {
+                $azyl->setSlug($newSlug);
+            }
         }
 
         $this->azylRepository->saveAzyl($azyl);
@@ -1263,19 +1285,27 @@ class AzylPresenter extends BasePresenter
 
         if (!is_null($user))
         {
-            $phoneNumber = \Brick\PhoneNumber\PhoneNumber::parse($post['phone']);
-
-            $phone = $phoneNumber->format(PhoneNumberFormat::INTERNATIONAL);
-            $user->setFirstName($post['firstName']);
-            $user->setLastName($post['lastName']);
+            $rawPhone = $post['phone'] ?? '';
+            $phone = null;
+            if (!empty($rawPhone)) {
+                try {
+                    $parsed = \Brick\PhoneNumber\PhoneNumber::parse($rawPhone);
+                    $phone = $parsed->format(\Brick\PhoneNumber\PhoneNumberFormat::INTERNATIONAL);
+                } catch (\Brick\PhoneNumber\PhoneNumberParseException) {
+                    $phone = $rawPhone;
+                }
+            }
+            $user->setFirstName($post['firstName'] ?? '');
+            $user->setLastName($post['lastName'] ?? '');
             $user->setUpdatedAt(new DateTimeImmutable());
             $user->setUpdatedBy($this->usersRepository->getUserById($this->getPresenter()->getUser()->getId()));
-            $user->setPhone(phone: empty($post['phone']) ? null : $phone);
-            $user->setOrientationNumber($post['orientation']);
+            $user->setPhone(phone: $phone);
+            $user->setOrientationNumber($post['orientation'] ?? null);
             $user->setStreet($values->street);
             $user->setDescription($values->description);
-            $user->setHouseNumber($post['house']);
-            $user->setCity( empty($post['city']) ? null : intval($post['city']));
+            $user->setHouseNumber($post['house'] ?? null);
+            $rawCity = $post['city'] ?? '';
+            $user->setCity($rawCity !== '' ? intval($rawCity) : null);
             // $user->setCity($this->cityRepository->findCityById(intval($post['city'])));
             $this->usersRepository->save($user);
             $this->flashMessage('Uživatelské informace aktualizovány.', 'alert-success');
