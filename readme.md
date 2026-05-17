@@ -10,7 +10,7 @@ Autorem je [Josef Němec](https://josefnemec.cz/), systém je navržený s ohled
 Požadavky
 ------------
 1. Doctrine
-2. PHP 8.2+
+2. PHP 8.4+
 3. Nette 3.1+
 4. Composer
 5. MySQL 5.7+
