@@ -1,0 +1,70 @@
+{block scripts}{/block}
+{block azylContent}
+<div class="container-fluid pt-4 px-4">
+    <div class="row g-4">
+        <div class="col-12">
+            <div class="bg-light rounded p-4">
+                <h4 class="mb-4"><i class="bi bi-people me-2"></i>Správci azylu</h4>
+
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Pozvat nového správce</h5>
+                        <p class="text-muted small">Zadejte e-mail registrovaného uživatele. Správce může spravovat vše kromě přidávání dalších správců.</p>
+                        {form inviteManagerForm, class => 'row g-2 align-items-end'}
+                            <div class="col-md-6">
+                                <label class="form-label">E-mail uživatele</label>
+                                {input email}
+                            </div>
+                            <div class="col-auto">
+                                {input send, class => 'btn btn-primary'}
+                            </div>
+                        {/form}
+                    </div>
+                </div>
+
+                <h5 class="mb-3">Aktuální správci</h5>
+                {if empty($managers)}
+                    <p class="text-muted">Zatím žádní správci nebyli přidáni.</p>
+                {else}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Uživatel</th>
+                                <th>E-mail</th>
+                                <th>Pozván</th>
+                                <th>Stav</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {foreach $managers as $manager}
+                            <tr>
+                                <td>{$manager->getUser()->getUserName()}</td>
+                                <td>{$manager->getUser()->getEmail()}</td>
+                                <td>{$manager->getInvitedAt()->format('d.m.Y')}</td>
+                                <td>
+                                    {if $manager->isAccepted()}
+                                        <span class="badge bg-success">Aktivní</span>
+                                    {else}
+                                        <span class="badge bg-warning text-dark">Čeká na přijetí</span>
+                                    {/if}
+                                </td>
+                                <td class="text-end">
+                                    <a href="{link removeManager!, managerId => $manager->id}"
+                                       class="btn btn-sm btn-outline-danger"
+                                       onclick="return confirm('Opravdu odebrat správce ' + {$manager->getUser()->getUserName()|json|noescape} + '?')">
+                                        <i class="bi bi-person-dash"></i> Odebrat
+                                    </a>
+                                </td>
+                            </tr>
+                            {/foreach}
+                        </tbody>
+                    </table>
+                </div>
+                {/if}
+            </div>
+        </div>
+    </div>
+</div>
+{/block}
