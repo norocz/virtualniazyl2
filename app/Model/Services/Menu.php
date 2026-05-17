@@ -18,6 +18,7 @@ class Menu
             ['logged' => false, 'role' => '', 'title' => 'Obchody azylů - eshop', 'name' => 'Obchody', 'link' => 'Shop:default', 'alwaysAvailable' => true],
             ['logged' => true, 'role' => 'admin','title' => 'Administrace', 'name' => 'Administrace', 'link' => 'Admin:default', 'alwaysAvailable' => false],
             ['logged' => true, 'role' => 'azyl','title' => 'Můj azyl - Azyl administration', 'name' => 'Můj azyl', 'link' => 'Azyl:default', 'alwaysAvailable' => false],
+            ['logged' => true, 'role' => 'azyladmin','title' => 'Správa azylu - Co-manager', 'name' => 'Správa azylu', 'link' => 'Azyl:default', 'alwaysAvailable' => false],
             ['logged' => true, 'role' => '','title' => 'Profil uživatele', 'name' => 'Profil', 'link' => 'User:default', 'alwaysAvailable' => false],
             ['logged' => true, 'role' => 'superadmin','title' => 'Pretorian administration', 'name' => 'Administrace', 'link' => 'Admin:default', 'alwaysAvailable' => false],
             ['logged' => true, 'role' => 'superadmin','title' => 'Pretorian azyl admin', 'name' => 'Můj azyl', 'link' => 'Azyl:default', 'alwaysAvailable' => false],

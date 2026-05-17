@@ -79,8 +79,11 @@ use App\Model\Orm\Enums\RecurrenceTypeEnum;
 use App\Model\Orm\Repository\AzylEventRepository;
 use App\Model\Orm\Repository\AzylEventReservationRepository;
 use App\Forms\AzylEventFormFactory;
+use App\Services\AzylCoManagerMailService;
 use App\Services\EventRegistrationMailService;
 use App\Services\SlugService;
+use App\Model\Orm\Repository\AzylCoManagerRepository;
+use App\Model\Orm\Entity\AzylCoManager;
 
 class AzylPresenter extends BasePresenter
 {
@@ -89,6 +92,12 @@ class AzylPresenter extends BasePresenter
 
     #[\Nette\DI\Attributes\Inject]
     public SlugService $slugService;
+
+    #[\Nette\DI\Attributes\Inject]
+    public AzylCoManagerRepository $azylCoManagerRepository;
+
+    #[\Nette\DI\Attributes\Inject]
+    public AzylCoManagerMailService $azylCoManagerMailService;
 
     #[Parameter]
     public ?int $id;
@@ -162,7 +171,7 @@ class AzylPresenter extends BasePresenter
             $this->redirect('Home:SignIn');
         } else {
 
-            if (!($this->getPresenter()->getUser()->isInRole('azyl') || $this->getPresenter()->getUser()->isInRole('superadmin'))) {
+            if (!($this->getPresenter()->getUser()->isInRole('azyl') || $this->getPresenter()->getUser()->isInRole('superadmin') || $this->getPresenter()->getUser()->isInRole('azyladmin'))) {
                 $this->flashMessage('Nemáte dostatečná oprávnění pro tuto akci. Akce byla zalogována!', 'alert-danger');
                 $this->analyticsService->setPresenter($this);
                 $this->analyticsService->setComment('Azyl presenter, nepovolený přístup|' . $this->getPresenter()->getAction() . ' | ' . $this->getPresenter()->getUser()->getIdentity()->getId());
@@ -189,6 +198,7 @@ class AzylPresenter extends BasePresenter
      */
     protected function beforeRender(): void
     {
+        $this->getTemplate()->addFilter('json', fn($v) => json_encode($v, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT));
         $this->getTemplate()->addFilter('safeHtml', function (string $html): string {
             $allowedTags = ['b', 'i', 'a', 'p', 'br'];
             $html = strip_tags($html, '<' . implode('><', $allowedTags) . '>');
@@ -692,6 +702,39 @@ class AzylPresenter extends BasePresenter
     public function renderMessages(): void
     {
         $this->getTemplate()->title = 'Message';
+    }
+
+    public function renderManagers(): void
+    {
+        $user = $this->getUser();
+        if (!$user->isInRole('azyl') && !$user->isInRole('superadmin')) {
+            $this->flashMessage('Přidávání správců je vyhrazeno zakladateli azylu.', 'alert-warning');
+            $this->redirect('Azyl:default');
+        }
+        $azyl = $this->azylRepository->findById($user->getIdentity()->getData()['Azyl']->getId());
+        $this->getTemplate()->managers = $this->azylCoManagerRepository->findAllForAzyl($azyl);
+        $this->getTemplate()->title = 'Správci azylu';
+    }
+
+    public function handleRemoveManager(int $managerId): void
+    {
+        $user = $this->getUser();
+        if (!$user->isInRole('azyl') && !$user->isInRole('superadmin')) {
+            $this->flashMessage('Tato akce je vyhrazena zakladateli azylu.', 'alert-warning');
+            $this->redirect('Azyl:default');
+        }
+
+        $azyl = $this->azylRepository->findById($user->getIdentity()->getData()['Azyl']->getId());
+        $cm   = $this->azylCoManagerRepository->find($managerId);
+
+        if (!$cm || $cm->getAzyl()->getId() !== $azyl->getId()) {
+            $this->flashMessage('Správce nebyl nalezen.', 'alert-warning');
+            $this->redirect('Azyl:managers');
+        }
+
+        $this->azylCoManagerRepository->remove($cm);
+        $this->flashMessage('Správce byl odebrán.', 'alert-success');
+        $this->redirect('Azyl:managers');
     }
 
     public function renderSettings(): void
@@ -2017,6 +2060,61 @@ class AzylPresenter extends BasePresenter
             $this->flashMessage('Fotka smazána.', 'alert-success');
         }
         $this->redirect('this');
+    }
+
+    public function createComponentInviteManagerForm(): Form
+    {
+        $form = new Form;
+        $form->addEmail('email', 'E-mail uživatele')
+            ->setRequired('Zadejte e-mail')
+            ->setHtmlAttribute('class', 'form-control')
+            ->setHtmlAttribute('placeholder', 'uzivatel@example.cz');
+        $form->addSubmit('send', 'Odeslat pozvánku')
+            ->setHtmlAttribute('class', 'btn btn-primary');
+        $form->onSuccess[] = [$this, 'inviteManagerFormSucceeded'];
+        return $form;
+    }
+
+    public function inviteManagerFormSucceeded(Form $form, \stdClass $values): void
+    {
+        $user = $this->getUser();
+        if (!$user->isInRole('azyl') && !$user->isInRole('superadmin')) {
+            $this->flashMessage('Tato akce je vyhrazena zakladateli azylu.', 'alert-warning');
+            $this->redirect('Azyl:default');
+        }
+
+        $founder     = $this->usersRepository->getUserById($user->getId());
+        $azyl        = $this->azylRepository->findById($user->getIdentity()->getData()['Azyl']->getId());
+        $invitedUser = $this->usersRepository->findOneBy(['email' => $values->email]);
+
+        if (!$invitedUser) {
+            $this->flashMessage('Uživatel s tímto e-mailem není registrován.', 'alert-warning');
+            $this->redirect('Azyl:managers');
+        }
+
+        if ($invitedUser->getId() === $founder->getId()) {
+            $this->flashMessage('Nemůžete pozvat sebe sama.', 'alert-warning');
+            $this->redirect('Azyl:managers');
+        }
+
+        if ($this->azylCoManagerRepository->findPendingForAzylAndUser($azyl, $invitedUser)) {
+            $this->flashMessage('Tento uživatel již byl pozván nebo je správcem.', 'alert-warning');
+            $this->redirect('Azyl:managers');
+        }
+
+        $token = bin2hex(random_bytes(32));
+        $cm    = new AzylCoManager();
+        $cm->setAzyl($azyl)
+           ->setUser($invitedUser)
+           ->setInvitedBy($founder)
+           ->setInviteToken($token)
+           ->setInvitedAt(new \DateTimeImmutable());
+        $this->azylCoManagerRepository->save($cm);
+
+        $this->azylCoManagerMailService->sendInvitation($invitedUser, $azyl, $token);
+
+        $this->flashMessage('Pozvánka byla odeslána na ' . $values->email, 'alert-success');
+        $this->redirect('Azyl:managers');
     }
 
 }

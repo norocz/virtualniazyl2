@@ -5,6 +5,7 @@ namespace App\Model\Orm\Repository;
 use App\Model\Orm\Entity\Animal;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
+use Doctrine\ORM\Query\ResultSetMappingBuilder;
 
 
 class AnimalsRepository extends EntityRepository
@@ -122,6 +123,37 @@ class AnimalsRepository extends EntityRepository
         $export['results'] = $results;
         $export['words'] = $words;
         return $export;
+    }
+
+    public function findNearby(float $lat, float $lng, int $radius): array
+    {
+        $sql = "
+            SELECT a.*
+            FROM animals a
+            INNER JOIN azyls az ON a.azyl_id = az.id
+            WHERE a.to_adoption = 1
+              AND a.is_deleted = 0
+              AND az.latitude IS NOT NULL
+              AND az.longitude IS NOT NULL
+              AND (6371 * acos(LEAST(1.0,
+                    cos(radians(:lat)) * cos(radians(az.latitude)) * cos(radians(az.longitude) - radians(:lng))
+                    + sin(radians(:lat)) * sin(radians(az.latitude))
+                  ))) <= :radius
+            ORDER BY (6371 * acos(LEAST(1.0,
+                    cos(radians(:lat)) * cos(radians(az.latitude)) * cos(radians(az.longitude) - radians(:lng))
+                    + sin(radians(:lat)) * sin(radians(az.latitude))
+                  )))
+        ";
+
+        $rsm = new ResultSetMappingBuilder($this->getEntityManager());
+        $rsm->addRootEntityFromClassMetadata(Animal::class, 'a');
+
+        $query = $this->getEntityManager()->createNativeQuery($sql, $rsm);
+        $query->setParameter('lat', $lat);
+        $query->setParameter('lng', $lng);
+        $query->setParameter('radius', $radius);
+
+        return $query->getResult();
     }
 
     public function countWithoutCoordinates(): int

@@ -139,6 +139,11 @@
                 <a href="{link Azyl:finance}" class="nav-item nav-link {if isLinkCurrent('Azyl:finance')}active{/if}">
                     <i class="bi bi-bar-chart-line me-2"></i>Finanční přehled
                 </a>
+                {if $user->isInRole('azyl') || $user->isInRole('superadmin')}
+                <a href="{link Azyl:managers}" class="nav-item nav-link {if isLinkCurrent('Azyl:managers')}active{/if}">
+                    <i class="bi bi-people me-2"></i>Správci
+                </a>
+                {/if}
                 {if !empty($random)}
                 <hr class = "m-2">
                 <span class="m-3 text-black small">  Animal liberation front 4ever - Keep the fight my frend!</span>

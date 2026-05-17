@@ -57,6 +57,7 @@ use App\Model\Orm\Entity\UserAzylFollow;
 use App\Model\Orm\Repository\AzylEventRepository;
 use App\Model\Orm\Repository\AzylEventReservationRepository;
 use App\Model\Orm\Repository\UserAzylFollowRepository;
+use App\Model\Orm\Repository\AzylCoManagerRepository;
 use App\Services\EventRegistrationMailService;
 use Defr\QRPlatba\QRPlatba;
 use Nette\Utils\Random;
@@ -65,6 +66,9 @@ final class HomePresenter extends Nette\Application\UI\Presenter
 {
     #[\Nette\DI\Attributes\Inject]
     public AzylEventReservationRepository $eventReservationRepository;
+
+    #[\Nette\DI\Attributes\Inject]
+    public AzylCoManagerRepository $azylCoManagerRepository;
 
     #[\Nette\DI\Attributes\Inject]
     public EventRegistrationMailService $eventRegistrationMailService;
@@ -128,7 +132,7 @@ final class HomePresenter extends Nette\Application\UI\Presenter
             $this->getTemplate()->messagesCount = $this->messagesRepository->countUnreadMessagesForUser($this->getUser()->getIdentity()->getData()['User']);
 
             $identity = $this->getUser()->getIdentity()->getData();
-            if (!empty($identity['Azyl']) && ($this->getUser()->isInRole('azyl') || $this->getUser()->isInRole('superadmin'))) {
+            if (!empty($identity['Azyl']) && ($this->getUser()->isInRole('azyl') || $this->getUser()->isInRole('superadmin') || $this->getUser()->isInRole('azyladmin'))) {
                 $this->getTemplate()->azylUnreadCount = $this->messagesRepository->countUnreadMessagesForAzyl($identity['Azyl']);
             }
         }
@@ -250,16 +254,23 @@ public function renderAdoptions($offset = 0): void
         $this->getTemplate()->placeholders = $placeholders[array_rand($placeholders)];
         $this->getTemplate()->title = 'Všechny adopce';
 
-        if($this->getPresenter()->getParameter('search'))
-        {
+        $lat    = $this->getPresenter()->getParameter('lat');
+        $lng    = $this->getPresenter()->getParameter('lng');
+        $radius = (int)($this->getPresenter()->getParameter('radius') ?? 25);
+
+        if ($lat && $lng) {
+            $this->getTemplate()->adoptions  = $this->animalsRepository->findNearby((float)$lat, (float)$lng, $radius);
+            $this->getTemplate()->geoSearch  = true;
+            $this->getTemplate()->geoRadius  = $radius;
+            $this->getTemplate()->geoLat     = (float)$lat;
+            $this->getTemplate()->geoLng     = (float)$lng;
+        } elseif ($this->getPresenter()->getParameter('search')) {
             $e = $this->animalsRepository->search($this->getPresenter()->getParameter('search'));
             $this->getTemplate()->adoptions = $e['results'];
             $this->getTemplate()->words = $e['words'];
             $this->getTemplate()->placeholders = $this->getPresenter()->getParameter('search');
-        }
-        else
-        {
-            $this->getTemplate()->adoptions = $this->animalsRepository->findBy(['isDeleted' => false, 'toAdoption' => true],  ['id' => 'DESC'], 20, $offset);
+        } else {
+            $this->getTemplate()->adoptions = $this->animalsRepository->findBy(['isDeleted' => false, 'toAdoption' => true], ['id' => 'DESC'], 20, $offset);
         }
     }
 
@@ -705,6 +716,44 @@ public function renderAdoptions($offset = 0): void
         $this->getUser()->logout();
         $this->getPresenter()->flashMessage('Odhlášení proběhlo v pořádku.', 'alert-success');
         $this->redirect('Home:default');
+    }
+
+    public function renderAcceptInvite(string $token = ''): void
+    {
+        if ($token === '') {
+            $this->redirect('Home:default');
+        }
+
+        $cm = $this->azylCoManagerRepository->findByToken($token);
+        if (!$cm) {
+            $this->flashMessage('Pozvánka nebyla nalezena nebo vypršela.', 'alert-warning');
+            $this->redirect('Home:default');
+        }
+
+        if ($cm->isAccepted()) {
+            $this->flashMessage('Tato pozvánka již byla použita.', 'alert-warning');
+            $this->redirect('Home:default');
+        }
+
+        if (!$this->getUser()->isLoggedIn()) {
+            $backSession = $this->getSession('back');
+            $backSession->set('backUrl', $this->link('//Home:acceptInvite', ['token' => $token]));
+            $this->flashMessage('Pro přijetí pozvánky se prosím přihlaste.', 'alert-warning');
+            $this->redirect('Home:SignIn');
+        }
+
+        $loggedUser = $this->getUser()->getIdentity()->getData()['User'];
+        if ($loggedUser->getId() !== $cm->getUser()->getId()) {
+            $this->flashMessage('Tato pozvánka náleží jinému účtu.', 'alert-warning');
+            $this->redirect('Home:default');
+        }
+
+        $cm->setAcceptedAt(new \DateTimeImmutable());
+        $this->azylCoManagerRepository->save($cm);
+
+        $this->getUser()->logout(true);
+        $this->flashMessage('Pozvánka přijata! Přihlaste se prosím znovu — správa azylu ' . $cm->getAzyl()->getAzylName() . ' bude aktivní.', 'alert-success');
+        $this->redirect('Home:SignIn');
     }
 
     public function createComponentSignInForm(): Form

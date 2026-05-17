@@ -13,22 +13,51 @@
             <span class="sep">›</span>
             <span class="current">Zvířátka k adopci</span>
         </nav>
-        <div class="d-flex justify-content-between align-items-end flex-wrap gap-3">
-            <div>
-                <h1 class="vaz-page-title">Zvířátka k adopci</h1>
-                <p class="vaz-page-sub" style="max-width:640px;">
-                    Najděte svého nového parťáka. Každé zvířátko prošlo veterinární prohlídkou a čeká na člověka, který ho pustí do srdce i do života.
-                </p>
-            </div>
-            <form n:name="searchForm" class="vaz-form d-flex gap-2 align-items-center">
-                <div class="position-relative">
-                    <i class="bi bi-search position-absolute" style="left:12px; top:50%; transform:translateY(-50%); color: var(--vaz-text-muted);"></i>
-                    <input n:name="search" type="text" class="form-control" placeholder="{$placeholders}"
-                           style="padding-left:36px; width:320px;">
+
+        <h1 class="vaz-page-title">Zvířátka k adopci</h1>
+        <p class="vaz-page-sub" style="max-width:640px;">
+            Najděte svého nového parťáka. Každé zvířátko prošlo veterinární prohlídkou a čeká na člověka, který ho pustí do srdce i do života.
+        </p>
+
+        <form n:name="searchForm" id="adoptionSearchForm" class="mt-4">
+            <div class="d-flex gap-2 flex-wrap">
+                <div class="position-relative flex-grow-1" style="min-width:220px;">
+                    <i class="bi bi-search position-absolute" style="left:14px; top:50%; transform:translateY(-50%); color:var(--vaz-text-muted); pointer-events:none;"></i>
+                    <input n:name="search" type="text" class="form-control form-control-lg" placeholder="{$placeholders}"
+                           style="padding-left:42px;" id="searchInput">
                 </div>
-                <button n:name="send" type="submit" class="vaz-btn vaz-btn--primary">Hledat</button>
-            </form>
-        </div>
+                <button type="button" id="geoBtn" class="btn btn-outline-secondary d-flex align-items-center gap-2" title="Hledat v okolí">
+                    <i class="bi bi-geo-alt"></i>
+                    <span>V okolí</span>
+                </button>
+                <button n:name="send" type="submit" class="vaz-btn vaz-btn--primary vaz-btn--lg">
+                    <i class="bi bi-search me-1"></i>Hledat
+                </button>
+            </div>
+
+            <div id="geoPanel" class="d-none mt-3 p-3 rounded-3" style="background:var(--vaz-surface); border:1px solid var(--vaz-border);">
+                <div class="d-flex align-items-center gap-3 flex-wrap">
+                    <span id="geoStatus" class="small text-muted d-flex align-items-center gap-2">
+                        <span class="spinner-border spinner-border-sm d-none" id="geoSpinner"></span>
+                        <span id="geoStatusText">Klikněte pro zjištění polohy</span>
+                    </span>
+                    <div class="d-flex align-items-center gap-2">
+                        <label class="small text-muted mb-0">Okruh:</label>
+                        <select name="radius" id="geoRadius" class="form-select form-select-sm" style="width:auto;">
+                            <option value="10">10 km</option>
+                            <option value="25" selected>25 km</option>
+                            <option value="50">50 km</option>
+                            <option value="100">100 km</option>
+                        </select>
+                    </div>
+                    <input type="hidden" name="lat" id="geoLat">
+                    <input type="hidden" name="lng" id="geoLng">
+                    <button type="button" id="geoLocateBtn" class="btn btn-sm btn-outline-primary d-flex align-items-center gap-1">
+                        <i class="bi bi-crosshair2"></i> Zjistit polohu
+                    </button>
+                </div>
+            </div>
+        </form>
 
         {ifset $words}
             <div class="d-flex gap-2 mt-3 flex-wrap align-items-center">
@@ -38,6 +67,15 @@
                 {/foreach}
             </div>
         {/ifset}
+
+        {if isset($geoSearch) && $geoSearch}
+            <div class="d-flex gap-2 mt-3 align-items-center">
+                <span class="vaz-pill" style="background:var(--vaz-green-light); color:var(--vaz-green);">
+                    <i class="bi bi-geo-alt-fill me-1"></i>V okruhu {$geoRadius} km
+                </span>
+                <a href="{link Home:adoptions}" class="small text-muted">Zrušit filtr</a>
+            </div>
+        {/if}
     </div>
 </section>
 
@@ -104,4 +142,68 @@
 
 </main>
 {/block}
-{block scripts-user}{/block}
+
+{block scripts-user}
+<script>
+(function () {
+    const geoBtn      = document.getElementById('geoBtn');
+    const geoPanel    = document.getElementById('geoPanel');
+    const geoLocateBtn = document.getElementById('geoLocateBtn');
+    const geoSpinner  = document.getElementById('geoSpinner');
+    const geoStatusTxt = document.getElementById('geoStatusText');
+    const geoLatInput = document.getElementById('geoLat');
+    const geoLngInput = document.getElementById('geoLng');
+    const form        = document.getElementById('adoptionSearchForm');
+    const searchInput = document.getElementById('searchInput');
+
+    {if isset($geoSearch) && $geoSearch}
+    geoPanel.classList.remove('d-none');
+    geoBtn.classList.add('active');
+    geoLatInput.value = {$geoLat};
+    geoLngInput.value = {$geoLng};
+    document.getElementById('geoRadius').value = {$geoRadius};
+    geoStatusTxt.innerHTML = '<i class="bi bi-geo-alt-fill text-success me-1"></i>Poloha aktivní';
+    {/if}
+
+    geoBtn.addEventListener('click', () => {
+        geoPanel.classList.toggle('d-none');
+        geoBtn.classList.toggle('active');
+    });
+
+    function locate() {
+        if (!navigator.geolocation) {
+            geoStatusTxt.textContent = 'Geolokace není podporována.';
+            return;
+        }
+        geoSpinner.classList.remove('d-none');
+        geoStatusTxt.textContent = 'Zjišťuji polohu…';
+        geoLocateBtn.disabled = true;
+
+        navigator.geolocation.getCurrentPosition(
+            (pos) => {
+                geoLatInput.value = pos.coords.latitude.toFixed(6);
+                geoLngInput.value = pos.coords.longitude.toFixed(6);
+                geoSpinner.classList.add('d-none');
+                geoStatusTxt.innerHTML = '<i class="bi bi-geo-alt-fill text-success me-1"></i>Poloha získána';
+                geoLocateBtn.disabled = false;
+                searchInput.value = '';
+            },
+            () => {
+                geoSpinner.classList.add('d-none');
+                geoStatusTxt.textContent = 'Polohu nelze zjistit. Zkontrolujte oprávnění.';
+                geoLocateBtn.disabled = false;
+            },
+            { timeout: 10000 }
+        );
+    }
+
+    geoLocateBtn.addEventListener('click', locate);
+
+    form.addEventListener('submit', (e) => {
+        if (geoLatInput.value && geoLngInput.value) {
+            searchInput.removeAttribute('name');
+        }
+    });
+})();
+</script>
+{/block}

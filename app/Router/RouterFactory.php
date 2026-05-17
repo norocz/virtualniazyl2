@@ -26,6 +26,9 @@ final class RouterFactory
         $router->addRoute('zn/confirm/<token>', 'ZN:confirm');
         $router->addRoute('zn/<action>[/<id>]', 'ZN:default');
 
+        // Přijetí pozvánky správce azylu
+        $router->addRoute('azyl/prijmout-pozvani/<token>', 'Home:acceptInvite');
+
         // Azyl slug route — /u/<slug> avoids conflict with AzylPresenter routes at /azyl/...
         $router->addRoute('u/<slug [a-z0-9-]+>', 'Home:azyl');
 

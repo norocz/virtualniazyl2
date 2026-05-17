@@ -71,6 +71,14 @@ services:
     # ============== Slug ==============
     - App\Services\SlugService
 
+    # ============== Správci azylu (co-managers) ==============
+    - App\Model\Orm\Repository\AzylCoManagerRepository
+    AzylCoManagerMailService:
+        factory: App\Services\AzylCoManagerMailService(
+            fromEmail: %zn.fromEmail%,
+            siteUrl: %zn.siteUrl%
+        )
+
     # ============== Události ==============
     - App\Model\Orm\Repository\AzylEventRepository
     - App\Model\Orm\Repository\AzylEventReservationRepository
