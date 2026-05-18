@@ -436,6 +436,8 @@ public function renderAdoptions($offset = 0): void
         $this->getTemplate()->azylPhoto    = $this->photosRepository->findOneBy(['id' => $azylProfil->getMainPhoto()]) ?? null;
         $this->getTemplate()->upcomingEvents = $this->azylEventRepository->findUpcomingByAzyl($azylProfil, 50);
         $this->getTemplate()->pastEvents     = $this->azylEventRepository->findPublicPastByAzyl($azylProfil, 50);
+        $this->getTemplate()->azylCollections = $this->collectionsRepository->findByAzylActive($azylProfil);
+        $this->getTemplate()->azylShopProducts = $this->shopProductRepository->findByAzyl($azylProfil, true);
         $this->getTemplate()->title        = 'Události — ' . $azylProfil->getAzylName();
     }
 
@@ -598,6 +600,9 @@ public function renderAdoptions($offset = 0): void
         $this->getTemplate()->azylProfil = $azylProfil;
         $this->getTemplate()->azylPhoto = $this->photosRepository->findOneBy(['id' => $azylProfil->getMainPhoto()]) ?? null;
         $this->getTemplate()->azylCollections = $this->collectionsRepository->findByAzylActive($azylProfil);
+        $this->getTemplate()->azylShopProducts = $this->shopProductRepository->findByAzyl($azylProfil, true);
+        $this->getTemplate()->azylUpcomingEvents = $this->azylEventRepository->findUpcomingByAzyl($azylProfil, 5);
+        $this->getTemplate()->azylPastEvents = $this->azylEventRepository->findPublicPastByAzyl($azylProfil, 10);
         $this->getTemplate()->title = 'Sbírky — ' . $azylProfil->getAzylName();
     }
 
@@ -612,6 +617,10 @@ public function renderAdoptions($offset = 0): void
         $this->getTemplate()->azylPhoto = $this->photosRepository->findOneBy(['id' => $azylProfil->getMainPhoto()]) ?? null ;
         $this->getTemplate()->azylProfil = $azylProfil;
         $this->getTemplate()->azylUser = $azylUser;
+        $this->getTemplate()->azylCollections = $this->collectionsRepository->findByAzylActive($azylProfil);
+        $this->getTemplate()->azylShopProducts = $this->shopProductRepository->findByAzyl($azylProfil, true);
+        $this->getTemplate()->azylUpcomingEvents = $this->azylEventRepository->findUpcomingByAzyl($azylProfil, 5);
+        $this->getTemplate()->azylPastEvents = $this->azylEventRepository->findPublicPastByAzyl($azylProfil, 10);
         $this->getTemplate()->title = 'Azyl -' . $azylProfil->getAzylName();
         $this->getTemplate()->newsCount = $this->newsRepository->count(['deleted' => false, 'author' => $azylUser->getId()]);
 
@@ -627,8 +636,12 @@ public function renderAdoptions($offset = 0): void
         $azylUser = $this->usersRepository->getUserByAzylId($id);
         $this->getTemplate()->azylProfil = $azylProfil;
         $this->getTemplate()->azylPhoto = $this->photosRepository->findOneBy(['id' => $azylProfil->getMainPhoto()]) ?? null ;
-        $this->getTemplate()->azylNews = is_null($azylProfil->getAzylNews()) ? null : $azylProfil->getAzylNews() ;   // $this->newsRepository->findBy(['author'=> $azylUser->getId()], ['createdAt' => 'DESC']);
+        $this->getTemplate()->azylNews = is_null($azylProfil->getAzylNews()) ? null : $azylProfil->getAzylNews() ;
         $this->getTemplate()->azylUser = $azylUser;
+        $this->getTemplate()->azylCollections = $this->collectionsRepository->findByAzylActive($azylProfil);
+        $this->getTemplate()->azylShopProducts = $this->shopProductRepository->findByAzyl($azylProfil, true);
+        $this->getTemplate()->azylUpcomingEvents = $this->azylEventRepository->findUpcomingByAzyl($azylProfil, 5);
+        $this->getTemplate()->azylPastEvents = $this->azylEventRepository->findPublicPastByAzyl($azylProfil, 10);
         $this->getTemplate()->title = 'Azyl -' . $azylProfil->getAzylName();
         $this->getTemplate()->newsCount = $this->newsRepository->count(['deleted' => false, 'author' => $azylUser->getId()]);
 
@@ -646,6 +659,10 @@ public function renderAdoptions($offset = 0): void
         $this->getTemplate()->azylPhoto = $this->photosRepository->findOneBy(['id' => $azylProfil->getMainPhoto()]) ?? null ;
         $this->getTemplate()->azylPhotos = $this->photosRepository->fetchByAzylId($id);
         $this->getTemplate()->azylUser = $azylUser;
+        $this->getTemplate()->azylCollections = $this->collectionsRepository->findByAzylActive($azylProfil);
+        $this->getTemplate()->azylShopProducts = $this->shopProductRepository->findByAzyl($azylProfil, true);
+        $this->getTemplate()->azylUpcomingEvents = $this->azylEventRepository->findUpcomingByAzyl($azylProfil, 5);
+        $this->getTemplate()->azylPastEvents = $this->azylEventRepository->findPublicPastByAzyl($azylProfil, 10);
         $this->getTemplate()->title = 'Azyl -' . $azylProfil->getAzylName();
         $this->getTemplate()->newsCount = $this->newsRepository->count(['deleted' => false, 'author' => $azylUser->getId()]);
 

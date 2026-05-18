@@ -22,35 +22,73 @@
 
 <section class="py-4">
     <div class="container">
-        <div class="row g-4">
+        <div class="vaz-azyl-layout">
 
         {* Sidebar — navigace azylu *}
-        <div class="col-lg-3">
-            <div class="vaz-card" style="padding:14px; position:sticky; top:16px;">
+        <aside class="d-flex flex-column gap-3" style="position:sticky; top:16px; align-self:start;">
+            <div class="vaz-card" style="padding:14px;">
                 <div class="text-uppercase fw-bold small text-muted mb-2 px-1" style="letter-spacing:.08em; font-size:11px;">
                     {$azylProfil->getAzylName()}
                 </div>
                 <nav class="vaz-sidenav">
-                    <a n:href="Home:azyl, $azylProfil->getId()">
-                        <i class="bi bi-house-heart"></i><span>Profil azylu</span>
+                    <a n:class="$presenter->isLinkCurrent('Home:azyl') ? 'active'"
+                       n:href="Home:azyl $azylProfil->getId()">
+                        <i class="bi bi-house-heart"></i> <span>Profil azylu</span>
                     </a>
-                    <a n:class="true ? 'active'" n:href="Home:azylevents, $azylProfil->getId()">
-                        <i class="bi bi-calendar-event"></i>
-                        <span>Události</span>
-                        {if count($upcomingEvents) > 0}<span class="count">{count($upcomingEvents)}</span>{/if}
+                    <a n:class="$presenter->isLinkCurrent('Home:azyladoptions') ? 'active'"
+                       n:href="Home:azyladoptions $azylProfil->getId()">
+                        <i class="bi bi-heart"></i> <span>Všechny adopce</span>
+                        {if count($azylProfil->getAdoptions()) > 0}
+                            <span class="count">{count($azylProfil->getAdoptions())}</span>
+                        {/if}
                     </a>
-                    <a n:href="Home:azyladoptions, $azylProfil->getId()">
-                        <i class="bi bi-heart"></i><span>Adopce</span>
+                    <a n:class="$presenter->isLinkCurrent('Home:azylnews') ? 'active'"
+                       n:href="Home:azylnews $azylProfil->getId()">
+                        <i class="bi bi-newspaper"></i> <span>Aktuality</span>
+                        {if !empty($azylProfil->getAzylNews())}
+                            <span class="count">{count($azylProfil->getAzylNews())}</span>
+                        {/if}
                     </a>
-                    <a n:href="Home:azylnews, $azylProfil->getId()">
-                        <i class="bi bi-newspaper"></i><span>Aktuality</span>
+                    <a n:class="$presenter->isLinkCurrent('Home:azylphotos') ? 'active'"
+                       n:href="Home:azylphotos $azylProfil->getId()">
+                        <i class="bi bi-images"></i> <span>Fotogalerie</span>
+                    </a>
+                    {if isset($azylCollections) && count($azylCollections) > 0}
+                    <a n:class="$presenter->isLinkCurrent('Home:azylcollections') ? 'active'"
+                       n:href="Home:azylcollections $azylProfil->getId()">
+                        <i class="bi bi-piggy-bank"></i> <span>Sbírky</span>
+                        <span class="count">{count($azylCollections)}</span>
+                    </a>
+                    {/if}
+                    {if isset($azylShopProducts) && count($azylShopProducts) > 0}
+                    <a href="{link Shop:default, azyl => $azylProfil->getId()}">
+                        <i class="bi bi-shop"></i> <span>Obchod azylu</span>
+                        <span class="count">{count($azylShopProducts)}</span>
+                    </a>
+                    {/if}
+                    <a n:class="$presenter->isLinkCurrent('Home:azylevents') ? 'active'"
+                       n:href="Home:azylevents $azylProfil->getId()">
+                        <i class="bi bi-calendar-event"></i> <span>Události</span>
+                        {if count($upcomingEvents) > 0}
+                            <span class="count">{count($upcomingEvents)}</span>
+                        {/if}
                     </a>
                 </nav>
             </div>
-        </div>
+
+            <div class="vaz-card vaz-card--flush" style="overflow:hidden;">
+                {if $azylPhoto !== null}
+                    <img src="{$basePath}{$azylPhoto->getPath().$azylPhoto->getName()}"
+                         alt="{$azylProfil->getAzylName()}" style="width:100%; height:auto; display:block;">
+                {else}
+                    <img src="{$basePath}/assets/vazdata/img/pic/defaultPhoto.jpeg"
+                         alt="{$azylProfil->getAzylName()}" style="width:100%; height:auto; display:block;">
+                {/if}
+            </div>
+        </aside>
 
         {* Hlavní obsah *}
-        <div class="col-lg-9">
+        <div>
 
             {* Nadcházející *}
             {if count($upcomingEvents) > 0}
